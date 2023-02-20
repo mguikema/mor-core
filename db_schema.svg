@@ -1,0 +1,260 @@
+<svg width="662pt" height="479pt"
+ viewBox="0.00 0.00 662.00 479.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 475)">
+<title>model_graph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-475 658,-475 658,4 -4,4"/>
+<g id="clust1" class="cluster">
+<title>cluster_apps_mor</title>
+<path fill="none" stroke="#698b22" d="M12,0C12,0 634,0 634,0 640,0 646,-6 646,-12 646,-12 646,-459 646,-459 646,-465 640,-471 634,-471 634,-471 12,-471 12,-471 6,-471 0,-465 0,-459 0,-459 0,-12 0,-12 0,-6 6,0 12,0"/>
+<text text-anchor="start" x="241.5" y="-455.5" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="264.5" y="-455.5" font-family="Roboto" font-size="10.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="295.5" y="-455.5" font-family="Roboto" font-weight="bold" font-size="10.00">apps.mor</text>
+<text text-anchor="start" x="350.5" y="-455.5" font-family="Roboto" font-size="10.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="381.5" y="-455.5" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;</text>
+</g>
+<!-- apps_mor_models_Bijlage -->
+<g id="node1" class="node">
+<title>apps_mor_models_Bijlage</title>
+<polygon fill="white" stroke="transparent" points="394,-344 394,-432 628,-432 628,-344 394,-344"/>
+<polygon fill="#1b563f" stroke="transparent" points="395,-410 395,-431 627,-431 627,-410 395,-410"/>
+<text text-anchor="start" x="461.5" y="-419" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="475.5" y="-419" font-family="Roboto" font-weight="bold" font-size="10.00" fill="white"> &#160;&#160;&#160;&#160;&#160;Bijlage &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="397" y="-402.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="411" y="-402.6" font-family="Roboto" font-weight="bold" font-size="8.00">id</text>
+<text text-anchor="start" x="421" y="-402.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="526" y="-402.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="540" y="-402.6" font-family="Roboto" font-weight="bold" font-size="8.00">AutoField</text>
+<text text-anchor="start" x="584" y="-402.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="397" y="-389.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="411" y="-389.6" font-family="Roboto" font-weight="bold" font-size="8.00">incident_gebeurtenis</text>
+<text text-anchor="start" x="508" y="-389.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="526" y="-389.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="540" y="-389.6" font-family="Roboto" font-weight="bold" font-size="8.00">ForeignKey (id)</text>
+<text text-anchor="start" x="611" y="-389.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="397" y="-376.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="411" y="-376.6" font-family="Roboto" font-size="8.00">bestand</text>
+<text text-anchor="start" x="445" y="-376.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="526" y="-376.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="540" y="-376.6" font-family="Roboto" font-size="8.00">FileField</text>
+<text text-anchor="start" x="573" y="-376.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="397" y="-363.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="411" y="-363.6" font-family="Roboto" font-size="8.00">is_afbeelding</text>
+<text text-anchor="start" x="466" y="-363.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="526" y="-363.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="540" y="-363.6" font-family="Roboto" font-size="8.00">BooleanField</text>
+<text text-anchor="start" x="593" y="-363.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="397" y="-350.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="411" y="-350.6" font-family="Roboto" font-size="8.00">mimetype</text>
+<text text-anchor="start" x="452" y="-350.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="526" y="-350.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="540" y="-350.6" font-family="Roboto" font-size="8.00">CharField</text>
+<text text-anchor="start" x="578" y="-350.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="none" stroke="black" points="394,-344 394,-432 628,-432 628,-344 394,-344"/>
+</g>
+<!-- apps_mor_models_MeldingGebeurtenis -->
+<g id="node2" class="node">
+<title>apps_mor_models_MeldingGebeurtenis</title>
+<polygon fill="white" stroke="transparent" points="441.5,-222.5 441.5,-284.5 630.5,-284.5 630.5,-222.5 441.5,-222.5"/>
+<polygon fill="#1b563f" stroke="transparent" points="443,-262.5 443,-283.5 630,-283.5 630,-262.5 443,-262.5"/>
+<text text-anchor="start" x="449.5" y="-271.5" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="463.5" y="-271.5" font-family="Roboto" font-weight="bold" font-size="10.00" fill="white"> &#160;&#160;&#160;&#160;&#160;MeldingGebeurtenis &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="445" y="-255.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="459" y="-255.1" font-family="Roboto" font-weight="bold" font-size="8.00">id</text>
+<text text-anchor="start" x="469" y="-255.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="529" y="-255.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="543" y="-255.1" font-family="Roboto" font-weight="bold" font-size="8.00">AutoField</text>
+<text text-anchor="start" x="587" y="-255.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="445" y="-242.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="459" y="-242.1" font-family="Roboto" font-weight="bold" font-size="8.00">melding</text>
+<text text-anchor="start" x="497" y="-242.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="529" y="-242.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="543" y="-242.1" font-family="Roboto" font-weight="bold" font-size="8.00">ForeignKey (id)</text>
+<text text-anchor="start" x="614" y="-242.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="445" y="-229.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="459" y="-229.1" font-family="Roboto" font-size="8.00" fill="#7b7b7b">aangemaakt</text>
+<text text-anchor="start" x="511" y="-229.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="529" y="-229.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="543" y="-229.1" font-family="Roboto" font-size="8.00" fill="#7b7b7b">DateTimeField</text>
+<text text-anchor="start" x="601" y="-229.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="none" stroke="black" points="441.5,-222.5 441.5,-284.5 630.5,-284.5 630.5,-222.5 441.5,-222.5"/>
+</g>
+<!-- apps_mor_models_Bijlage&#45;&gt;apps_mor_models_MeldingGebeurtenis -->
+<g id="edge1" class="edge">
+<title>apps_mor_models_Bijlage&#45;&gt;apps_mor_models_MeldingGebeurtenis</title>
+<path fill="none" stroke="black" d="M521.41,-331.85C524.18,-317.16 527.09,-301.72 529.58,-288.53"/>
+<ellipse fill="black" stroke="black" cx="520.63" cy="-335.98" rx="4" ry="4"/>
+<text text-anchor="middle" x="589" y="-315.6" font-family="Roboto" font-size="8.00"> incident_gebeurtenis (bijlages)</text>
+</g>
+<!-- apps_mor_models_Melding -->
+<g id="node3" class="node">
+<title>apps_mor_models_Melding</title>
+<polygon fill="white" stroke="transparent" points="230,-114 230,-163 406,-163 406,-114 230,-114"/>
+<polygon fill="#1b563f" stroke="transparent" points="231,-140.5 231,-161.5 405,-161.5 405,-140.5 231,-140.5"/>
+<text text-anchor="start" x="265.5" y="-149.5" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="279.5" y="-149.5" font-family="Roboto" font-weight="bold" font-size="10.00" fill="white"> &#160;&#160;&#160;&#160;&#160;Melding &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="233" y="-133.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="247" y="-133.1" font-family="Roboto" font-weight="bold" font-size="8.00">id</text>
+<text text-anchor="start" x="257" y="-133.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="317" y="-133.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="331" y="-133.1" font-family="Roboto" font-weight="bold" font-size="8.00">AutoField</text>
+<text text-anchor="start" x="375" y="-133.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="233" y="-120.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="247" y="-120.1" font-family="Roboto" font-size="8.00" fill="#7b7b7b">aangemaakt</text>
+<text text-anchor="start" x="299" y="-120.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="317" y="-120.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="331" y="-120.1" font-family="Roboto" font-size="8.00" fill="#7b7b7b">DateTimeField</text>
+<text text-anchor="start" x="389" y="-120.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="none" stroke="black" points="230,-114 230,-163 406,-163 406,-114 230,-114"/>
+</g>
+<!-- apps_mor_models_MeldingGebeurtenis&#45;&gt;apps_mor_models_Melding -->
+<g id="edge2" class="edge">
+<title>apps_mor_models_MeldingGebeurtenis&#45;&gt;apps_mor_models_Melding</title>
+<path fill="none" stroke="black" d="M472.27,-214.19C455.16,-204.33 436.53,-193.98 419,-185 407.1,-178.91 394.22,-172.77 381.77,-167.06"/>
+<ellipse fill="black" stroke="black" cx="476.04" cy="-216.37" rx="4" ry="4"/>
+<text text-anchor="middle" x="507.5" y="-187.6" font-family="Roboto" font-size="8.00"> melding (melding_gebeurtenissen)</text>
+</g>
+<!-- apps_mor_models_TaakApplicatie -->
+<g id="node4" class="node">
+<title>apps_mor_models_TaakApplicatie</title>
+<polygon fill="white" stroke="transparent" points="240.5,-12 240.5,-61 395.5,-61 395.5,-12 240.5,-12"/>
+<polygon fill="#1b563f" stroke="transparent" points="242,-38.5 242,-59.5 395,-59.5 395,-38.5 242,-38.5"/>
+<text text-anchor="start" x="247" y="-47.5" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="261" y="-47.5" font-family="Roboto" font-weight="bold" font-size="10.00" fill="white"> &#160;&#160;&#160;&#160;&#160;TaakApplicatie &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="244" y="-31.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="258" y="-31.1" font-family="Roboto" font-weight="bold" font-size="8.00">id</text>
+<text text-anchor="start" x="268" y="-31.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="310" y="-31.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="324" y="-31.1" font-family="Roboto" font-weight="bold" font-size="8.00">AutoField</text>
+<text text-anchor="start" x="368" y="-31.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="244" y="-18.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="258" y="-18.1" font-family="Roboto" font-size="8.00">naam</text>
+<text text-anchor="start" x="282" y="-18.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="310" y="-18.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="324" y="-18.1" font-family="Roboto" font-size="8.00">CharField</text>
+<text text-anchor="start" x="362" y="-18.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="none" stroke="black" points="240.5,-12 240.5,-61 395.5,-61 395.5,-12 240.5,-12"/>
+</g>
+<!-- apps_mor_models_Melding&#45;&gt;apps_mor_models_TaakApplicatie -->
+<g id="edge4" class="edge">
+<title>apps_mor_models_Melding&#45;&gt;apps_mor_models_TaakApplicatie</title>
+<path fill="none" stroke="black" d="M318,-101.77C318,-92.51 318,-82.53 318,-73.27"/>
+<ellipse fill="black" stroke="black" cx="318" cy="-105.91" rx="4" ry="4"/>
+<ellipse fill="black" stroke="black" cx="318" cy="-69" rx="4" ry="4"/>
+<text text-anchor="middle" x="378.5" y="-85.6" font-family="Roboto" font-size="8.00"> taak_applicaties (meldingen)</text>
+</g>
+<!-- apps_mor_models_MeldingGebeurtenisType -->
+<g id="node5" class="node">
+<title>apps_mor_models_MeldingGebeurtenisType</title>
+<polygon fill="white" stroke="transparent" points="126,-350.5 126,-425.5 360,-425.5 360,-350.5 126,-350.5"/>
+<polygon fill="#1b563f" stroke="transparent" points="127,-403 127,-424 359,-424 359,-403 127,-403"/>
+<text text-anchor="start" x="142.5" y="-412" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="156.5" y="-412" font-family="Roboto" font-weight="bold" font-size="10.00" fill="white"> &#160;&#160;&#160;&#160;&#160;MeldingGebeurtenisType &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="129" y="-395.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="143" y="-395.6" font-family="Roboto" font-weight="bold" font-size="8.00">id</text>
+<text text-anchor="start" x="153" y="-395.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="258" y="-395.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="272" y="-395.6" font-family="Roboto" font-weight="bold" font-size="8.00">AutoField</text>
+<text text-anchor="start" x="316" y="-395.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="129" y="-382.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="143" y="-382.6" font-family="Roboto" font-weight="bold" font-size="8.00">incident_gebeurtenis</text>
+<text text-anchor="start" x="240" y="-382.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="258" y="-382.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="272" y="-382.6" font-family="Roboto" font-weight="bold" font-size="8.00">ForeignKey (id)</text>
+<text text-anchor="start" x="343" y="-382.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="129" y="-369.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="143" y="-369.6" font-family="Roboto" font-size="8.00">meta</text>
+<text text-anchor="start" x="165" y="-369.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="258" y="-369.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="272" y="-369.6" font-family="Roboto" font-size="8.00">JSONField</text>
+<text text-anchor="start" x="311" y="-369.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="129" y="-356.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="143" y="-356.6" font-family="Roboto" font-size="8.00">type_naam</text>
+<text text-anchor="start" x="189" y="-356.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="258" y="-356.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="272" y="-356.6" font-family="Roboto" font-size="8.00">CharField</text>
+<text text-anchor="start" x="310" y="-356.6" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="none" stroke="black" points="126,-350.5 126,-425.5 360,-425.5 360,-350.5 126,-350.5"/>
+</g>
+<!-- apps_mor_models_MeldingGebeurtenisType&#45;&gt;apps_mor_models_MeldingGebeurtenis -->
+<g id="edge3" class="edge">
+<title>apps_mor_models_MeldingGebeurtenisType&#45;&gt;apps_mor_models_MeldingGebeurtenis</title>
+<path fill="none" stroke="black" d="M278.03,-340.57C288.19,-329.97 300.07,-319.83 313,-313 357.57,-289.44 376.21,-307.7 425,-295 432.35,-293.09 439.89,-290.88 447.41,-288.51"/>
+<ellipse fill="black" stroke="black" cx="275.28" cy="-343.55" rx="4" ry="4"/>
+<text text-anchor="middle" x="416" y="-315.6" font-family="Roboto" font-size="8.00"> incident_gebeurtenis (melding_gebeurtenistypes)</text>
+</g>
+<!-- apps_mor_models_Geometrie -->
+<g id="node6" class="node">
+<title>apps_mor_models_Geometrie</title>
+<polygon fill="white" stroke="transparent" points="228,-216 228,-291 408,-291 408,-216 228,-216"/>
+<polygon fill="#1b563f" stroke="transparent" points="229,-268.5 229,-289.5 407,-289.5 407,-268.5 229,-268.5"/>
+<text text-anchor="start" x="258.5" y="-277.5" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="272.5" y="-277.5" font-family="Roboto" font-weight="bold" font-size="10.00" fill="white"> &#160;&#160;&#160;&#160;&#160;Geometrie &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="231" y="-261.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="245" y="-261.1" font-family="Roboto" font-weight="bold" font-size="8.00">id</text>
+<text text-anchor="start" x="255" y="-261.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="306" y="-261.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="320" y="-261.1" font-family="Roboto" font-weight="bold" font-size="8.00">AutoField</text>
+<text text-anchor="start" x="364" y="-261.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="231" y="-248.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="245" y="-248.1" font-family="Roboto" font-weight="bold" font-size="8.00">melding</text>
+<text text-anchor="start" x="283" y="-248.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="306" y="-248.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="320" y="-248.1" font-family="Roboto" font-weight="bold" font-size="8.00">ForeignKey (id)</text>
+<text text-anchor="start" x="391" y="-248.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="231" y="-235.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="245" y="-235.1" font-family="Roboto" font-size="8.00">geometrie</text>
+<text text-anchor="start" x="288" y="-235.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="306" y="-235.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="320" y="-235.1" font-family="Roboto" font-size="8.00">GeometryField</text>
+<text text-anchor="start" x="379" y="-235.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="231" y="-222.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="245" y="-222.1" font-family="Roboto" font-size="8.00">meta</text>
+<text text-anchor="start" x="267" y="-222.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="306" y="-222.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="320" y="-222.1" font-family="Roboto" font-size="8.00">JSONField</text>
+<text text-anchor="start" x="359" y="-222.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="none" stroke="black" points="228,-216 228,-291 408,-291 408,-216 228,-216"/>
+</g>
+<!-- apps_mor_models_Geometrie&#45;&gt;apps_mor_models_Melding -->
+<g id="edge5" class="edge">
+<title>apps_mor_models_Geometrie&#45;&gt;apps_mor_models_Melding</title>
+<path fill="none" stroke="black" d="M318,-203.61C318,-191.13 318,-178.15 318,-167.16"/>
+<ellipse fill="black" stroke="black" cx="318" cy="-207.7" rx="4" ry="4"/>
+<text text-anchor="middle" x="366.5" y="-187.6" font-family="Roboto" font-size="8.00"> melding (geometrieen)</text>
+</g>
+<!-- apps_mor_models_Signaal -->
+<g id="node7" class="node">
+<title>apps_mor_models_Signaal</title>
+<polygon fill="white" stroke="transparent" points="15.5,-222.5 15.5,-284.5 194.5,-284.5 194.5,-222.5 15.5,-222.5"/>
+<polygon fill="#1b563f" stroke="transparent" points="17,-262.5 17,-283.5 194,-283.5 194,-262.5 17,-262.5"/>
+<text text-anchor="start" x="54.5" y="-271.5" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="68.5" y="-271.5" font-family="Roboto" font-weight="bold" font-size="10.00" fill="white"> &#160;&#160;&#160;&#160;&#160;Signaal &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="19" y="-255.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="33" y="-255.1" font-family="Roboto" font-weight="bold" font-size="8.00">id</text>
+<text text-anchor="start" x="43" y="-255.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="93" y="-255.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="107" y="-255.1" font-family="Roboto" font-weight="bold" font-size="8.00">AutoField</text>
+<text text-anchor="start" x="151" y="-255.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="19" y="-242.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="33" y="-242.1" font-family="Roboto" font-weight="bold" font-size="8.00">melding</text>
+<text text-anchor="start" x="71" y="-242.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="93" y="-242.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="107" y="-242.1" font-family="Roboto" font-weight="bold" font-size="8.00">ForeignKey (id)</text>
+<text text-anchor="start" x="178" y="-242.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="19" y="-229.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="33" y="-229.1" font-family="Roboto" font-size="8.00">verwijzing</text>
+<text text-anchor="start" x="75" y="-229.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="93" y="-229.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<text text-anchor="start" x="107" y="-229.1" font-family="Roboto" font-size="8.00">TextField</text>
+<text text-anchor="start" x="142" y="-229.1" font-family="Roboto" font-size="8.00"> &#160;&#160;&#160;&#160;&#160;</text>
+<polygon fill="none" stroke="black" points="15.5,-222.5 15.5,-284.5 194.5,-284.5 194.5,-222.5 15.5,-222.5"/>
+</g>
+<!-- apps_mor_models_Signaal&#45;&gt;apps_mor_models_Melding -->
+<g id="edge6" class="edge">
+<title>apps_mor_models_Signaal&#45;&gt;apps_mor_models_Melding</title>
+<path fill="none" stroke="black" d="M176.56,-214.54C205.87,-198.98 239.16,-181.32 266.08,-167.04"/>
+<ellipse fill="black" stroke="black" cx="172.73" cy="-216.57" rx="4" ry="4"/>
+<text text-anchor="middle" x="269.5" y="-187.6" font-family="Roboto" font-size="8.00"> melding (signalen)</text>
+</g>
+</g>
+</svg>
