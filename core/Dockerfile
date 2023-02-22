@@ -55,6 +55,7 @@ RUN mkdir -p /media && mkdir -p /static && chown 2000 /media && chown 2000 /stat
 RUN mkdir -p /srv/web/var/cache && chown 2000 /srv/web/var/cache
 
 RUN chmod +x /app/deploy/docker-entrypoint.sh && chown root:root /app/deploy/docker-entrypoint.sh \
-    && chmod +x /app/deploy/tests.sh && chown root:root /app/deploy/tests.sh
+    && chmod +x /app/deploy/tests.sh && chown root:root /app/deploy/tests.sh \
+    && chmod +x /app/deploy/wait-for.sh && chown root:root /app/deploy/wait-for.sh
 
 CMD ["bash", "/app/deploy/docker-entrypoint.sh"]

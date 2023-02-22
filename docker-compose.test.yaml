@@ -10,7 +10,8 @@ services:
       - database
     networks:
       - mor_network
-    command: ["bash", "/app/deploy/docker-entrypoint.development.sh"]
+    # command: ["bash", "/app/deploy/docker-entrypoint.development.sh"]
+    command: bash -c "/app/deploy/wait-for.sh database:5432 && /app/deploy/docker-entrypoint.development.sh"
 
   database:
     image: postgis/postgis:11-3.3
