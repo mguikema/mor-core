@@ -22,6 +22,6 @@ jobs:
     - name: Create Docker network
       run: docker network create mor_network
     - name: Start images and run tests
-      run: docker compose -f docker-compose.test.yaml up
+      run: docker compose -f docker-compose.test.yaml up -d
     # - name: Run Tests
       # run: docker compose -f docker-compose.test.yaml exec -T core bash ./deploy/tests.sh
