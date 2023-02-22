@@ -1,11 +1,10 @@
 from django.contrib.gis.db import models
-from PIL import Image, ImageFile, UnidentifiedImageError
-
+from PIL import Image, UnidentifiedImageError
 
 # class Orchestrator(models.Model):
 #     """
 #     Orchestrator manages one or more IncidentHandlers
-#     It can darefor follow an Melding 
+#     It can darefor follow an Melding
 #     """
 
 
@@ -51,7 +50,7 @@ from PIL import Image, ImageFile, UnidentifiedImageError
 # class ProccessProposal(models.Model):
 #     """
 #     A ProccessProposal is a concrete represention of a ProccessProposalTemplate
-#     When an Melding is assigned to the TaakApplicatie, a ProccessProposal is created based on the default ProccessProposalTemplate of the responsable TaakApplicatie, 
+#     When an Melding is assigned to the TaakApplicatie, a ProccessProposal is created based on the default ProccessProposalTemplate of the responsable TaakApplicatie,
 #     """
 #     proccess_proposal_template = models.ForeignKey(
 #         to="mor.ProccessProposalTemplate",
@@ -90,10 +89,7 @@ class Bijlage(models.Model):
         on_delete=models.CASCADE,
     )
     bestand = models.FileField(
-        upload_to='attachments/%Y/%m/%d/',
-        null=False,
-        blank=False,
-        max_length=255
+        upload_to="attachments/%Y/%m/%d/", null=False, blank=False, max_length=255
     )
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_afbeelding = models.BooleanField(default=False)
@@ -110,7 +106,7 @@ class Bijlage(models.Model):
             # Check of het bestand een afbeelding is
             self.is_afbeelding = self._is_afbeelding()
 
-            if not self.mimetype and hasattr(self.bestand.file, 'content_type'):
+            if not self.mimetype and hasattr(self.bestand.file, "content_type"):
                 self.mimetype = self.bestand.file.content_type
 
         super().save(*args, **kwargs)
@@ -120,6 +116,7 @@ class TaakApplicatie(models.Model):
     """
     Representeerd externe applicaite die de afhandling van de melden op zich nemen.
     """
+
     naam = models.CharField(
         max_length=100,
         default="Taak applicatie",
@@ -134,7 +131,7 @@ class MeldingGebeurtenisType(models.Model):
             ("incident_handler_change", "incident_handler_change"),
             ("status_change", "status_change"),
             ("meta_data_change", "meta_data_change"),
-        )
+        ),
     )
     incident_gebeurtenis = models.ForeignKey(
         to="mor.MeldingGebeurtenis",
@@ -148,6 +145,7 @@ class MeldingGebeurtenis(models.Model):
     """
     MeldingGebeurtenissen bouwen de history op van van de melding
     """
+
     aangemaakt = models.DateTimeField(auto_now_add=True)
     melding = models.ForeignKey(
         to="mor.Melding",
@@ -155,48 +153,50 @@ class MeldingGebeurtenis(models.Model):
         on_delete=models.CASCADE,
     )
 
+
 class Geometrie(models.Model):
     """
     Basis klasse voor geo info.
     """
+
     geometrie = models.GeometryField()
     meta = models.JSONField(default=dict)
     melding = models.ForeignKey(
         to="mor.Melding",
         related_name="geometrieen",
         on_delete=models.CASCADE,
-        null=True
+        null=True,
     )
 
 
 class Signaal(models.Model):
     """
-    Een signaal een individuele signaal vanuit de buiten ruimte. 
-    Er kunnen meerdere signalen aan een melding gekoppeld zijn, bijvoorbeeld dubbele signalen. 
+    Een signaal een individuele signaal vanuit de buiten ruimte.
+    Er kunnen meerdere signalen aan een melding gekoppeld zijn, bijvoorbeeld dubbele signalen.
     Maar er altijd minimaal een signaal gerelateerd aan een Melding.
-    Er mag binnen deze applicatie geen extra info over een signaal 
+    Er mag binnen deze applicatie geen extra info over een signaal
 
-    Het verwijzing veld, moet nog nader bepaald worden. Vermoedelijk wordt dit een url 
+    Het verwijzing veld, moet nog nader bepaald worden. Vermoedelijk wordt dit een url
     """
+
     verwijzing = models.TextField()
     melding = models.ForeignKey(
-        to="mor.Melding",
-        related_name="signalen",
-        on_delete=models.CASCADE,
-        null=True
+        to="mor.Melding", related_name="signalen", on_delete=models.CASCADE, null=True
     )
+
 
 class Melding(models.Model):
     """
     Een melding is de ontdubbelde versie van signalen
     """
+
     aangemaakt = models.DateTimeField(auto_now_add=True)
 
     """
     If the incident_handler field is empty, no one is responsable for the melding
     Maybe an orchestrator like  MidOffice can be connected automaticaly
 
-    
+
     """
     taak_applicaties = models.ManyToManyField(
         to="mor.TaakApplicatie",
