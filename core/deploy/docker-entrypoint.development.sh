@@ -23,5 +23,8 @@ chmod -R ugo+rwx /srv/web/var/cache
 
 chmod -R 777 /static
 
+echo Test python app
+python manage.py test
+
 # exec uwsgi --ini /app/deploy/config.ini
 exec python -m debugpy --listen 0.0.0.0:5678 /app/manage.py runserver 0.0.0.0:8000
