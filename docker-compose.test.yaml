@@ -2,8 +2,10 @@ version: '3'
 services:
   core:
     build: ./core
+    hostname: core
+    image: core
     ports:
-      - "8002:8000"
+      - "8080:8000"
     env_file:
       - .env.test
     depends_on:
@@ -11,6 +13,8 @@ services:
     networks:
       - mor_network
     # command: ["bash", "/app/deploy/docker-entrypoint.development.sh"]
+    stdin_open: true
+    tty: true
     command: bash -c "/app/deploy/wait-for.sh database:5432 && /app/deploy/docker-entrypoint.development.sh"
 
   database:
