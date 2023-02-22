@@ -1,0 +1,32 @@
+version: '3'
+services:
+  core:
+    build: ./core
+    ports:
+      - "8002:8000"
+    env_file:
+      - .env.test
+    depends_on:
+      - database
+    networks:
+      - mor_network
+    command: ["bash", "/app/deploy/docker-entrypoint.development.sh"]
+
+  database:
+    image: postgis/postgis:11-3.3
+    shm_size: '1024m'
+    ports:
+      - "5410:5432"
+    env_file:
+      - .env.test
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - mor_network
+
+volumes:
+  postgres-data:
+
+networks:
+  mor_network:
+    external: true
