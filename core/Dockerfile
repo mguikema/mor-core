@@ -50,9 +50,9 @@ RUN apt-get update \
 
 COPY . /app/
 
-RUN mkdir -p /media && mkdir -p /static && chown 2000 /media && chown 2000 /static
+RUN mkdir -p /media && mkdir -p /static && chown root:root /media && chown root:root /static
 
-RUN mkdir -p /srv/web/var/cache && chown 2000 /srv/web/var/cache
+RUN mkdir -p /srv/web/var/cache && chown root:root /srv/web/var/cache
 
 RUN chmod +x /app/deploy/docker-entrypoint.sh && chown root:root /app/deploy/docker-entrypoint.sh \
     && chmod +x /app/deploy/tests.sh && chown root:root /app/deploy/tests.sh \

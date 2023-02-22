@@ -3,6 +3,13 @@ set -u   # crash on missing env variables
 set -e   # stop on any error
 set -x
 
+echo "See if Postgres is up"
+until PGPASSWORD=$DATABASE_PASSWORD psql  -d $DATABASE_NAME -h $DATABASE_HOST_OVERRIDE -U $DATABASE_USER -c '\q'; do
+  echo "Postgres is unavailable - sleeping"
+  sleep 1
+done
+echo "Postgres is up!"
+
 echo Collecting static files
 python manage.py collectstatic --no-input
 
