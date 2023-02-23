@@ -1,4 +1,4 @@
-name: Create and publish a Docker image
+name: Create a Docker image and publish to production
 
 on:
   push:
@@ -30,21 +30,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata (tags, labels) for Docker
-        id: meta_frontend
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-nginx
-
-      - name: Build and push frontend Docker image
-        uses: docker/build-push-action@v3
-        with:
-          context: "{{defaultContext}}:frontend"
-          push: true
-          tags: ${{ steps.meta_frontend.outputs.tags }}
-          labels: ${{ steps.meta_frontend.outputs.labels }}
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta_backend
+        id: meta_core
         uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-app
@@ -52,10 +38,10 @@ jobs:
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v3
         with:
-          context: "{{defaultContext}}:backend"
+          context: "{{defaultContext}}:core"
           push: true
-          tags: ${{ steps.meta_backend.outputs.tags }}
-          labels: ${{ steps.meta_backend.outputs.labels }}
+          tags: ${{ steps.meta_core.outputs.tags }}
+          labels: ${{ steps.meta_core.outputs.labels }}
 
       - name: Start rollout on k8s platform
         uses: actions-hub/kubectl@master
@@ -64,7 +50,7 @@ jobs:
           KUBE_CERTIFICATE: ${{ secrets.KUBE_CERTIFICATE }}
           KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
         with:
-          args: rollout restart deployment/app --namespace=profilr-frontend-prod
+          args: rollout restart deployment/app --namespace=mor-core-prod
 
       - name: Status rollout on k8s platform
         uses: actions-hub/kubectl@master
@@ -73,4 +59,4 @@ jobs:
           KUBE_CERTIFICATE: ${{ secrets.KUBE_CERTIFICATE }}
           KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
         with:
-          args: rollout status deployment/app --namespace=profilr-frontend-prod
+          args: rollout status deployment/app --namespace=mor-core-prod
