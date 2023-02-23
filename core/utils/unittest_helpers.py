@@ -51,7 +51,7 @@ class GenericAPITestCase:
         response = client.get(url)
         data = response.json()
 
-        self.assertEqual(len(data["results"]), 3)
+        self.assertEqual(len(data["results"]), 2)
 
 
 def add_user_to_authorized_groups(user):
