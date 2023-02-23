@@ -1,26 +1,41 @@
-version: '3'
+version: "3.5"
 services:
   core:
     build: ./core
+    # hostname: core
+    # image: core
     ports:
-      - "8002:8000"
+      - 8080:8000
+      - 5678:5678
     env_file:
       - .env.test
     depends_on:
+      # - database
+      database:
+        condition: service_healthy
+    links:
       - database
     networks:
       - mor_network
+    stdin_open: true
+    tty: true
     command: ["bash", "/app/deploy/docker-entrypoint.development.sh"]
+    # command: bash -c "/app/deploy/wait-for.sh database:5432 && /app/deploy/docker-entrypoint.development.sh"
 
   database:
     image: postgis/postgis:11-3.3
     shm_size: '1024m'
     ports:
-      - "5410:5432"
+      - "5432:5432"
     env_file:
       - .env.test
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-q", "-d", "{POSTGRES_DB}", "-U", "{POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - mor_network
 

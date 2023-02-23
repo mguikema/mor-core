@@ -1,4 +1,11 @@
-from apps.mor.models import Signaal, TaakApplicatie, MeldingGebeurtenisType, MeldingGebeurtenis, Geometrie, Melding
+from apps.mor.models import (
+    Geometrie,
+    Melding,
+    MeldingGebeurtenis,
+    MeldingGebeurtenisType,
+    Signaal,
+    TaakApplicatie,
+)
 from django.contrib import admin
 
 

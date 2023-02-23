@@ -5,9 +5,7 @@ from os.path import join
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRUE_VALUES = [True, "True", "true", "1"]
 
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY", os.environ.get("DJANGO_SECRET_KEY")
-)
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", os.environ.get("DJANGO_SECRET_KEY"))
 
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 DEBUG = ENVIRONMENT == "development"
@@ -41,7 +39,6 @@ INSTALLED_APPS = (
     "health_check",
     "health_check.cache",
     "health_check.storage",
-
     # Apps
     "apps.mor",
     "apps.health",
@@ -152,19 +149,23 @@ CSRF_COOKIE_SAMESITE = "Strict" if not DEBUG else "Lax"
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_FRAME_ANCESTORS = ("'self'",)
 CSP_SCRIPT_SRC = (
-    ("'self'", "'unsafe-inline'", "http://cdnjs.cloudflare.com/ajax/libs/vis/4.7.0/vis.min.js")
+    "'self'",
+    "'unsafe-inline'",
+    "http://cdnjs.cloudflare.com/ajax/libs/vis/4.7.0/vis.min.js",
 )
-CSP_IMG_SRC = (
-    ("'self'", "data:")
-)
+CSP_IMG_SRC = ("'self'", "data:")
 CSP_STYLE_SRC = (
-    ("'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com/ajax/libs/vis/4.7.0/vis.min.css")
+    "'self'",
+    "'unsafe-inline'",
+    "https://cdnjs.cloudflare.com/ajax/libs/vis/4.7.0/vis.min.css",
 )
 CSP_CONNECT_SRC = ("'self'",)
 
 SPAGHETTI_SAUCE = {
-    'apps': ['mor',],
-    'show_fields': False,
+    "apps": [
+        "mor",
+    ],
+    "show_fields": False,
 }
 
 TEMPLATES = [
