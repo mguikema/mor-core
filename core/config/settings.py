@@ -119,6 +119,11 @@ REST_FRAMEWORK = dict(
     DEFAULT_THROTTLE_RATES={
         "nouser": os.getenv("PUBLIC_THROTTLE_RATE", "60/hour"),
     },
+    DEFAULT_PARSER_CLASSES=[
+        "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.FormParser",
+        "rest_framework.parsers.MultiPartParser",
+    ]
     # DEFAULT_RENDERER_CLASSES=(
     #     "rest_framework.renderers.JSONRenderer",
     #     "rest_framework.renderers.BrowsableAPIRenderer",
