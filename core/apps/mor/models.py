@@ -1,89 +1,9 @@
 from django.contrib.gis.db import models
 from PIL import Image, UnidentifiedImageError
 
-# class Orchestrator(models.Model):
-#     """
-#     Orchestrator manages one or more IncidentHandlers
-#     It can darefor follow an Melding
-#     """
-
-
-# class ProccessProposalTemplate(models.Model):
-#     """
-#     Created by task managers
-#     """
-#     proccess_proposal_name = models.CharField(
-#         max_length=100
-#     )
-#     default_proccess_proposal = models.BooleanField(
-#         default=False
-#     )
-#     incident_handler = models.ForeignKey(
-#         to="mor.TaakApplicatie",
-#         related_name="proccess_proposal_templates",
-#         on_delete=models.CASCADE,
-#     )
-
-#     def __str__(self):
-#         return self.proccess_proposal_name
-
-
-# class ProccessProposalItemTemplate(models.Model):
-#     """
-#     When a ProccessProposalTemplate instance is created, at least one ProccessProposalItemTemplate item should be added to ProccessProposalTemplate
-#     """
-#     status_name = models.CharField(max_length=50,)
-#     timedelta = models.DurationField()
-#     proccess_proposal_template = models.ForeignKey(
-#         to="mor.ProccessProposalTemplate",
-#         related_name="items",
-#         on_delete=models.CASCADE,
-#     )
-
-#     class Meta:
-#         ordering = ("timedelta",)
-
-#     def __str__(self):
-#         return f"{self.status_name}: {self.timedelta}"
-
-
-# class ProccessProposal(models.Model):
-#     """
-#     A ProccessProposal is a concrete represention of a ProccessProposalTemplate
-#     When an Melding is assigned to the TaakApplicatie, a ProccessProposal is created based on the default ProccessProposalTemplate of the responsable TaakApplicatie,
-#     """
-#     proccess_proposal_template = models.ForeignKey(
-#         to="mor.ProccessProposalTemplate",
-#         related_name="proccess_proposals",
-#         on_delete=models.SET_NULL,
-#         null=True
-#     )
-#     melding = models.OneToOneField(
-#         to="mor.Melding",
-#         related_name="proccess_proposal",
-#         on_delete=models.CASCADE,
-#         null=True
-#     )
-
-#     def __str__(self):
-#         return f"Template: {self.proccess_proposal_template}"
-
-
-# class ProccessProposalItem(models.Model):
-#     proccess_proposal = models.ForeignKey(
-#         to="mor.ProccessProposal",
-#         related_name="items",
-#         on_delete=models.CASCADE,
-#     )
-#     status_name = models.CharField(max_length=50,)
-#     expected_completion = models.DateTimeField()
-
-#     def __str__(self):
-#         return self.status_name
-
 
 class Bijlage(models.Model):
-    incident_gebeurtenis = models.ForeignKey(
+    melding_gebeurtenis = models.ForeignKey(
         to="mor.MeldingGebeurtenis",
         related_name="bijlages",
         on_delete=models.CASCADE,
@@ -124,16 +44,15 @@ class TaakApplicatie(models.Model):
 
 
 class MeldingGebeurtenisType(models.Model):
+    class TypeNaamOpties(models.TextChoices):
+        META_DATA_WIJZIGING = "META_DATA_WIJZIGING", "Meta data wijziging"
+        STATUS_WIJZIGING = "STATUS_WIJZIGING", "Status change"
+
     type_naam = models.CharField(
         max_length=50,
-        choices=(
-            ("proccess_proposal_item_completion", "proccess_proposal_item_completion"),
-            ("incident_handler_change", "incident_handler_change"),
-            ("status_change", "status_change"),
-            ("meta_data_change", "meta_data_change"),
-        ),
+        choices=TypeNaamOpties.choices,
     )
-    incident_gebeurtenis = models.ForeignKey(
+    melding_gebeurtenis = models.ForeignKey(
         to="mor.MeldingGebeurtenis",
         related_name="melding_gebeurtenistypes",
         on_delete=models.CASCADE,
@@ -201,4 +120,5 @@ class Melding(models.Model):
     taak_applicaties = models.ManyToManyField(
         to="mor.TaakApplicatie",
         related_name="meldingen",
+        blank=True,
     )
