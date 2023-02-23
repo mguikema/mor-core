@@ -1,4 +1,4 @@
-name: Create and publish a Docker image
+name: Create a Docker image and publish to acceptance
 
 on:
   push:
