@@ -1,6 +1,8 @@
 from apps.mor.models import (
     Bijlage,
+    Bron,
     Geometrie,
+    Melder,
     Melding,
     MeldingGebeurtenis,
     MeldingGebeurtenisType,
@@ -21,3 +23,5 @@ admin.site.register(Melding, DefaultAdmin)
 admin.site.register(Geometrie, DefaultAdmin)
 admin.site.register(Signaal, DefaultAdmin)
 admin.site.register(Bijlage, DefaultAdmin)
+admin.site.register(Melder, DefaultAdmin)
+admin.site.register(Bron, DefaultAdmin)

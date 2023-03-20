@@ -1,13 +1,23 @@
+import mimetypes
+
+from apps.locatie.models import Adres, Geometrie, Graf, Lichtmast
+from apps.mor.querysets import SignaalQuerySet
+from box import Box
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from PIL import Image, UnidentifiedImageError
+from utils.models import BasisModel
 
 
-class Bijlage(models.Model):
-    melding_gebeurtenis = models.ForeignKey(
-        to="mor.MeldingGebeurtenis",
-        related_name="bijlages",
-        on_delete=models.CASCADE,
-    )
+class Bron(BasisModel):
+    naam = models.CharField(max_length=30)
+
+
+class Bijlage(BasisModel):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
     bestand = models.FileField(
         upload_to="attachments/%Y/%m/%d/", null=False, blank=False, max_length=255
     )
@@ -25,14 +35,14 @@ class Bijlage(models.Model):
         if self.pk is None:
             # Check of het bestand een afbeelding is
             self.is_afbeelding = self._is_afbeelding()
-
-            if not self.mimetype and hasattr(self.bestand.file, "content_type"):
-                self.mimetype = self.bestand.file.content_type
+            mt = mimetypes.guess_type(self.bestand.path, strict=True)
+            if mt:
+                self.mimetype = mt[0]
 
         super().save(*args, **kwargs)
 
 
-class TaakApplicatie(models.Model):
+class TaakApplicatie(BasisModel):
     """
     Representeerd externe applicaite die de afhandling van de melden op zich nemen.
     """
@@ -43,7 +53,7 @@ class TaakApplicatie(models.Model):
     )
 
 
-class MeldingGebeurtenisType(models.Model):
+class MeldingGebeurtenisType(BasisModel):
     class TypeNaamOpties(models.TextChoices):
         META_DATA_WIJZIGING = "META_DATA_WIJZIGING", "Meta data wijziging"
         STATUS_WIJZIGING = "STATUS_WIJZIGING", "Status change"
@@ -60,12 +70,12 @@ class MeldingGebeurtenisType(models.Model):
     meta = models.JSONField(default=dict)
 
 
-class MeldingGebeurtenis(models.Model):
+class MeldingGebeurtenis(BasisModel):
     """
     MeldingGebeurtenissen bouwen de history op van van de melding
     """
 
-    aangemaakt = models.DateTimeField(auto_now_add=True)
+    bijlages = GenericRelation(Bijlage)
     melding = models.ForeignKey(
         to="mor.Melding",
         related_name="melding_gebeurtenissen",
@@ -73,22 +83,15 @@ class MeldingGebeurtenis(models.Model):
     )
 
 
-class Geometrie(models.Model):
-    """
-    Basis klasse voor geo info.
-    """
-
-    geometrie = models.GeometryField()
-    meta = models.JSONField(default=dict)
-    melding = models.ForeignKey(
-        to="mor.Melding",
-        related_name="geometrieen",
-        on_delete=models.CASCADE,
-        null=True,
-    )
+class Melder(BasisModel):
+    voornaam = models.CharField(max_length=50, blank=True, null=True)
+    achternaam = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    telefoonnummer = models.CharField(max_length=17, blank=True, null=True)
+    bijlages = GenericRelation(Bijlage)
 
 
-class Signaal(models.Model):
+class Signaal(BasisModel):
     """
     Een signaal een individuele signaal vanuit de buiten ruimte.
     Er kunnen meerdere signalen aan een melding gekoppeld zijn, bijvoorbeeld dubbele signalen.
@@ -98,24 +101,51 @@ class Signaal(models.Model):
     Het verwijzing veld, moet nog nader bepaald worden. Vermoedelijk wordt dit een url
     """
 
-    verwijzing = models.TextField()
-    melding = models.ForeignKey(
-        to="mor.Melding", related_name="signalen", on_delete=models.CASCADE, null=True
+    aangemaakt = models.DateTimeField(auto_now_add=True)
+    origineel_aangemaakt = models.DateTimeField()
+    tekst = models.CharField(max_length=3000)
+    meta = models.JSONField(default=dict)
+    melder = models.OneToOneField(
+        to="mor.Melder", on_delete=models.SET_NULL, null=True, blank=True
     )
+    bron = models.CharField(max_length=300)
+    melding = models.ForeignKey(
+        to="mor.Melding",
+        related_name="signalen_voor_melding",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    onderwerp = models.CharField(max_length=300)
+    geometrieen = GenericRelation(Geometrie)
+    adressen = GenericRelation(Adres)
+    graven = GenericRelation(Graf)
+    lichtmasten = GenericRelation(Lichtmast)
+
+    objects = SignaalQuerySet.as_manager()
+
+    def parse_querystring(self, qs_template, **kwargs):
+        format_data = {
+            "aangemaakt": self.aangemaakt,
+            "origineel_aangemaakt": self.origineel_aangemaakt,
+            "tekst": self.tekst,
+            "meta": Box(**self.meta),
+            "bron": self.bron,
+            "melder": self.melder,
+        }
+        try:
+            qs_template.format(**format_data)
+        except Exception as e:
+            print(e)
+        return qs_template.format(**format_data)
 
 
-class Melding(models.Model):
+class Melding(BasisModel):
     """
     Een melding is de ontdubbelde versie van signalen
     """
 
-    aangemaakt = models.DateTimeField(auto_now_add=True)
-
     """
-    If the incident_handler field is empty, no one is responsable for the melding
-    Maybe an orchestrator like  MidOffice can be connected automaticaly
-
-
+    Als er geen taak_applicaties zijn linked aan deze melding, kan b.v. MidOffice deze handmatig toewijzen
     """
     taak_applicaties = models.ManyToManyField(
         to="mor.TaakApplicatie",

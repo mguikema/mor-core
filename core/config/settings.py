@@ -21,6 +21,10 @@ LANGUAGE_CODE = "nl-NL"
 DEFAULT_ALLOWED_HOSTS = "localhost,127.0.0.1"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", DEFAULT_ALLOWED_HOSTS).split(",")
 
+SIGNALEN_API = os.getenv("SIGNALEN_API")
+MELDING_API = os.getenv("MELDING_API")
+APPLICATIE_BASIS_URL = os.getenv("APPLICATIE_BASIS_URL")
+
 INSTALLED_APPS = (
     "django_db_schema_renderer",
     "django.contrib.contenttypes",
@@ -32,6 +36,7 @@ INSTALLED_APPS = (
     "django.contrib.admin",
     "django.contrib.gis",
     "rest_framework",
+    "drf_spectacular",
     "django_filters",
     "corsheaders",
     "django_extensions",
@@ -42,6 +47,8 @@ INSTALLED_APPS = (
     # Apps
     "apps.mor",
     "apps.health",
+    "apps.classificatie",
+    "apps.locatie",
 )
 
 MIDDLEWARE = (
@@ -84,6 +91,7 @@ STATIC_ROOT = os.path.normpath(join(os.path.dirname(BASE_DIR), "static"))
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.normpath(join(os.path.dirname(BASE_DIR), "media"))
+MEDIA_ROOT = os.path.normpath(join(os.path.dirname(BASE_DIR), "media"))
 
 # Database settings
 DATABASE_NAME = os.getenv("DATABASE_NAME")
@@ -121,14 +129,22 @@ REST_FRAMEWORK = dict(
     },
     DEFAULT_PARSER_CLASSES=[
         "rest_framework.parsers.JSONParser",
+        "utils.parsers.NestedMultipartParser",
         "rest_framework.parsers.FormParser",
         "rest_framework.parsers.MultiPartParser",
-    ]
+    ],
+    DEFAULT_SCHEMA_CLASS="drf_spectacular.openapi.AutoSchema",
     # DEFAULT_RENDERER_CLASSES=(
     #     "rest_framework.renderers.JSONRenderer",
     #     "rest_framework.renderers.BrowsableAPIRenderer",
     # ),
 )
+SPECTACULAR_SETTINGS = {
+    "TITLE": "MOR CORE",
+    "DESCRIPTION": "Voor het organiseren en beheren van Meldingen Openbare Ruimte",
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 
 # Django security settings
 SECURE_BROWSER_XSS_FILTER = True
@@ -156,15 +172,28 @@ CSP_FRAME_ANCESTORS = ("'self'",)
 CSP_SCRIPT_SRC = (
     "'self'",
     "'unsafe-inline'",
-    "http://cdnjs.cloudflare.com/ajax/libs/vis/4.7.0/vis.min.js",
+    "blob:",
+    "cdnjs.cloudflare.com",
+    "cdn.jsdelivr.net",
 )
-CSP_IMG_SRC = ("'self'", "data:")
+CSP_IMG_SRC = (
+    "'self'",
+    "data:",
+    "cdn.redoc.ly",
+    "cdn.jsdelivr.net",
+)
 CSP_STYLE_SRC = (
     "'self'",
     "'unsafe-inline'",
-    "https://cdnjs.cloudflare.com/ajax/libs/vis/4.7.0/vis.min.css",
+    "cdnjs.cloudflare.com",
+    "cdn.jsdelivr.net",
+    "fonts.googleapis.com",
 )
 CSP_CONNECT_SRC = ("'self'",)
+CSP_FONT_SRC = (
+    "'self'",
+    "fonts.gstatic.com",
+)
 
 SPAGHETTI_SAUCE = {
     "apps": [

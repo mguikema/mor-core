@@ -1,6 +1,7 @@
 from apps.mor.models import (
     Bijlage,
     Geometrie,
+    Melder,
     Melding,
     MeldingGebeurtenis,
     MeldingGebeurtenisType,
@@ -10,6 +11,7 @@ from apps.mor.models import (
 from apps.mor.serializers import (
     BijlageSerializer,
     GeometrieSerializer,
+    MelderSerializer,
     MeldingGebeurtenisSerializer,
     MeldingGebeurtenisTypeSerializer,
     MeldingSerializer,
@@ -20,6 +22,9 @@ from rest_framework import viewsets
 
 
 class BijlageViewSet(viewsets.ModelViewSet):
+    """
+    Bijlage comment van viewset
+    """
 
     queryset = Bijlage.objects.all()
 
@@ -52,6 +57,13 @@ class GeometrieViewSet(viewsets.ModelViewSet):
     queryset = Geometrie.objects.all()
 
     serializer_class = GeometrieSerializer
+
+
+class MelderViewSet(viewsets.ModelViewSet):
+
+    queryset = Melder.objects.all()
+
+    serializer_class = MelderSerializer
 
 
 class SignaalViewSet(viewsets.ModelViewSet):
