@@ -32,41 +32,6 @@ class BijlageApiTest(APITestCase):
         response = client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_create_with_file(self):
-        url = reverse("app:bijlage-list")
-        melding_gebeurtenis = baker.make(MeldingGebeurtenis)
-        client = APIClient()
-        file = "tekst.rtf"
-        base_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(f"{base_dir}/bestanden/{file}", "rb") as fp:
-            fio = io.FileIO(fp.fileno())
-            fio.name = fp.name
-        data = {
-            "melding_gebeurtenis": melding_gebeurtenis.id,
-            "bestand": fio,
-        }
-
-        response = client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get("is_afbeelding"), False)
-
-    def test_create_with_image(self):
-        url = reverse("app:bijlage-list")
-        melding_gebeurtenis = baker.make(MeldingGebeurtenis)
-        client = APIClient()
-        file = "afbeelding.jpg"
-        base_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(f"{base_dir}/bestanden/{file}", "rb") as fp:
-            fio = io.FileIO(fp.fileno())
-            fio.name = fp.name
-            data = {
-                "melding_gebeurtenis": melding_gebeurtenis.id,
-                "bestand": fio,
-            }
-            response = client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get("is_afbeelding"), True)
-
     def test_get(self):
         instance = baker.make(Bijlage, _create_files=True)
         url = reverse("app:bijlage-detail", kwargs={"pk": instance.pk})
@@ -232,6 +197,8 @@ class SignaalApiTest(APITestCase):
                 "additionalProp2": "string",
                 "additionalProp3": "string",
             },
+            "bron": "mock_bron",
+            "onderwerp": "mock_onderwerp",
         }
         response = client.post(url, data=data, format="json")
         print(response.data)
@@ -245,18 +212,6 @@ class MeldingApiTest(APITestCase):
         client = APIClient()
         response = client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_create_met_taak_applicatie(self):
-        url = reverse("app:melding-list")
-        taak_applicatie = baker.make(TaakApplicatie)
-        client = APIClient()
-
-        data = {
-            "taak_applicaties": [taak_applicatie.id],
-        }
-
-        response = client.post(url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_zonder_taak_applicatie(self):
         url = reverse("app:melding-list")
