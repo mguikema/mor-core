@@ -1,15 +1,24 @@
+from apps.classificatie.viewsets import OnderwerpViewSet
 from apps.mor.viewsets import (
     BijlageViewSet,
     GeometrieViewSet,
+    MelderViewSet,
     MeldingGebeurtenisTypeViewSet,
     MeldingGebeurtenisViewSet,
     MeldingViewSet,
     SignaalViewSet,
     TaakApplicatieViewSet,
 )
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from django_db_schema_renderer.urls import schema_urls
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -26,6 +35,8 @@ router.register(
 router.register(r"geometrie", GeometrieViewSet, basename="geometrie")
 router.register(r"signaal", SignaalViewSet, basename="signaal")
 router.register(r"melding", MeldingViewSet, basename="melding")
+router.register(r"melder", MelderViewSet, basename="melder")
+router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 
 urlpatterns = [
     path("v1/", include((router.urls, "app"), namespace="v1")),
@@ -34,4 +45,16 @@ urlpatterns = [
     path("plate/", include("django_spaghetti.urls")),
     # The Django admin
     path("admin/", admin.site.urls),
-]
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    # Optional UI:
+    path(
+        "api/schema/swagger-ui/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/schema/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
+    ),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
