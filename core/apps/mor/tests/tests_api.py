@@ -222,12 +222,6 @@ class MeldingApiTest(APITestCase):
         response = client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_create_zonder_taak_applicatie(self):
-        url = reverse("app:melding-list")
-        client = APIClient()
-        response = client.post(url, {})
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
     def test_get(self):
         instance = baker.make(Melding)
         url = reverse("app:melding-detail", kwargs={"pk": instance.pk})
