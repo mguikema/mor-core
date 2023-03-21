@@ -1,7 +1,7 @@
 import mimetypes
 
 from apps.locatie.models import Adres, Geometrie, Graf, Lichtmast
-from apps.mor.querysets import SignaalQuerySet
+from apps.mor.querysets import MeldingQuerySet, SignaalQuerySet
 from box import Box
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -91,7 +91,21 @@ class Melder(BasisModel):
     bijlages = GenericRelation(Bijlage)
 
 
-class Signaal(BasisModel):
+class MeldingBasis(BasisModel):
+    origineel_aangemaakt = models.DateTimeField()
+    tekst = models.CharField(max_length=3000)
+    onderwerp = models.CharField(max_length=300)
+
+    geometrieen = GenericRelation(Geometrie)
+    adressen = GenericRelation(Adres)
+    graven = GenericRelation(Graf)
+    lichtmasten = GenericRelation(Lichtmast)
+
+    class Meta:
+        abstract = True
+
+
+class Signaal(MeldingBasis):
     """
     Een signaal een individuele signaal vanuit de buiten ruimte.
     Er kunnen meerdere signalen aan een melding gekoppeld zijn, bijvoorbeeld dubbele signalen.
@@ -101,9 +115,6 @@ class Signaal(BasisModel):
     Het verwijzing veld, moet nog nader bepaald worden. Vermoedelijk wordt dit een url
     """
 
-    aangemaakt = models.DateTimeField(auto_now_add=True)
-    origineel_aangemaakt = models.DateTimeField()
-    tekst = models.CharField(max_length=3000)
     meta = models.JSONField(default=dict)
     melder = models.OneToOneField(
         to="mor.Melder", on_delete=models.SET_NULL, null=True, blank=True
@@ -115,17 +126,11 @@ class Signaal(BasisModel):
         on_delete=models.CASCADE,
         null=True,
     )
-    onderwerp = models.CharField(max_length=300)
-    geometrieen = GenericRelation(Geometrie)
-    adressen = GenericRelation(Adres)
-    graven = GenericRelation(Graf)
-    lichtmasten = GenericRelation(Lichtmast)
-
     objects = SignaalQuerySet.as_manager()
 
     def parse_querystring(self, qs_template, **kwargs):
         format_data = {
-            "aangemaakt": self.aangemaakt,
+            "aangemaakt": self.aangemaakt_op,
             "origineel_aangemaakt": self.origineel_aangemaakt,
             "tekst": self.tekst,
             "meta": Box(**self.meta),
@@ -139,7 +144,7 @@ class Signaal(BasisModel):
         return qs_template.format(**format_data)
 
 
-class Melding(BasisModel):
+class Melding(MeldingBasis):
     """
     Een melding is de ontdubbelde versie van signalen
     """
@@ -152,3 +157,8 @@ class Melding(BasisModel):
         related_name="meldingen",
         blank=True,
     )
+    objects = MeldingQuerySet.as_manager()
+
+    def save(self, *args, **kwargs):
+        print("save melding")
+        super().save(*args, **kwargs)

@@ -2,6 +2,7 @@ from apps.mor.models import (
     Bijlage,
     Bron,
     Geometrie,
+    Graf,
     Melder,
     Melding,
     MeldingGebeurtenis,
@@ -20,6 +21,7 @@ admin.site.register(TaakApplicatie, DefaultAdmin)
 admin.site.register(MeldingGebeurtenisType, DefaultAdmin)
 admin.site.register(MeldingGebeurtenis, DefaultAdmin)
 admin.site.register(Melding, DefaultAdmin)
+admin.site.register(Graf, DefaultAdmin)
 admin.site.register(Geometrie, DefaultAdmin)
 admin.site.register(Signaal, DefaultAdmin)
 admin.site.register(Bijlage, DefaultAdmin)

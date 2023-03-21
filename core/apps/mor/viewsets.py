@@ -12,6 +12,7 @@ from apps.mor.serializers import (
     BijlageSerializer,
     GeometrieSerializer,
     MelderSerializer,
+    MeldingDetailSerializer,
     MeldingGebeurtenisSerializer,
     MeldingGebeurtenisTypeSerializer,
     MeldingSerializer,
@@ -73,8 +74,14 @@ class SignaalViewSet(viewsets.ModelViewSet):
     serializer_class = SignaalSerializer
 
 
-class MeldingViewSet(viewsets.ModelViewSet):
+class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Melding.objects.all()
 
     serializer_class = MeldingSerializer
+    serializer_detail_class = MeldingDetailSerializer
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return self.serializer_detail_class
+        return super().get_serializer_class()
