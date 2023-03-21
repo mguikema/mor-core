@@ -6,6 +6,7 @@ from apps.mor.models import (
     Melding,
     MeldingGebeurtenis,
     MeldingGebeurtenisType,
+    Signaal,
     TaakApplicatie,
 )
 from django.urls import reverse
@@ -166,10 +167,6 @@ class SignaalApiTest(APITestCase):
         url = reverse("app:signaal-list")
         client = APIClient()
 
-        # headers = {"Content-type": "multipart/form-data"}
-
-        # files = {'document': open('file_name.pdf', 'rb')}
-
         file = "tekst.rtf"
         b64_file = "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyNTgwClxjb2NvYXRleHRzY2FsaW5nMFxjb2NvYXBsYXRmb3JtMHtcZm9udHRibFxmMFxmc3dpc3NcZmNoYXJzZXQwIEhlbHZldGljYTt9CntcY29sb3J0Ymw7XHJlZDI1NVxncmVlbjI1NVxibHVlMjU1O30Ke1wqXGV4cGFuZGVkY29sb3J0Ymw7O30KXHBhcGVydzExOTAwXHBhcGVyaDE2ODQwXG1hcmdsMTQ0MFxtYXJncjE0NDBcdmlld3cxMTUyMFx2aWV3aDg0MDBcdmlld2tpbmQwClxwYXJkXHR4NTY2XHR4MTEzM1x0eDE3MDBcdHgyMjY3XHR4MjgzNFx0eDM0MDFcdHgzOTY4XHR4NDUzNVx0eDUxMDJcdHg1NjY5XHR4NjIzNlx0eDY4MDNccGFyZGlybmF0dXJhbFxwYXJ0aWdodGVuZmFjdG9yMAoKXGYwXGZzMjQgXGNmMCBUZXN0IGZpbGV9Cg=="
         base_dir = os.path.dirname(os.path.realpath(__file__))
@@ -177,7 +174,6 @@ class SignaalApiTest(APITestCase):
             fio = io.FileIO(fp.fileno())
             fio.name = fp.name
 
-        # files = {"document": open(f"{base_dir}/bestanden/{file}", "rb")}
         data = {
             "melder": {
                 "bijlages": [
@@ -199,9 +195,22 @@ class SignaalApiTest(APITestCase):
             },
             "bron": "mock_bron",
             "onderwerp": "mock_onderwerp",
+            "graven": [
+                {
+                    "bron": "string",
+                    "plaatsnaam": "string",
+                    "begraafplaats": "string",
+                    "grafnummer": "string",
+                    "vak": "string",
+                    "geometrieen": [],
+                }
+            ],
         }
         response = client.post(url, data=data, format="json")
-        print(response.data)
+        signaal = Signaal.objects.all()
+        melding = Melding.objects.all()
+        self.assertEqual(melding.first().graven.all().count(), 1)
+        self.assertEqual(signaal.first().graven.all().count(), 1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 

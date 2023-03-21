@@ -21,3 +21,15 @@ class SignaalQuerySet(QuerySet):
             print("Maybe check to see if all of these Signalen share the same Melding")
             return result.first.melding
         return
+
+
+class MeldingQuerySet(QuerySet):
+    def create_from_signaal(self, signaal):
+        from apps.mor.models import Melding
+
+        melding = Melding()
+        melding.origineel_aangemaakt = signaal.origineel_aangemaakt
+        melding.tekst = signaal.tekst
+        melding.onderwerp = signaal.onderwerp
+        melding.save()
+        return melding

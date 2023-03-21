@@ -104,4 +104,35 @@ class SignaalSerializer(WritableNestedModelSerializer):
 class MeldingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Melding
-        fields = "__all__"
+        fields = (
+            "id",
+            "uuid",
+            "aangemaakt_op",
+            "aangepast_op",
+            "origineel_aangemaakt",
+            "tekst",
+            "onderwerp",
+        )
+
+
+class GrafRelatedField(serializers.RelatedField):
+    def to_representation(self, value):
+        serializer = GrafSerializer(value)
+        return serializer.data
+
+
+class MeldingDetailSerializer(MeldingSerializer):
+    graven = GrafRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Melding
+        fields = (
+            "id",
+            "uuid",
+            "aangemaakt_op",
+            "aangepast_op",
+            "origineel_aangemaakt",
+            "tekst",
+            "onderwerp",
+            "graven",
+        )
