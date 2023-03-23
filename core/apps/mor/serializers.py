@@ -86,10 +86,10 @@ class MeldingGebeurtenisSerializer(serializers.ModelSerializer):
 
 class SignaalSerializer(WritableNestedModelSerializer):
     melder = MelderSerializer()
-    bijlagen = BijlageSerializer(many=True)
+    bijlagen = BijlageSerializer(many=True, required=False)
+    graven = GrafSerializer(many=True, required=False)
     # geometrieen = GeometrieSerializer(many=True, required=False)
     # adressen = AdresSerializer(many=True, required=False)
-    # graven = GrafSerializer(many=True, required=False)
     # lichtmasten = LichtmastSerializer(many=True, required=False)
 
     class Meta:
@@ -102,10 +102,10 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "onderwerp",
             "bron",
             "bijlagen",
-            "geometrieen",
-            "adressen",
             "graven",
-            "lichtmasten",
+            # "geometrieen",
+            # "adressen",
+            # "lichtmasten",
         )
 
 
