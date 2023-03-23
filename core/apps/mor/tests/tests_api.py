@@ -74,7 +74,7 @@ class SignaalApiTest(APITestCase):
         melding = Melding.objects.all()
         print(Bijlage.objects.all())
 
-        self.assertEqual(Bijlage.objects.all().count(), 1)
+        self.assertEqual(Bijlage.objects.all().count(), 2)
         self.assertEqual(melding.first().graven.all().count(), 1)
         self.assertEqual(signaal.first().graven.all().count(), 1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
