@@ -31,10 +31,16 @@ def add_locations_to_melding(sender, instance, created, **kwargs):
         return
     sct = ContentType.objects.get_for_model(Signaal)
     mct = ContentType.objects.get_for_model(Melding)
-    is_location = sender.__name__ in ("Graf", "Lichtmast", "Adres", "Geometrie")
+    valid_relation = sender.__name__ in (
+        "Graf",
+        "Lichtmast",
+        "Adres",
+        "Geometrie",
+        "Bijlage",
+    )
     if (
         created
-        and is_location
+        and valid_relation
         and instance.content_type == sct
         and not hasattr(instance.content_type, "melding")
     ):

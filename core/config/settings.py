@@ -42,8 +42,8 @@ INSTALLED_APPS = (
     "django_extensions",
     "django_spaghetti",
     "health_check",
-    "health_check.cache",
-    "health_check.storage",
+    "health_check.db",
+    "health_check.contrib.migrations",
     # Apps
     "apps.mor",
     "apps.health",
@@ -90,7 +90,6 @@ STATIC_URL = "/static/"
 STATIC_ROOT = os.path.normpath(join(os.path.dirname(BASE_DIR), "static"))
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.normpath(join(os.path.dirname(BASE_DIR), "media"))
 MEDIA_ROOT = os.path.normpath(join(os.path.dirname(BASE_DIR), "media"))
 
 # Database settings

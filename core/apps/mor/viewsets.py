@@ -19,7 +19,7 @@ from apps.mor.serializers import (
     SignaalSerializer,
     TaakApplicatieSerializer,
 )
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 
 
 class BijlageViewSet(viewsets.ModelViewSet):
@@ -67,7 +67,7 @@ class MelderViewSet(viewsets.ModelViewSet):
     serializer_class = MelderSerializer
 
 
-class SignaalViewSet(viewsets.ModelViewSet):
+class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     queryset = Signaal.objects.all()
 

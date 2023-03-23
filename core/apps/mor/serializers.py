@@ -2,6 +2,7 @@ import filetype
 from apps.locatie.serializers import (
     AdresSerializer,
     GeometrieSerializer,
+    GrafRelatedField,
     GrafSerializer,
     LichtmastSerializer,
 )
@@ -47,13 +48,17 @@ class BijlageSerializer(serializers.ModelSerializer):
         )
 
 
-class MelderSerializer(WritableNestedModelSerializer):
-    bijlages = BijlageSerializer(many=True)
+class BijlageRelatedField(serializers.RelatedField):
+    def to_representation(self, value):
+        serializer = BijlageSerializer(value)
+        return serializer.data
 
+
+class MelderSerializer(WritableNestedModelSerializer):
     class Meta:
         model = Melder
         fields = (
-            "bijlages",
+            "naam",
             "voornaam",
             "achternaam",
             "email",
@@ -81,10 +86,11 @@ class MeldingGebeurtenisSerializer(serializers.ModelSerializer):
 
 class SignaalSerializer(WritableNestedModelSerializer):
     melder = MelderSerializer()
-    geometrieen = GeometrieSerializer(many=True, required=False)
-    adressen = AdresSerializer(many=True, required=False)
-    graven = GrafSerializer(many=True, required=False)
-    lichtmasten = LichtmastSerializer(many=True, required=False)
+    bijlagen = BijlageSerializer(many=True)
+    # geometrieen = GeometrieSerializer(many=True, required=False)
+    # adressen = AdresSerializer(many=True, required=False)
+    # graven = GrafSerializer(many=True, required=False)
+    # lichtmasten = LichtmastSerializer(many=True, required=False)
 
     class Meta:
         model = Signaal
@@ -93,7 +99,9 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "origineel_aangemaakt",
             "tekst",
             "meta",
+            "onderwerp",
             "bron",
+            "bijlagen",
             "geometrieen",
             "adressen",
             "graven",
@@ -102,6 +110,9 @@ class SignaalSerializer(WritableNestedModelSerializer):
 
 
 class MeldingSerializer(serializers.ModelSerializer):
+    graven = GrafRelatedField(many=True, read_only=True)
+    bijlagen = BijlageRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Melding
         fields = (
@@ -110,15 +121,13 @@ class MeldingSerializer(serializers.ModelSerializer):
             "aangemaakt_op",
             "aangepast_op",
             "origineel_aangemaakt",
+            "afgesloten_op",
             "tekst",
+            "meta",
             "onderwerp",
+            "bijlagen",
+            "graven",
         )
-
-
-class GrafRelatedField(serializers.RelatedField):
-    def to_representation(self, value):
-        serializer = GrafSerializer(value)
-        return serializer.data
 
 
 class MeldingDetailSerializer(MeldingSerializer):

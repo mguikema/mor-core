@@ -151,7 +151,6 @@ class MelderApiTest(APITestCase):
         }
 
         response = client.post(url, data=data, format="json")
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
@@ -209,6 +208,8 @@ class SignaalApiTest(APITestCase):
         response = client.post(url, data=data, format="json")
         signaal = Signaal.objects.all()
         melding = Melding.objects.all()
+        Bijlage.objects.all()
+
         self.assertEqual(melding.first().graven.all().count(), 1)
         self.assertEqual(signaal.first().graven.all().count(), 1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

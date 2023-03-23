@@ -54,3 +54,9 @@ class LichtmastSerializer(WritableNestedModelSerializer):
             "lichtmast",
             "geometrieen",
         )
+
+
+class GrafRelatedField(serializers.RelatedField):
+    def to_representation(self, value):
+        serializer = GrafSerializer(value)
+        return serializer.data
