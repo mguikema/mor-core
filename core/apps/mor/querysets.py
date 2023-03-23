@@ -31,5 +31,6 @@ class MeldingQuerySet(QuerySet):
         melding.origineel_aangemaakt = signaal.origineel_aangemaakt
         melding.tekst = signaal.tekst
         melding.onderwerp = signaal.onderwerp
+        melding.meta = signaal.meta
         melding.save()
         return melding

@@ -84,11 +84,11 @@ class MeldingGebeurtenis(BasisModel):
 
 
 class Melder(BasisModel):
+    naam = models.CharField(max_length=100, blank=True, null=True)
     voornaam = models.CharField(max_length=50, blank=True, null=True)
     achternaam = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     telefoonnummer = models.CharField(max_length=17, blank=True, null=True)
-    bijlages = GenericRelation(Bijlage)
 
 
 class MeldingBasis(BasisModel):
@@ -96,6 +96,13 @@ class MeldingBasis(BasisModel):
     tekst = models.CharField(max_length=3000)
     onderwerp = models.CharField(max_length=300)
 
+    """
+    TODO: Er is behoefte aan opslag van extra info. De structuur hiervan zou kunnen afhangen van het onderwerp van de melding of de bron(b.v. melder applicatie)
+    Voor nu ongestructureerde json data.
+    """
+    meta = models.JSONField(default=dict)
+
+    bijlagen = GenericRelation(Bijlage)
     geometrieen = GenericRelation(Geometrie)
     adressen = GenericRelation(Adres)
     graven = GenericRelation(Graf)
@@ -115,7 +122,6 @@ class Signaal(MeldingBasis):
     Het verwijzing veld, moet nog nader bepaald worden. Vermoedelijk wordt dit een url
     """
 
-    meta = models.JSONField(default=dict)
     melder = models.OneToOneField(
         to="mor.Melder", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -152,6 +158,7 @@ class Melding(MeldingBasis):
     """
     Als er geen taak_applicaties zijn linked aan deze melding, kan b.v. MidOffice deze handmatig toewijzen
     """
+    afgesloten_op = models.DateTimeField(null=True, blank=True)
     taak_applicaties = models.ManyToManyField(
         to="mor.TaakApplicatie",
         related_name="meldingen",
@@ -160,5 +167,4 @@ class Melding(MeldingBasis):
     objects = MeldingQuerySet.as_manager()
 
     def save(self, *args, **kwargs):
-        print("save melding")
         super().save(*args, **kwargs)
