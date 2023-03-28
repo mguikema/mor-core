@@ -1,3 +1,4 @@
+from apps.mor.filtersets import MeldingFilter, RelatedOrderingFilter
 from apps.mor.models import (
     Bijlage,
     Geometrie,
@@ -19,6 +20,9 @@ from apps.mor.serializers import (
     SignaalSerializer,
     TaakApplicatieSerializer,
 )
+from django_filters import rest_framework as filters
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, viewsets
 
 
@@ -53,13 +57,6 @@ class MeldingGebeurtenisViewSet(viewsets.ModelViewSet):
     serializer_class = MeldingGebeurtenisSerializer
 
 
-class GeometrieViewSet(viewsets.ModelViewSet):
-
-    queryset = Geometrie.objects.all()
-
-    serializer_class = GeometrieSerializer
-
-
 class MelderViewSet(viewsets.ModelViewSet):
 
     queryset = Melder.objects.all()
@@ -74,12 +71,57 @@ class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = SignaalSerializer
 
 
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            "aangemaakt_op_gte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter("aangemaakt_op_gt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "aangemaakt_op_lte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter("aangemaakt_op_lt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter("aangepast_op_gte", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter("aangepast_op_gt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter("aangepast_op_lte", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter("aangepast_op_lt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "origineel_aangemaakt_gte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "origineel_aangemaakt_gt", OpenApiTypes.DATE, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "origineel_aangemaakt_lte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "origineel_aangemaakt_lt", OpenApiTypes.DATE, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "afgesloten_op_gte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter("afgesloten_op_gt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "afgesloten_op_lte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter("afgesloten_op_lt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "actieve_meldingen", OpenApiTypes.BOOL, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter("bc_categorie", OpenApiTypes.STR, OpenApiParameter.QUERY),
+    ]
+)
 class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Melding.objects.all()
-
     serializer_class = MeldingSerializer
     serializer_detail_class = MeldingDetailSerializer
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        RelatedOrderingFilter,
+    )
+    ordering_fields = "__all_related__"
+    filterset_class = MeldingFilter
 
     def get_serializer_class(self):
         if self.action == "retrieve":

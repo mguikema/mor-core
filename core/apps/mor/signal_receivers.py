@@ -1,6 +1,5 @@
 import copy
 
-from apps.locatie.models import Adres, Geometrie, Graf, Lichtmast
 from apps.mor.models import Bijlage, Melding, Signaal
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_save
@@ -18,33 +17,22 @@ def add_melding_to_signaal(sender, instance, **kwargs):
         instance.melding = melding
 
 
-@receiver(
-    post_save, sender=Lichtmast, dispatch_uid="add_locations_to_melding_lichtmast"
-)
-@receiver(
-    post_save, sender=Geometrie, dispatch_uid="add_locations_to_melding_geometrie"
-)
-@receiver(post_save, sender=Adres, dispatch_uid="add_locations_to_melding_adres")
-@receiver(post_save, sender=Graf, dispatch_uid="add_locations_to_melding_graf")
-@receiver(post_save, sender=Bijlage, dispatch_uid="add_locations_to_melding_bijlage")
-def add_locations_to_melding(sender, instance, created, **kwargs):
+# @receiver(
+#     post_save, sender=Lichtmast, dispatch_uid="add_locations_to_melding_lichtmast"
+# )
+# @receiver(
+#     post_save, sender=Geometrie, dispatch_uid="add_locations_to_melding_geometrie"
+# )
+# @receiver(post_save, sender=Adres, dispatch_uid="add_locations_to_melding_adres")
+# @receiver(post_save, sender=Graf, dispatch_uid="add_locations_to_melding_graf")
+@receiver(post_save, sender=Bijlage, dispatch_uid="add_bijlage_to_melding")
+def add_relation_to_melding(sender, instance, created, **kwargs):
     if kwargs.get("raw"):
         return
     sct = ContentType.objects.get_for_model(Signaal)
     mct = ContentType.objects.get_for_model(Melding)
-    valid_relation = sender.__name__ in (
-        "Graf",
-        "Lichtmast",
-        "Adres",
-        "Geometrie",
-        "Bijlage",
-    )
-    if (
-        created
-        and valid_relation
-        and instance.content_type == sct
-        and not hasattr(instance.content_type, "melding")
-    ):
+    valid_relation = sender.__name__ in ("Graf",)
+    if created and valid_relation and instance.content_type == sct:
         data = copy.deepcopy(instance.__dict__)
         data = {
             k: v

@@ -1,4 +1,4 @@
-from apps.locatie.models import Adres, Geometrie, Graf, Lichtmast
+from apps.locatie.models import Adres, Geometrie, Graf, Lichtmast, Locatie
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
 
@@ -12,9 +12,19 @@ class GeometrieSerializer(serializers.ModelSerializer):
         )
 
 
-class AdresSerializer(WritableNestedModelSerializer):
-    geometrieen = GeometrieSerializer(many=True, required=False)
+class LocatieSerializer(WritableNestedModelSerializer):
+    class Meta:
+        model = Locatie
+        fields = "__all__"
 
+
+class LocatieRelatedField(serializers.RelatedField):
+    def to_representation(self, value):
+        serializer = LocatieSerializer(value)
+        return serializer.data
+
+
+class AdresSerializer(WritableNestedModelSerializer):
     class Meta:
         model = Adres
         fields = (
@@ -25,13 +35,11 @@ class AdresSerializer(WritableNestedModelSerializer):
             "huisletter",
             "toevoeging",
             "postcode",
-            "geometrieen",
+            "geometrie",
         )
 
 
 class GrafSerializer(WritableNestedModelSerializer):
-    geometrieen = GeometrieSerializer(many=True, required=False)
-
     class Meta:
         model = Graf
         fields = (
@@ -40,19 +48,17 @@ class GrafSerializer(WritableNestedModelSerializer):
             "begraafplaats",
             "grafnummer",
             "vak",
-            "geometrieen",
+            "geometrie",
         )
 
 
 class LichtmastSerializer(WritableNestedModelSerializer):
-    geometrieen = GeometrieSerializer(many=True, required=False)
-
     class Meta:
         model = Lichtmast
         fields = (
             "bron",
-            "lichtmast",
-            "geometrieen",
+            "lichtmast_id",
+            "geometrie",
         )
 
 

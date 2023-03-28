@@ -1,3 +1,4 @@
+import base64
 import io
 import os
 
@@ -35,6 +36,11 @@ class SignaalApiTest(APITestCase):
         with open(f"{base_dir}/bestanden/{file}", "rb") as fp:
             fio = io.FileIO(fp.fileno())
             fio.name = fp.name
+
+        with open(f"{base_dir}/bestanden/{file}", "rb") as binary_file:
+            binary_file_data = binary_file.read()
+            base64_encoded_data = base64.b64encode(binary_file_data)
+            base64_encoded_data.decode("utf-8")
 
         data = {
             "melder": {

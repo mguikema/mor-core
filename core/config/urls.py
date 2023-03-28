@@ -1,6 +1,5 @@
 from apps.mor.viewsets import (
     BijlageViewSet,
-    GeometrieViewSet,
     MelderViewSet,
     MeldingGebeurtenisTypeViewSet,
     MeldingGebeurtenisViewSet,
