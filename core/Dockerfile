@@ -60,9 +60,9 @@ RUN apt-get update \
 
 COPY . /app/
 
-RUN mkdir -p /media && mkdir -p /static && chown $APP_USER:$APP_USER /media && chown $APP_USER:$APP_USER /static
+RUN mkdir -p /media && mkdir -p /static && chown $APP_USER:$APP_USER /media && chown $APP_USER:$APP_USER /static && chmod 744 /media && chmod 744 /static
 
-RUN mkdir -p /srv/web/var/cache && chown $APP_USER:$APP_USER /srv/web/var/cache
+RUN mkdir -p /srv/web/var/cache && chown $APP_USER:$APP_USER /srv/web/var/cache && chmod -R ugo+rwx /srv/web/var/cache
 
 RUN chmod +x /app/deploy/docker-entrypoint.sh && chown $APP_USER:$APP_USER /app/deploy/docker-entrypoint.sh \
     && chmod +x /app/deploy/tests.sh && chown $APP_USER:$APP_USER /app/deploy/tests.sh \
