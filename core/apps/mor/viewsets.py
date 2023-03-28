@@ -1,7 +1,6 @@
 from apps.mor.filtersets import MeldingFilter, RelatedOrderingFilter
 from apps.mor.models import (
     Bijlage,
-    Geometrie,
     Melder,
     Melding,
     MeldingGebeurtenis,

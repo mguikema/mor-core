@@ -31,7 +31,7 @@ def add_relation_to_melding(sender, instance, created, **kwargs):
         return
     sct = ContentType.objects.get_for_model(Signaal)
     mct = ContentType.objects.get_for_model(Melding)
-    valid_relation = sender.__name__ in ("Graf",)
+    valid_relation = sender.__name__ in ("Bijlage",)
     if created and valid_relation and instance.content_type == sct:
         data = copy.deepcopy(instance.__dict__)
         data = {

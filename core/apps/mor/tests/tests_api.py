@@ -75,14 +75,10 @@ class SignaalApiTest(APITestCase):
             ],
         }
         response = client.post(url, data=data, format="json")
-        print(response.data)
-        signaal = Signaal.objects.all()
         melding = Melding.objects.all()
-        print(Bijlage.objects.all())
 
         self.assertEqual(Bijlage.objects.all().count(), 2)
-        self.assertEqual(melding.first().graven.all().count(), 1)
-        self.assertEqual(signaal.first().graven.all().count(), 1)
+        self.assertEqual(melding.first().locaties.all().count(), 1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
