@@ -2,6 +2,14 @@ FROM python:3.10.10-slim-bullseye
 
 EXPOSE 8000
 
+ENV APP_HOME=/app
+ENV APP_USER=appuser
+ENV APP_USER_ID=2000
+
+# RUN useradd -u  --system --no-create-home 2000 docker
+RUN groupadd -r $APP_USER && \
+    useradd -r -u $APP_USER_ID -g $APP_USER -d $APP_HOME -s /sbin/nologin -c "Docker image user" $APP_USER
+
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
     REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
@@ -52,12 +60,15 @@ RUN apt-get update \
 
 COPY . /app/
 
-RUN mkdir -p /media && mkdir -p /static && chown root:root /media && chown root:root /static
+RUN mkdir -p /media && mkdir -p /static && chown $APP_USER:$APP_USER /media && chown $APP_USER:$APP_USER /static
 
-RUN mkdir -p /srv/web/var/cache && chown root:root /srv/web/var/cache
+RUN mkdir -p /srv/web/var/cache && chown $APP_USER:$APP_USER /srv/web/var/cache
 
-RUN chmod +x /app/deploy/docker-entrypoint.sh && chown root:root /app/deploy/docker-entrypoint.sh \
-    && chmod +x /app/deploy/tests.sh && chown root:root /app/deploy/tests.sh \
-    && chmod +x /app/deploy/wait-for.sh && chown root:root /app/deploy/wait-for.sh
+RUN chmod +x /app/deploy/docker-entrypoint.sh && chown $APP_USER:$APP_USER /app/deploy/docker-entrypoint.sh \
+    && chmod +x /app/deploy/tests.sh && chown $APP_USER:$APP_USER /app/deploy/tests.sh \
+    && chmod +x /app/deploy/wait-for.sh && chown $APP_USER:$APP_USER /app/deploy/wait-for.sh
 
+RUN chown -R $APP_USER:$APP_USER $APP_HOME
+
+USER $APP_USER
 CMD ["bash", "/app/deploy/docker-entrypoint.sh"]

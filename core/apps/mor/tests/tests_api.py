@@ -1,3 +1,4 @@
+import base64
 import io
 import os
 
@@ -36,6 +37,11 @@ class SignaalApiTest(APITestCase):
             fio = io.FileIO(fp.fileno())
             fio.name = fp.name
 
+        with open(f"{base_dir}/bestanden/{file}", "rb") as binary_file:
+            binary_file_data = binary_file.read()
+            base64_encoded_data = base64.b64encode(binary_file_data)
+            base64_encoded_data.decode("utf-8")
+
         data = {
             "melder": {
                 "voornaam": "string",
@@ -69,14 +75,10 @@ class SignaalApiTest(APITestCase):
             ],
         }
         response = client.post(url, data=data, format="json")
-        print(response.data)
-        signaal = Signaal.objects.all()
         melding = Melding.objects.all()
-        print(Bijlage.objects.all())
 
         self.assertEqual(Bijlage.objects.all().count(), 2)
-        self.assertEqual(melding.first().graven.all().count(), 1)
-        self.assertEqual(signaal.first().graven.all().count(), 1)
+        self.assertEqual(melding.first().locaties.all().count(), 1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 

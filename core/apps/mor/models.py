@@ -1,8 +1,7 @@
 import mimetypes
 
-from apps.locatie.models import Adres, Geometrie, Graf, Lichtmast
+from apps.locatie.models import Locatie
 from apps.mor.querysets import MeldingQuerySet, SignaalQuerySet
-from box import Box
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
@@ -93,20 +92,14 @@ class Melder(BasisModel):
 
 class MeldingBasis(BasisModel):
     origineel_aangemaakt = models.DateTimeField()
-    tekst = models.CharField(max_length=3000)
     onderwerp = models.CharField(max_length=300)
 
     """
     TODO: Er is behoefte aan opslag van extra info. De structuur hiervan zou kunnen afhangen van het onderwerp van de melding of de bron(b.v. melder applicatie)
     Voor nu ongestructureerde json data.
     """
-    meta = models.JSONField(default=dict)
 
     bijlagen = GenericRelation(Bijlage)
-    geometrieen = GenericRelation(Geometrie)
-    adressen = GenericRelation(Adres)
-    graven = GenericRelation(Graf)
-    lichtmasten = GenericRelation(Lichtmast)
 
     class Meta:
         abstract = True
@@ -122,10 +115,11 @@ class Signaal(MeldingBasis):
     Het verwijzing veld, moet nog nader bepaald worden. Vermoedelijk wordt dit een url
     """
 
+    bron = models.CharField(max_length=200)
     melder = models.OneToOneField(
         to="mor.Melder", on_delete=models.SET_NULL, null=True, blank=True
     )
-    bron = models.CharField(max_length=300)
+    ruwe_informatie = models.JSONField(default=dict)
     melding = models.ForeignKey(
         to="mor.Melding",
         related_name="signalen_voor_melding",
@@ -133,21 +127,6 @@ class Signaal(MeldingBasis):
         null=True,
     )
     objects = SignaalQuerySet.as_manager()
-
-    def parse_querystring(self, qs_template, **kwargs):
-        format_data = {
-            "aangemaakt": self.aangemaakt_op,
-            "origineel_aangemaakt": self.origineel_aangemaakt,
-            "tekst": self.tekst,
-            "meta": Box(**self.meta),
-            "bron": self.bron,
-            "melder": self.melder,
-        }
-        try:
-            qs_template.format(**format_data)
-        except Exception as e:
-            print(e)
-        return qs_template.format(**format_data)
 
 
 class Melding(MeldingBasis):
@@ -158,13 +137,11 @@ class Melding(MeldingBasis):
     """
     Als er geen taak_applicaties zijn linked aan deze melding, kan b.v. MidOffice deze handmatig toewijzen
     """
+    omschrijving_kort = models.CharField(max_length=500)
+    omschrijving = models.CharField(max_length=5000, null=True, blank=True)
     afgesloten_op = models.DateTimeField(null=True, blank=True)
-    taak_applicaties = models.ManyToManyField(
-        to="mor.TaakApplicatie",
-        related_name="meldingen",
-        blank=True,
-    )
-    objects = MeldingQuerySet.as_manager()
+    meta = models.JSONField(default=dict)
+    meta_uitgebreid = models.JSONField(default=dict)
+    locaties = GenericRelation(Locatie)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+    objects = MeldingQuerySet.as_manager()

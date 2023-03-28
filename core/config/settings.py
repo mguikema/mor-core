@@ -26,6 +26,7 @@ MELDING_API = os.getenv("MELDING_API")
 APPLICATIE_BASIS_URL = os.getenv("APPLICATIE_BASIS_URL")
 
 INSTALLED_APPS = (
+    "polymorphic",
     "django_db_schema_renderer",
     "django.contrib.contenttypes",
     "django.contrib.staticfiles",
@@ -35,6 +36,7 @@ INSTALLED_APPS = (
     "django.contrib.auth",
     "django.contrib.admin",
     "django.contrib.gis",
+    "django.contrib.postgres",
     "rest_framework",
     "drf_spectacular",
     "django_filters",
@@ -180,6 +182,9 @@ CSP_IMG_SRC = (
     "data:",
     "cdn.redoc.ly",
     "cdn.jsdelivr.net",
+    "map1c.vis.earthdata.nasa.gov",
+    "map1b.vis.earthdata.nasa.gov",
+    "map1a.vis.earthdata.nasa.gov",
 )
 CSP_STYLE_SRC = (
     "'self'",

@@ -1,4 +1,7 @@
+import copy
+
 from apps.mor.utils import get_q_objects_from_qs
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import QuerySet
 
 
@@ -25,12 +28,30 @@ class SignaalQuerySet(QuerySet):
 
 class MeldingQuerySet(QuerySet):
     def create_from_signaal(self, signaal):
+        from apps.locatie.models import Graf
         from apps.mor.models import Melding
 
+        data = copy.deepcopy(signaal.ruwe_informatie)
+        meta_uitgebreid = data.pop("labels", {})
         melding = Melding()
         melding.origineel_aangemaakt = signaal.origineel_aangemaakt
-        melding.tekst = signaal.tekst
+        melding.omschrijving_kort = data.get("toelichting", "")[:200]
+        melding.omschrijving = data.get("toelichting")
+        melding.meta = data
+        melding.meta_uitgebreid = meta_uitgebreid
         melding.onderwerp = signaal.onderwerp
-        melding.meta = signaal.meta
         melding.save()
+
+        mct = ContentType.objects.get_for_model(Melding)
+        Graf.objects.create(
+            **{
+                "object_id": melding.pk,
+                "content_type": mct,
+                "plaatsnaam": "Rotterdam",
+                "begraafplaats": data.get("begraafplaats"),
+                "grafnummer": data.get("grafnummer"),
+                "vak": data.get("vak"),
+            }
+        )
+
         return melding

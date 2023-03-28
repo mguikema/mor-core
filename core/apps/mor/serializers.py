@@ -5,6 +5,7 @@ from apps.locatie.serializers import (
     GrafRelatedField,
     GrafSerializer,
     LichtmastSerializer,
+    LocatieRelatedField,
 )
 from apps.mor.models import (
     Bijlage,
@@ -85,63 +86,59 @@ class MeldingGebeurtenisSerializer(serializers.ModelSerializer):
 
 
 class SignaalSerializer(WritableNestedModelSerializer):
-    melder = MelderSerializer()
     bijlagen = BijlageSerializer(many=True, required=False)
-    graven = GrafSerializer(many=True, required=False)
-    # geometrieen = GeometrieSerializer(many=True, required=False)
-    # adressen = AdresSerializer(many=True, required=False)
-    # lichtmasten = LichtmastSerializer(many=True, required=False)
+    melder = MelderSerializer(required=False)
 
     class Meta:
         model = Signaal
         fields = (
-            "melder",
             "origineel_aangemaakt",
-            "tekst",
-            "meta",
             "onderwerp",
-            "bron",
+            "ruwe_informatie",
             "bijlagen",
-            "graven",
-            # "geometrieen",
-            # "adressen",
-            # "lichtmasten",
+            "bron",
+            "melder",
         )
 
 
 class MeldingSerializer(serializers.ModelSerializer):
-    graven = GrafRelatedField(many=True, read_only=True)
+    locaties = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Melding
         fields = (
             "id",
-            "uuid",
             "aangemaakt_op",
             "aangepast_op",
             "origineel_aangemaakt",
             "afgesloten_op",
-            "tekst",
+            "omschrijving_kort",
+            "omschrijving",
             "meta",
+            "meta_uitgebreid",
             "onderwerp",
             "bijlagen",
-            "graven",
+            "locaties",
         )
 
 
 class MeldingDetailSerializer(MeldingSerializer):
-    graven = GrafRelatedField(many=True, read_only=True)
+    locaties = LocatieRelatedField(many=True, read_only=True)
+    bijlagen = BijlageRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Melding
         fields = (
             "id",
-            "uuid",
             "aangemaakt_op",
             "aangepast_op",
             "origineel_aangemaakt",
-            "tekst",
+            "afgesloten_op",
+            "omschrijving_kort",
+            "meta",
+            "meta_uitgebreid",
             "onderwerp",
-            "graven",
+            "bijlagen",
+            "locaties",
         )
