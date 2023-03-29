@@ -26,7 +26,6 @@ MELDING_API = os.getenv("MELDING_API")
 APPLICATIE_BASIS_URL = os.getenv("APPLICATIE_BASIS_URL")
 
 INSTALLED_APPS = (
-    "polymorphic",
     "django_db_schema_renderer",
     "django.contrib.contenttypes",
     "django.contrib.staticfiles",
@@ -46,6 +45,7 @@ INSTALLED_APPS = (
     "health_check",
     "health_check.db",
     "health_check.contrib.migrations",
+    "sorl.thumbnail",
     # Apps
     "apps.mor",
     "apps.health",
@@ -222,20 +222,11 @@ TEMPLATES = [
     }
 ]
 
-# REDIS_URL = "redis://redis:6379"
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": REDIS_URL,
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#             "SOCKET_CONNECT_TIMEOUT": 5,
-#             "SOCKET_TIMEOUT": 5,
-#         },
-#     }
-# }
+THUMBNAIL_BACKEND = "utils.images.ThumbnailBackend"
+THUMBNAIL_PREFIX = "afbeeldingen-verkleind"
+THUMBNAIL_KLEIN = "96x128"
+BESTANDEN_PREFIX = "bestanden"
 
-# SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 LOGGING = {
     "version": 1,
