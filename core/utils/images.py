@@ -28,7 +28,7 @@ class ThumbnailBackend(SorlThumbnailBackend):
 
         filename, _ext = os.path.splitext(os.path.basename(source.name))
 
-        filename_full = f"{filename}_{geometry_string}.{_ext}"
+        filename_full = f"{filename}_{geometry_string}{_ext}"
         return os.path.join(
             sorl_settings.THUMBNAIL_PREFIX, get_date_file_path(), filename_full
         )
