@@ -40,10 +40,12 @@ class BijlageSerializer(serializers.ModelSerializer):
         model = Bijlage
         fields = (
             "bestand",
+            "afbeelding_verkleind",
             "mimetype",
             "is_afbeelding",
         )
         read_only_fields = (
+            "afbeelding_verkleind",
             "is_afbeelding",
             "mimetype",
         )

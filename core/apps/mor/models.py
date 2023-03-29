@@ -2,10 +2,13 @@ import mimetypes
 
 from apps.locatie.models import Locatie
 from apps.mor.querysets import MeldingQuerySet, SignaalQuerySet
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from PIL import Image, UnidentifiedImageError
+from sorl.thumbnail import get_thumbnail
+from utils.images import get_upload_path
 from utils.models import BasisModel
 
 
@@ -18,8 +21,12 @@ class Bijlage(BasisModel):
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("content_type", "object_id")
     bestand = models.FileField(
-        upload_to="attachments/%Y/%m/%d/", null=False, blank=False, max_length=255
+        upload_to=get_upload_path, null=False, blank=False, max_length=255
     )
+    afbeelding_verkleind = models.ImageField(
+        upload_to=get_upload_path, null=True, blank=True, max_length=255
+    )
+
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_afbeelding = models.BooleanField(default=False)
 
@@ -37,7 +44,11 @@ class Bijlage(BasisModel):
             mt = mimetypes.guess_type(self.bestand.path, strict=True)
             if mt:
                 self.mimetype = mt[0]
-
+            if self.is_afbeelding:
+                im = get_thumbnail(
+                    self.bestand, settings.THUMBNAIL_KLEIN, crop="center", quality=99
+                )
+                self.afbeelding_verkleind.name = im.name
         super().save(*args, **kwargs)
 
 
