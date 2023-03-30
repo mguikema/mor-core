@@ -1,6 +1,9 @@
+import locale
 import os
 import sys
 from os.path import join
+
+locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRUE_VALUES = [True, "True", "true", "1"]
@@ -16,7 +19,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 USE_TZ = True
 TIME_ZONE = "Europe/Amsterdam"
 USE_L10N = True
+USE_I18N = True
 LANGUAGE_CODE = "nl-NL"
+LANGUAGES = [("nl", "Dutch")]
 
 DEFAULT_ALLOWED_HOSTS = "localhost,127.0.0.1"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", DEFAULT_ALLOWED_HOSTS).split(",")

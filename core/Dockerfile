@@ -51,12 +51,19 @@ RUN apt-get update \
         graphviz \
         graphviz-dev \
         git \
+        locales \
     && rm -rf /var/lib/apt/lists/* /var/cache/debconf/*-old \
     && pip install --upgrade pip \
     && pip install --no-cache-dir -r /requirements.txt \
+    && sed -i '/nl_NL.UTF-8/s/^# //g' /etc/locale.gen \
+    && locale-gen \
     && apt-get purge -y gcc \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates
+
+ENV LANG=nl_NL.UTF-8 \
+    LANGUAGE=nl_NL \
+    LC_ALL=nl_NL.UTF-8
 
 COPY . /app/
 
