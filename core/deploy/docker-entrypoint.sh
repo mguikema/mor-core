@@ -14,4 +14,7 @@ python manage.py collectstatic --no-input
 echo Apply migrations
 python manage.py migrate --noinput
 
+echo Create superuser
+python manage.py createsuperuser --noinput || true
+
 exec uwsgi --ini /app/deploy/config.ini
