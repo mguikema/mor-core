@@ -92,7 +92,6 @@ class MeldingFilter(BasisFilter):
     omschrijving = filters.CharFilter(method="get_omschrijving")
 
     actieve_meldingen = filters.BooleanFilter(method="get_actieve_meldingen")
-    onderwerp = filters.CharFilter(field_name="onderwerp", lookup_expr="icontains")
     onderwerp = MultipleValueFilter(field_class=CharField, method="get_onderwerpen")
     begraafplaats = MultipleValueFilter(
         field_class=CharField, method="get_begraafplaatsen"

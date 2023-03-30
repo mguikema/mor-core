@@ -72,42 +72,77 @@ class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 
 @extend_schema(
     parameters=[
+        OpenApiParameter("omschrijving", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("onderwerp", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("begraafplaats", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("begraafplaats_vak", OpenApiTypes.STR, OpenApiParameter.QUERY),
         OpenApiParameter(
-            "aangemaakt_op_gte", OpenApiTypes.DATE, OpenApiParameter.QUERY
-        ),
-        OpenApiParameter("aangemaakt_op_gt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
-        OpenApiParameter(
-            "aangemaakt_op_lte", OpenApiTypes.DATE, OpenApiParameter.QUERY
-        ),
-        OpenApiParameter("aangemaakt_op_lt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
-        OpenApiParameter("aangepast_op_gte", OpenApiTypes.DATE, OpenApiParameter.QUERY),
-        OpenApiParameter("aangepast_op_gt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
-        OpenApiParameter("aangepast_op_lte", OpenApiTypes.DATE, OpenApiParameter.QUERY),
-        OpenApiParameter("aangepast_op_lt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
-        OpenApiParameter(
-            "origineel_aangemaakt_gte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+            "begraafplaats_grafnummer", OpenApiTypes.STR, OpenApiParameter.QUERY
         ),
         OpenApiParameter(
-            "origineel_aangemaakt_gt", OpenApiTypes.DATE, OpenApiParameter.QUERY
+            "begraafplaats_grafnummer_gte", OpenApiTypes.INT, OpenApiParameter.QUERY
         ),
         OpenApiParameter(
-            "origineel_aangemaakt_lte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+            "begraafplaats_grafnummer_gt", OpenApiTypes.INT, OpenApiParameter.QUERY
         ),
         OpenApiParameter(
-            "origineel_aangemaakt_lt", OpenApiTypes.DATE, OpenApiParameter.QUERY
+            "begraafplaats_grafnummer_lte", OpenApiTypes.INT, OpenApiParameter.QUERY
         ),
         OpenApiParameter(
-            "afgesloten_op_gte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+            "begraafplaats_grafnummer_lt", OpenApiTypes.INT, OpenApiParameter.QUERY
         ),
-        OpenApiParameter("afgesloten_op_gt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter("meta__categorie", OpenApiTypes.STR, OpenApiParameter.QUERY),
         OpenApiParameter(
-            "afgesloten_op_lte", OpenApiTypes.DATE, OpenApiParameter.QUERY
+            "aangemaakt_op_gte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
         ),
-        OpenApiParameter("afgesloten_op_lt", OpenApiTypes.DATE, OpenApiParameter.QUERY),
+        OpenApiParameter(
+            "aangemaakt_op_gt", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "aangemaakt_op_lte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "aangemaakt_op_lt", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "aangepast_op_gte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "aangepast_op_gt", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "aangepast_op_lte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "aangepast_op_lt", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "origineel_aangemaakt_gte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "origineel_aangemaakt_gt", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "origineel_aangemaakt_lte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "origineel_aangemaakt_lt", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "afgesloten_op_gte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "afgesloten_op_gt", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "afgesloten_op_lte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
+        OpenApiParameter(
+            "afgesloten_op_lt", OpenApiTypes.DATETIME, OpenApiParameter.QUERY
+        ),
         OpenApiParameter(
             "actieve_meldingen", OpenApiTypes.BOOL, OpenApiParameter.QUERY
         ),
-        OpenApiParameter("bc_categorie", OpenApiTypes.STR, OpenApiParameter.QUERY),
     ]
 )
 class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
