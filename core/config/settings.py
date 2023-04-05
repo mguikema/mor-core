@@ -125,7 +125,7 @@ SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
 
 # Django REST framework settings
 REST_FRAMEWORK = dict(
-    PAGE_SIZE=100,
+    PAGE_SIZE=5,
     UNAUTHENTICATED_USER={},
     UNAUTHENTICATED_TOKEN={},
     DEFAULT_PAGINATION_CLASS="rest_framework.pagination.LimitOffsetPagination",
