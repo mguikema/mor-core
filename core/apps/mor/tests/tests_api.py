@@ -108,3 +108,14 @@ class MeldingApiTest(APITestCase):
         data = response.json()
 
         self.assertEqual(len(data["results"]), 2)
+
+    def test_status_aanpassen(self):
+        baker.make(Melding, _quantity=2)
+
+        url = reverse("app:melding-list")
+
+        client = APIClient()
+        response = client.get(url)
+        data = response.json()
+
+        self.assertEqual(len(data["results"]), 2)

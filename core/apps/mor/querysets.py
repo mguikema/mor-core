@@ -30,16 +30,22 @@ class MeldingQuerySet(QuerySet):
     def create_from_signaal(self, signaal):
         from apps.locatie.models import Graf
         from apps.mor.models import Melding
+        from apps.status.models import Status
 
         data = copy.deepcopy(signaal.ruwe_informatie)
         meta_uitgebreid = data.pop("labels", {})
         melding = Melding()
+        status = Status()
         melding.origineel_aangemaakt = signaal.origineel_aangemaakt
         melding.omschrijving_kort = data.get("toelichting", "")[:200]
         melding.omschrijving = data.get("toelichting")
         melding.meta = data
         melding.meta_uitgebreid = meta_uitgebreid
         melding.onderwerp = signaal.onderwerp
+        melding.save()
+        status.melding = melding
+        status.save()
+        melding.status = status
         melding.save()
 
         mct = ContentType.objects.get_for_model(Melding)

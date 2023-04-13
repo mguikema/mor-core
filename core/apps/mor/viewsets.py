@@ -22,7 +22,9 @@ from apps.mor.serializers import (
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 
 class BijlageViewSet(viewsets.ModelViewSet):
@@ -161,3 +163,33 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == "retrieve":
             return self.serializer_detail_class
         return super().get_serializer_class()
+
+    @extend_schema(
+        description="Verander de status van een melding",
+        request=MeldingGebeurtenisSerializer,
+        responses={status.HTTP_200_OK: MeldingDetailSerializer},
+        parameters=None,
+    )
+    @action(detail=True, methods=["patch"], url_path="status-aanpassen")
+    def status_aanpassen(self, request, pk):
+        serializer = MeldingGebeurtenisSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            melding = self.get_object()
+            try:
+                Melding.acties.status_aanpassen(serializer.validated_data, melding)
+            except Exception as e:
+                return Response(
+                    data=e,
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            serializer = MeldingDetailSerializer(
+                self.get_object(), context={"request": request}
+            )
+            return Response(serializer.data)
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

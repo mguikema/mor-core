@@ -19,7 +19,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 USE_TZ = True
 TIME_ZONE = "Europe/Amsterdam"
 USE_L10N = True
-USE_I18N = True
+USE_I18N = False
 LANGUAGE_CODE = "nl-NL"
 LANGUAGES = [("nl", "Dutch")]
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     "django.contrib.gis",
     "django.contrib.postgres",
     "rest_framework",
+    "rest_framework.authtoken",
     "drf_spectacular",
     "django_filters",
     "corsheaders",
@@ -56,19 +57,21 @@ INSTALLED_APPS = (
     "apps.health",
     "apps.classificatie",
     "apps.locatie",
+    "apps.status",
 )
+
 
 MIDDLEWARE = (
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django_permissions_policy.PermissionsPolicyMiddleware",
     "csp.middleware.CSPMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 )
 
@@ -140,10 +143,9 @@ REST_FRAMEWORK = dict(
         "rest_framework.parsers.MultiPartParser",
     ],
     DEFAULT_SCHEMA_CLASS="drf_spectacular.openapi.AutoSchema",
-    # DEFAULT_RENDERER_CLASSES=(
-    #     "rest_framework.renderers.JSONRenderer",
-    #     "rest_framework.renderers.BrowsableAPIRenderer",
-    # ),
+    DEFAULT_AUTHENTICATION_CLASSES=(
+        # "rest_framework.authentication.TokenAuthentication",
+    ),
 )
 SPECTACULAR_SETTINGS = {
     "TITLE": "MOR CORE",
@@ -221,6 +223,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.contrib.auth.context_processors.auth",
                 "django.template.context_processors.debug",
+                "django.template.context_processors.static",
                 "django.template.context_processors.request",
             ],
         },
