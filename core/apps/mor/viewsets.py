@@ -178,13 +178,8 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
         if serializer.is_valid():
             melding = self.get_object()
-            try:
-                Melding.acties.status_aanpassen(serializer.validated_data, melding)
-            except Exception as e:
-                return Response(
-                    data=e,
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
+            Melding.acties.status_aanpassen(serializer.validated_data, melding)
+
             serializer = MeldingDetailSerializer(
                 self.get_object(), context={"request": request}
             )
