@@ -2,14 +2,7 @@ import base64
 import io
 import os
 
-from apps.mor.models import (
-    Bijlage,
-    Melding,
-    MeldingGebeurtenis,
-    MeldingGebeurtenisType,
-    Signaal,
-    TaakApplicatie,
-)
+from apps.mor.models import Bijlage, Melding
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status
@@ -99,17 +92,6 @@ class MeldingApiTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_list(self):
-        baker.make(Melding, _quantity=2)
-
-        url = reverse("app:melding-list")
-
-        client = APIClient()
-        response = client.get(url)
-        data = response.json()
-
-        self.assertEqual(len(data["results"]), 2)
-
-    def test_status_aanpassen(self):
         baker.make(Melding, _quantity=2)
 
         url = reverse("app:melding-list")

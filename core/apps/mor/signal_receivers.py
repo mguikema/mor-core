@@ -11,20 +11,9 @@ def add_melding_to_signaal(sender, instance, **kwargs):
     if kwargs.get("raw"):
         return
     if not instance.melding:
-        melding = None  # Signaal.objects.filter_to_get_melding(instance)
-        if not melding:
-            melding = Melding.objects.create_from_signaal(instance)
-        instance.melding = melding
+        instance.melding = Melding.acties.aanmaken(instance)
 
 
-# @receiver(
-#     post_save, sender=Lichtmast, dispatch_uid="add_locations_to_melding_lichtmast"
-# )
-# @receiver(
-#     post_save, sender=Geometrie, dispatch_uid="add_locations_to_melding_geometrie"
-# )
-# @receiver(post_save, sender=Adres, dispatch_uid="add_locations_to_melding_adres")
-# @receiver(post_save, sender=Graf, dispatch_uid="add_locations_to_melding_graf")
 @receiver(post_save, sender=Bijlage, dispatch_uid="add_bijlage_to_melding")
 def add_relation_to_melding(sender, instance, created, **kwargs):
     if kwargs.get("raw"):

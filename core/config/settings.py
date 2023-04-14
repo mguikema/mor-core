@@ -109,16 +109,25 @@ DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
 DATABASE_HOST = os.getenv("DATABASE_HOST_OVERRIDE")
 DATABASE_PORT = os.getenv("DATABASE_PORT_OVERRIDE")
 
+DEFAULT_DATABASE = {
+    "ENGINE": "django.contrib.gis.db.backends.postgis",
+    "NAME": DATABASE_NAME,  # noqa:
+    "USER": DATABASE_USER,  # noqa
+    "PASSWORD": DATABASE_PASSWORD,  # noqa
+    "HOST": DATABASE_HOST,  # noqa
+    "PORT": DATABASE_PORT,  # noqa
+}
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": DATABASE_NAME,  # noqa:
-        "USER": DATABASE_USER,  # noqa
-        "PASSWORD": DATABASE_PASSWORD,  # noqa
-        "HOST": DATABASE_HOST,  # noqa
-        "PORT": DATABASE_PORT,  # noqa
-    },
-}  # noqa
+    "default": DEFAULT_DATABASE,
+}
+DATABASES.update(
+    {
+        "alternate": DEFAULT_DATABASE,
+    }
+    if ENVIRONMENT == "test"
+    else {}
+)
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 

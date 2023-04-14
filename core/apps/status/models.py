@@ -28,6 +28,9 @@ class Status(BasisModel):
     def volgende_statussen(self):
         return workflow.ALLOWED_STATUS_CHANGES[self.naam]
 
+    def status_verandering_toegestaan(self, status_naam):
+        return status_naam in self.volgende_statussen()
+
     def clean(self):
         errors = {}
         if self.melding.status:
@@ -48,3 +51,6 @@ class Status(BasisModel):
 
         if errors:
             raise ValidationError(errors)
+
+    class StatusVeranderingNietToegestaan(Exception):
+        pass
