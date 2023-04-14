@@ -38,3 +38,4 @@ uWSGI==2.0.21
 djangorestframework-simplejwt==4.8.0
 python-box[all]~=7.0
 sorl-thumbnail==12.8.0
+pyheif==0.7.1

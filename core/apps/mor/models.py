@@ -1,5 +1,8 @@
 import mimetypes
+import os
+from os.path import exists
 
+import pyheif
 from apps.locatie.models import Locatie
 from apps.mor.querysets import MeldingQuerySet, SignaalQuerySet
 from django.conf import settings
@@ -37,18 +40,38 @@ class Bijlage(BasisModel):
             return False
         return True
 
+    def _heic_to_jpeg(self, file_field):
+        heif_file = pyheif.read(file_field)
+        image = Image.frombytes(
+            heif_file.mode,
+            heif_file.size,
+            heif_file.data,
+            "raw",
+            heif_file.mode,
+            heif_file.stride,
+        )
+        new_file_name = f"{file_field.name}.jpg"
+        image.save(os.path.join(settings.MEDIA_ROOT, new_file_name), "JPEG")
+        return new_file_name
+
     def save(self, *args, **kwargs):
         if self.pk is None:
-            # Check of het bestand een afbeelding is
-            self.is_afbeelding = self._is_afbeelding()
             mt = mimetypes.guess_type(self.bestand.path, strict=True)
-            if mt:
-                self.mimetype = mt[0]
-            if self.is_afbeelding:
-                im = get_thumbnail(
-                    self.bestand, settings.THUMBNAIL_KLEIN, crop="center", quality=99
-                )
-                self.afbeelding_verkleind.name = im.name
+            if exists(self.bestand.path):
+                if mt:
+                    self.mimetype = mt[0]
+                if self.mimetype == "image/heic":
+                    self.bestand = self._heic_to_jpeg(self.bestand)
+                self.is_afbeelding = self._is_afbeelding()
+                if self.is_afbeelding:
+                    im = get_thumbnail(
+                        self.bestand.path,
+                        settings.THUMBNAIL_KLEIN,
+                        crop="center",
+                        quality=99,
+                    )
+                    self.afbeelding_verkleind.name = im.name
+
         super().save(*args, **kwargs)
 
 
