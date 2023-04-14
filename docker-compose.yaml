@@ -8,6 +8,7 @@ services:
       - .env.local
     volumes:
       - ./core:/app
+      - ./media:/media
     depends_on:
       - database
     networks:
@@ -18,7 +19,7 @@ services:
     image: postgis/postgis:11-3.3
     shm_size: '1024m'
     ports:
-      - "5410:5432"
+      - "5410:5433"
     env_file:
       - .env.local
     volumes:

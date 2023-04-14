@@ -22,7 +22,7 @@ from rest_framework import serializers
 
 
 class DefaultBase64File(Base64FileField):
-    ALLOWED_TYPES = ["jpg", "jpeg", "png", "rtf", "doc", "docx"]
+    ALLOWED_TYPES = ["jpg", "jpeg", "png", "rtf", "doc", "docx", "heic"]
 
     def get_file_extension(self, filename, decoded_file):
         kind = filetype.guess(decoded_file)
