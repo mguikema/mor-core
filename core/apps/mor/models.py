@@ -4,6 +4,7 @@ from os.path import exists
 
 import pyheif
 from apps.locatie.models import Locatie
+from apps.mor.managers import MeldingManager
 from apps.mor.querysets import MeldingQuerySet, SignaalQuerySet
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -74,6 +75,10 @@ class Bijlage(BasisModel):
 
         super().save(*args, **kwargs)
 
+    class Meta:
+        verbose_name = "Bijlage"
+        verbose_name_plural = "Bijlagen"
+
 
 class TaakApplicatie(BasisModel):
     """
@@ -108,12 +113,24 @@ class MeldingGebeurtenis(BasisModel):
     MeldingGebeurtenissen bouwen de history op van van de melding
     """
 
-    bijlages = GenericRelation(Bijlage)
+    bijlagen = GenericRelation(Bijlage)
+    status = models.OneToOneField(
+        to="status.Status",
+        related_name="melding_gebeurtenis_voor_status",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    omschrijving = models.CharField(max_length=5000, null=True, blank=True)
     melding = models.ForeignKey(
         to="mor.Melding",
         related_name="melding_gebeurtenissen",
         on_delete=models.CASCADE,
     )
+
+    class Meta:
+        verbose_name = "Melding gebeurtenis"
+        verbose_name_plural = "Melding gebeurtenissen"
 
 
 class Melder(BasisModel):
@@ -122,6 +139,10 @@ class Melder(BasisModel):
     achternaam = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     telefoonnummer = models.CharField(max_length=17, blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Melder"
+        verbose_name_plural = "Melders"
 
 
 class MeldingBasis(BasisModel):
@@ -158,9 +179,14 @@ class Signaal(MeldingBasis):
         to="mor.Melding",
         related_name="signalen_voor_melding",
         on_delete=models.CASCADE,
+        blank=True,
         null=True,
     )
     objects = SignaalQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = "Signaal"
+        verbose_name_plural = "Signalen"
 
 
 class Melding(MeldingBasis):
@@ -176,6 +202,18 @@ class Melding(MeldingBasis):
     afgesloten_op = models.DateTimeField(null=True, blank=True)
     meta = models.JSONField(default=dict)
     meta_uitgebreid = models.JSONField(default=dict)
+    status = models.OneToOneField(
+        to="status.Status",
+        related_name="melding_voor_status",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
     locaties = GenericRelation(Locatie)
 
     objects = MeldingQuerySet.as_manager()
+    acties = MeldingManager()
+
+    class Meta:
+        verbose_name = "Melding"
+        verbose_name_plural = "Meldingen"

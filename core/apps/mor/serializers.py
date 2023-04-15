@@ -16,6 +16,7 @@ from apps.mor.models import (
     Signaal,
     TaakApplicatie,
 )
+from apps.status.serializers import StatusSerializer
 from drf_extra_fields.fields import Base64FileField
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
@@ -82,9 +83,16 @@ class MeldingGebeurtenisTypeSerializer(serializers.ModelSerializer):
 
 
 class MeldingGebeurtenisSerializer(serializers.ModelSerializer):
+    bijlagen = BijlageSerializer(many=True, required=False)
+    status = StatusSerializer(required=False)
+
     class Meta:
         model = MeldingGebeurtenis
-        fields = "__all__"
+        fields = (
+            "bijlagen",
+            "status",
+            "omschrijving",
+        )
 
 
 class SignaalSerializer(WritableNestedModelSerializer):
@@ -106,6 +114,12 @@ class SignaalSerializer(WritableNestedModelSerializer):
 class MeldingSerializer(serializers.ModelSerializer):
     locaties = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
+    status = StatusSerializer()
+    volgende_statussen = serializers.ListField(
+        source="status.volgende_statussen",
+        child=serializers.CharField(),
+        read_only=True,
+    )
 
     class Meta:
         model = Melding
@@ -121,12 +135,20 @@ class MeldingSerializer(serializers.ModelSerializer):
             "onderwerp",
             "bijlagen",
             "locaties",
+            "status",
+            "volgende_statussen",
         )
 
 
 class MeldingDetailSerializer(MeldingSerializer):
     locaties = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
+    status = StatusSerializer()
+    volgende_statussen = serializers.ListField(
+        source="status.volgende_statussen",
+        child=serializers.CharField(),
+        read_only=True,
+    )
 
     class Meta:
         model = Melding
@@ -143,4 +165,6 @@ class MeldingDetailSerializer(MeldingSerializer):
             "onderwerp",
             "bijlagen",
             "locaties",
+            "status",
+            "volgende_statussen",
         )

@@ -2,14 +2,7 @@ import base64
 import io
 import os
 
-from apps.mor.models import (
-    Bijlage,
-    Melding,
-    MeldingGebeurtenis,
-    MeldingGebeurtenisType,
-    Signaal,
-    TaakApplicatie,
-)
+from apps.mor.models import Bijlage, Melding
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status
