@@ -129,6 +129,11 @@ DATABASES.update(
     else {}
 )
 
+if ENVIRONMENT == "test":
+    DJANGO_TEST_USERNAME = os.getenv("DJANGO_TEST_USERNAME", "test")
+    DJANGO_TEST_EMAIL = os.getenv("DJANGO_TEST_EMAIL", "test@test.com")
+    DJANGO_TEST_PASSWORD = os.getenv("DJANGO_TEST_PASSWORD", "insecure")
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 SITE_ID = 1
@@ -152,10 +157,10 @@ REST_FRAMEWORK = dict(
         "rest_framework.parsers.MultiPartParser",
     ],
     DEFAULT_SCHEMA_CLASS="drf_spectacular.openapi.AutoSchema",
-    # DEFAULT_PERMISSION_CLASSES=("rest_framework.permissions.IsAuthenticated", ),
-    # DEFAULT_AUTHENTICATION_CLASSES=(
-    #     "rest_framework.authentication.TokenAuthentication",
-    # ),
+    DEFAULT_PERMISSION_CLASSES=("rest_framework.permissions.IsAuthenticated",),
+    DEFAULT_AUTHENTICATION_CLASSES=(
+        "rest_framework.authentication.TokenAuthentication",
+    ),
 )
 SPECTACULAR_SETTINGS = {
     "TITLE": "MOR CORE",

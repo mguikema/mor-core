@@ -5,8 +5,8 @@ from django.core import management
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
 
 AUTHENTICATED_CLIENT_EMAIL = "f.foo@foo.com"
 
@@ -72,7 +72,9 @@ def get_test_user():
     """
     Creates and returns a test user
     """
-    return get_user_model().objects.get_or_create(email=AUTHENTICATED_CLIENT_EMAIL)[0]
+    return get_user_model().objects.get_or_create(
+        username=settings.DJANGO_TEST_USERNAME
+    )[0]
 
 
 def get_authenticated_client():
@@ -80,11 +82,10 @@ def get_authenticated_client():
     Returns an authenticated APIClient, for unit testing API requests
     """
     user = get_test_user()
-    add_user_to_authorized_groups(user)
-    access_token = RefreshToken.for_user(user).access_token
+    access_token = Token.objects.create(user=user)
 
     client = APIClient()
-    client.credentials(HTTP_AUTHORIZATION="Bearer {}".format(access_token))
+    client.credentials(HTTP_AUTHORIZATION="Token {}".format(access_token))
     return client
 
 
