@@ -24,4 +24,7 @@ python manage.py migrate --noinput
 echo Create superuser
 python manage.py createsuperuser --noinput || true
 
+echo Create users
+python manage.py createusers --noinput || true
+
 exec python -m debugpy --listen 0.0.0.0:5678 /app/manage.py runserver 0.0.0.0:8000
