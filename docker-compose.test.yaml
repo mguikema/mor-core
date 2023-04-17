@@ -9,8 +9,10 @@ services:
       - 5678:5678
     env_file:
       - .env.test
+    # volumes:
+    #   - ./core:/app
+    #   - ./media:/media
     depends_on:
-      # - database
       database:
         condition: service_healthy
     links:

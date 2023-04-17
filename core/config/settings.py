@@ -129,6 +129,11 @@ DATABASES.update(
     else {}
 )
 
+if ENVIRONMENT == "test":
+    DJANGO_TEST_USERNAME = os.getenv("DJANGO_TEST_USERNAME", "test")
+    DJANGO_TEST_EMAIL = os.getenv("DJANGO_TEST_EMAIL", "test@test.com")
+    DJANGO_TEST_PASSWORD = os.getenv("DJANGO_TEST_PASSWORD", "insecure")
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 SITE_ID = 1
