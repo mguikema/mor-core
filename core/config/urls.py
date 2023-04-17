@@ -17,6 +17,7 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from rest_framework.authtoken import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
@@ -38,6 +39,7 @@ router.register(r"melding", MeldingViewSet, basename="melding")
 
 urlpatterns = [
     path("v1/", include((router.urls, "app"), namespace="v1")),
+    path("api-token-auth/", views.obtain_auth_token),
     path("health/", include("health_check.urls")),
     path("db-schema/", include((schema_urls, "db-schema"))),
     path("plate/", include("django_spaghetti.urls")),
