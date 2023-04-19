@@ -7,7 +7,7 @@ from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Greatest
-from django.forms.fields import CharField, MultipleChoiceField
+from django.forms.fields import CharField, IntegerField, MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
 from django_filters import rest_framework as filters
 from rest_framework import filters as rest_filters
@@ -93,6 +93,9 @@ class MeldingFilter(BasisFilter):
 
     actieve_meldingen = filters.BooleanFilter(method="get_actieve_meldingen")
     onderwerp = MultipleValueFilter(field_class=CharField, method="get_onderwerpen")
+    melding_context = MultipleValueFilter(
+        field_class=IntegerField, method="get_melding_context"
+    )
     begraafplaats = MultipleValueFilter(
         field_class=CharField, method="get_begraafplaatsen"
     )
@@ -154,6 +157,11 @@ class MeldingFilter(BasisFilter):
             for v in value:
                 q |= Q(locaties__begraafplaats__icontains=v)
             return queryset.filter(q)
+        return queryset
+
+    def get_melding_context(self, queryset, name, value):
+        if value:
+            return queryset.filter(melding_context__id__in=value)
         return queryset
 
     def get_onderwerpen(self, queryset, name, value):

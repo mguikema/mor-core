@@ -13,21 +13,37 @@ class MeldingManager(models.Manager):
     class StatusVeranderingNietToegestaan(Exception):
         pass
 
+    class MeldingContextInGebruik(Exception):
+        pass
+
     class MeldingInGebruik(Exception):
         pass
 
-    def aanmaken(self, signaal):
+    def aanmaken(self, signaal, db="default"):
         from apps.locatie.models import Graf
-        from apps.mor.models import Melding, MeldingGebeurtenis
+        from apps.mor.models import Melding, MeldingContext, MeldingGebeurtenis
         from apps.status.models import Status
 
         if signaal.melding:
             return signaal.melding
 
         with transaction.atomic():
+            try:
+                melding_context = (
+                    MeldingContext.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .filter(onderwerpen__contains=signaal.onderwerpen)
+                    .first()
+                )
+            except OperationalError:
+                raise MeldingManager.MeldingContextInGebruik
+
             data = copy.deepcopy(signaal.ruwe_informatie)
             meta_uitgebreid = data.pop("labels", {})
             melding = Melding()
+
+            melding.melding_context = melding_context
+
             status_instance = Status()
             melding.origineel_aangemaakt = signaal.origineel_aangemaakt
             melding.omschrijving_kort = data.get("toelichting", "")[:200]
@@ -40,6 +56,9 @@ class MeldingManager(models.Manager):
             status_instance.save()
             melding.status = status_instance
             melding.save()
+
+            melding_context.veld_waardes_toevoegen(meta_uitgebreid)
+            melding_context.save()
 
             melding_gebeurtenis = MeldingGebeurtenis(
                 **dict(

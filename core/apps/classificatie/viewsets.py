@@ -3,7 +3,9 @@ from apps.classificatie.serializers import OnderwerpSerializer
 from rest_framework import mixins, viewsets
 
 
-class OnderwerpViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class OnderwerpViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
     """
     Onderwerpen voor Meldingen en Signalen
     """
@@ -11,3 +13,4 @@ class OnderwerpViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Onderwerp.objects.all()
 
     serializer_class = OnderwerpSerializer
+    lookup_field = "slug"
