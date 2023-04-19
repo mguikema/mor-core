@@ -19,6 +19,9 @@ class MeldingManager(models.Manager):
     class MeldingInGebruik(Exception):
         pass
 
+    class MeldingContextOnderwerpNietGevonden(Exception):
+        pass
+
     def aanmaken(self, signaal, db="default"):
         from apps.locatie.models import Graf
         from apps.mor.models import Melding, MeldingContext, MeldingGebeurtenis
@@ -57,8 +60,9 @@ class MeldingManager(models.Manager):
             melding.status = status_instance
             melding.save()
 
-            melding_context.veld_waardes_toevoegen(meta_uitgebreid)
-            melding_context.save()
+            if melding_context:
+                melding_context.veld_waardes_toevoegen(meta_uitgebreid)
+                melding_context.save()
 
             melding_gebeurtenis = MeldingGebeurtenis(
                 **dict(
