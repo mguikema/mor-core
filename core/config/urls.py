@@ -1,6 +1,8 @@
+from apps.classificatie.viewsets import OnderwerpViewSet
 from apps.mor.viewsets import (
     BijlageViewSet,
     MelderViewSet,
+    MeldingContextViewSet,
     MeldingGebeurtenisTypeViewSet,
     MeldingGebeurtenisViewSet,
     MeldingViewSet,
@@ -33,9 +35,10 @@ router = DefaultRouter()
 # )
 # router.register(r"geometrie", GeometrieViewSet, basename="geometrie")
 router.register(r"signaal", SignaalViewSet, basename="signaal")
+router.register(r"melding-context", MeldingContextViewSet, basename="melding_context")
 router.register(r"melding", MeldingViewSet, basename="melding")
 # router.register(r"melder", MelderViewSet, basename="melder")
-# router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
+router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 
 urlpatterns = [
     path("v1/", include((router.urls, "app"), namespace="v1")),

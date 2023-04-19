@@ -1,9 +1,17 @@
-from apps.classificatie.models import Onderwerp
+from apps.classificatie.models import Onderwerp, OnderwerpGroep
 from django.contrib import admin
 
 
-class DefaultAdmin(admin.ModelAdmin):
-    pass
+class OnderwerpGroepAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "naam",
+    )
 
 
-admin.site.register(Onderwerp, DefaultAdmin)
+class OnderwerpAdmin(admin.ModelAdmin):
+    list_display = ("id", "naam", "onderwerp_groep")
+
+
+admin.site.register(Onderwerp, OnderwerpAdmin)
+admin.site.register(OnderwerpGroep, OnderwerpGroepAdmin)

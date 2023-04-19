@@ -3,6 +3,7 @@ from apps.mor.models import (
     Bijlage,
     Melder,
     Melding,
+    MeldingContext,
     MeldingGebeurtenis,
     MeldingGebeurtenisType,
     Signaal,
@@ -12,6 +13,7 @@ from apps.mor.serializers import (
     BijlageSerializer,
     GeometrieSerializer,
     MelderSerializer,
+    MeldingContextSerializer,
     MeldingDetailSerializer,
     MeldingGebeurtenisSerializer,
     MeldingGebeurtenisTypeSerializer,
@@ -63,6 +65,14 @@ class MelderViewSet(viewsets.ModelViewSet):
     queryset = Melder.objects.all()
 
     serializer_class = MelderSerializer
+
+
+class MeldingContextViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+
+    queryset = MeldingContext.objects.all()
+
+    serializer_class = MeldingContextSerializer
+    lookup_field = "slug"
 
 
 class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):

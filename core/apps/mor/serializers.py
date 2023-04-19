@@ -11,6 +11,7 @@ from apps.mor.models import (
     Bijlage,
     Melder,
     Melding,
+    MeldingContext,
     MeldingGebeurtenis,
     MeldingGebeurtenisType,
     Signaal,
@@ -103,12 +104,19 @@ class SignaalSerializer(WritableNestedModelSerializer):
         model = Signaal
         fields = (
             "origineel_aangemaakt",
-            "onderwerp",
+            "onderwerpen",
             "ruwe_informatie",
             "bijlagen",
             "bron",
             "melder",
         )
+
+
+class MeldingContextSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MeldingContext
+        lookup_field = "slug"
+        fields = "__all__"
 
 
 class MeldingSerializer(serializers.ModelSerializer):

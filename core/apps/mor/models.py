@@ -10,6 +10,8 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
+from django.contrib.postgres.fields import ArrayField
+from django_extensions.db.fields import AutoSlugField
 from PIL import Image, UnidentifiedImageError
 from sorl.thumbnail import get_thumbnail
 from utils.images import get_upload_path
@@ -145,6 +147,35 @@ class Melder(BasisModel):
         verbose_name_plural = "Melders"
 
 
+class MeldingContext(BasisModel):
+    naam = models.CharField(max_length=100)
+    slug = AutoSlugField(
+        populate_from=("naam",),
+        blank=False,
+        overwrite=True,
+        editable=False,
+        unique=True,
+    )
+    onderwerpen = ArrayField(base_field=models.CharField(max_length=300))
+    veld_waardes = models.JSONField(default=dict)
+
+    class Meta:
+        verbose_name = "Melding context"
+        verbose_name_plural = "Melding contexten"
+
+    def veld_waardes_toevoegen(self, extra_veld_waardes: dict):
+        for k, v in extra_veld_waardes.items():
+            if not self.veld_waardes.get(k):
+                self.veld_waardes[k] = v
+            else:
+                self.veld_waardes[k]["label"] = v.get("label")
+                choices = self.veld_waardes.get(k, {}).get("choices", {})
+                extra_choices = extra_veld_waardes.get(k, {}).get("choices", {})
+                if isinstance(choices, dict) and isinstance(extra_choices, dict):
+                    choices.update(extra_choices)
+                self.veld_waardes[k]["choices"] = choices
+
+
 class MeldingBasis(BasisModel):
     origineel_aangemaakt = models.DateTimeField()
     onderwerp = models.CharField(max_length=300)
@@ -171,6 +202,7 @@ class Signaal(MeldingBasis):
     """
 
     bron = models.CharField(max_length=200)
+    onderwerpen = ArrayField(base_field=models.CharField(max_length=300), default=list)
     melder = models.OneToOneField(
         to="mor.Melder", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -208,6 +240,13 @@ class Melding(MeldingBasis):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
+    )
+    melding_context = models.ForeignKey(
+        to="mor.MeldingContext",
+        related_name="meldingen_voor_meldingcontext",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     locaties = GenericRelation(Locatie)
 

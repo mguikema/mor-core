@@ -63,7 +63,7 @@ class SignaalApiTest(APITestCase):
                 "additionalProp3": "string",
             },
             "bron": "mock_bron",
-            "onderwerp": "mock_onderwerp",
+            "onderwerpen": ["mock_onderwerp"],
             "graven": [
                 {
                     "bron": "string",
