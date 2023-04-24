@@ -21,7 +21,10 @@ RUN apt-get update \
  && apt-get dist-upgrade -y \
  && apt-get autoremove -y \
  && apt-get install --no-install-recommends -y \
+        build-essential \
+        python-dev \
         unzip \
+        curl \
         wget \
         dnsutils \
         vim-tiny \

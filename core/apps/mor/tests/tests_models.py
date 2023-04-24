@@ -1,5 +1,12 @@
+import requests_mock
 from apps.mor.managers import MeldingManager
-from apps.mor.models import Melding, MeldingGebeurtenis, Signaal
+from apps.mor.models import (
+    Melding,
+    MeldingContext,
+    MeldingGebeurtenis,
+    OnderwerpAlias,
+    Signaal,
+)
 from apps.status import workflow
 from apps.status.models import Status
 from django.db import transaction
@@ -9,16 +16,22 @@ from model_bakery import baker
 
 
 class SignaalTest(TestCase):
+    @requests_mock.Mocker()
+    def setUp(self, m):
+        m.get("http://mock_url", json={}, status_code=200)
+        onderwerp_alias = baker.make(OnderwerpAlias, bron_url="http://mock_url")
+        baker.make(
+            MeldingContext, onderwerpen=OnderwerpAlias.objects.all(), slug="slug"
+        )
+        self.instance = baker.make(Signaal, onderwerpen=[onderwerp_alias.bron_url])
+
     def test_default_status(self):
-        instance = baker.make(Signaal)
-        self.assertEqual(instance.melding.status.naam, workflow.GEMELD)
+        self.assertEqual(self.instance.melding.status.naam, workflow.GEMELD)
 
     def test_melding_gebeurtenis_aangemaakt(self):
-        baker.make(Signaal)
         self.assertEqual(MeldingGebeurtenis.objects.all().count(), 1)
 
     def test_status_aangemaakt(self):
-        baker.make(Signaal)
         self.assertEqual(Status.objects.all().count(), 1)
 
 
@@ -28,10 +41,17 @@ class MeldingTransactionTest(TransactionTestCase):
     DB2 = "alternate"
     signaal_data = {
         "origineel_aangemaakt": timezone.now().isoformat(),
+        "onderwerpen": ["http://mock_url"],
     }
     status_aanpassen_data = {"status": {"naam": workflow.IN_BEHANDELING}}
 
-    def setUp(self):
+    @requests_mock.Mocker()
+    def setUp(self, m):
+        m.get("http://mock_url", json={}, status_code=200)
+        baker.make(OnderwerpAlias, bron_url="http://mock_url")
+        baker.make(
+            MeldingContext, onderwerpen=OnderwerpAlias.objects.all(), slug="slug"
+        )
         self.melding_id = Signaal.objects.create(**self.signaal_data).melding.id
 
     def test_dubbele_status_verandering_serieel(self):

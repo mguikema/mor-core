@@ -52,6 +52,7 @@ INSTALLED_APPS = (
     "health_check.db",
     "health_check.contrib.migrations",
     "sorl.thumbnail",
+    "debug_toolbar",
     # Apps
     "apps.mor",
     "apps.health",
@@ -67,6 +68,7 @@ MIDDLEWARE = (
     "django_permissions_policy.PermissionsPolicyMiddleware",
     "csp.middleware.CSPMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -101,6 +103,15 @@ STATIC_ROOT = os.path.normpath(join(os.path.dirname(BASE_DIR), "static"))
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.normpath(join(os.path.dirname(BASE_DIR), "media"))
+
+if DEBUG:
+    import socket  # only if you haven't already imported this
+
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + [
+        "127.0.0.1",
+        "10.0.2.2",
+    ]
 
 # Database settings
 DATABASE_NAME = os.getenv("DATABASE_NAME")
@@ -145,7 +156,7 @@ REST_FRAMEWORK = dict(
     PAGE_SIZE=5,
     UNAUTHENTICATED_USER={},
     UNAUTHENTICATED_TOKEN={},
-    DEFAULT_PAGINATION_CLASS="rest_framework.pagination.LimitOffsetPagination",
+    DEFAULT_PAGINATION_CLASS="utils.pagination.LimitOffsetPagination",
     DEFAULT_FILTER_BACKENDS=("django_filters.rest_framework.DjangoFilterBackend",),
     DEFAULT_THROTTLE_RATES={
         "nouser": os.getenv("PUBLIC_THROTTLE_RATE", "60/hour"),
