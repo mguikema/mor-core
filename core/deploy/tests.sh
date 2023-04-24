@@ -4,4 +4,4 @@ set -e   # stop on any error
 set -x
 
 echo Test python app
-python manage.py test --reverse
+python manage.py test
