@@ -2,8 +2,10 @@ version: '3'
 services:
   core:
     build: ./core
+    extra_hosts:
+      - "mor-core.forzamor.local:172.17.0.1"
     ports:
-      - "8002:8000"
+      - "80:8000"
     env_file:
       - .env.local
     volumes:

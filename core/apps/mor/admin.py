@@ -6,10 +6,15 @@ from apps.mor.models import (
     MeldingContext,
     MeldingGebeurtenis,
     MeldingGebeurtenisType,
+    OnderwerpAlias,
     Signaal,
     TaakApplicatie,
 )
 from django.contrib import admin
+
+
+class OnderwerpAliasAdmin(admin.ModelAdmin):
+    list_display = ("bron_url", "aangemaakt_op", "aangepast_op")
 
 
 class SignaalAdmin(admin.ModelAdmin):
@@ -17,7 +22,7 @@ class SignaalAdmin(admin.ModelAdmin):
 
 
 class MeldingContextAdmin(admin.ModelAdmin):
-    list_display = ("id", "naam", "slug")
+    list_display = ("id", "naam", "slug", "aangepast_op")
 
 
 class MeldingAdmin(admin.ModelAdmin):
@@ -39,6 +44,7 @@ class DefaultAdmin(admin.ModelAdmin):
 admin.site.register(MeldingGebeurtenis, DefaultAdmin)
 admin.site.register(Melding, MeldingAdmin)
 admin.site.register(Signaal, SignaalAdmin)
+admin.site.register(OnderwerpAlias, OnderwerpAliasAdmin)
 admin.site.register(Bijlage, DefaultAdmin)
 admin.site.register(Melder, DefaultAdmin)
 admin.site.register(MeldingContext, MeldingContextAdmin)

@@ -1,6 +1,5 @@
 import copy
 
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.db import OperationalError, transaction
 from django.dispatch import Signal as DjangoSignal
@@ -10,6 +9,9 @@ status_aangepast = DjangoSignal()
 
 
 class MeldingManager(models.Manager):
+    class OnderwerpenNietValide(Exception):
+        pass
+
     class StatusVeranderingNietToegestaan(Exception):
         pass
 
@@ -24,18 +26,29 @@ class MeldingManager(models.Manager):
 
     def aanmaken(self, signaal, db="default"):
         from apps.locatie.models import Graf
-        from apps.mor.models import Melding, MeldingContext, MeldingGebeurtenis
+        from apps.mor.models import (
+            Melding,
+            MeldingContext,
+            MeldingGebeurtenis,
+            OnderwerpAlias,
+        )
         from apps.status.models import Status
 
         if signaal.melding:
             return signaal.melding
+
+        gevalideerde_onderwerpen = OnderwerpAlias.objects.filter(
+            bron_url__in=signaal.onderwerpen
+        )
+        if not gevalideerde_onderwerpen:
+            raise MeldingManager.OnderwerpenNietValide
 
         with transaction.atomic():
             try:
                 melding_context = (
                     MeldingContext.objects.using(db)
                     .select_for_update(nowait=True)
-                    .filter(onderwerpen__contains=signaal.onderwerpen)
+                    .filter(onderwerpen__in=gevalideerde_onderwerpen)
                     .first()
                 )
             except OperationalError:
@@ -53,8 +66,8 @@ class MeldingManager(models.Manager):
             melding.omschrijving = data.get("toelichting")
             melding.meta = data
             melding.meta_uitgebreid = meta_uitgebreid
-            melding.onderwerp = signaal.onderwerp
             melding.save()
+            melding.onderwerpen.set(gevalideerde_onderwerpen)
             status_instance.melding = melding
             status_instance.save()
             melding.status = status_instance
@@ -72,12 +85,9 @@ class MeldingManager(models.Manager):
                 )
             )
             melding_gebeurtenis.save()
-
-            mct = ContentType.objects.get_for_model(Melding)
             Graf.objects.create(
                 **{
-                    "object_id": melding.pk,
-                    "content_type": mct,
+                    "melding": melding,
                     "plaatsnaam": "Rotterdam",
                     "begraafplaats": data.get("begraafplaats"),
                     "grafnummer": data.get("grafnummer"),

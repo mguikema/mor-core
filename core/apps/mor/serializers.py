@@ -120,7 +120,7 @@ class MeldingContextSerializer(serializers.ModelSerializer):
 
 
 class MeldingSerializer(serializers.ModelSerializer):
-    locaties = LocatieRelatedField(many=True, read_only=True)
+    locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
     status = StatusSerializer()
     volgende_statussen = serializers.ListField(
@@ -139,17 +139,16 @@ class MeldingSerializer(serializers.ModelSerializer):
             "afgesloten_op",
             "omschrijving_kort",
             "meta",
-            "meta_uitgebreid",
-            "onderwerp",
+            "onderwerpen",
             "bijlagen",
-            "locaties",
+            "locaties_voor_melding",
             "status",
             "volgende_statussen",
         )
 
 
 class MeldingDetailSerializer(MeldingSerializer):
-    locaties = LocatieRelatedField(many=True, read_only=True)
+    locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
     status = StatusSerializer()
     volgende_statussen = serializers.ListField(
@@ -170,9 +169,9 @@ class MeldingDetailSerializer(MeldingSerializer):
             "omschrijving_kort",
             "meta",
             "meta_uitgebreid",
-            "onderwerp",
+            "onderwerpen",
             "bijlagen",
-            "locaties",
+            "locaties_voor_melding",
             "status",
             "volgende_statussen",
         )

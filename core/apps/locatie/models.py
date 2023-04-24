@@ -38,7 +38,12 @@ LOCATIE_TYPE_CHOICES = (
 )
 
 
-class Locatie(BasisModel, GenericRelationMixin):
+class Locatie(BasisModel):
+    melding = models.ForeignKey(
+        to="mor.Melding",
+        related_name="locaties_voor_melding",
+        on_delete=models.CASCADE,
+    )
     locatie_type = models.CharField(
         max_length=50, choices=LOCATIE_TYPE_CHOICES, default=LOCATIE_TYPE_CHOICES[0][0]
     )

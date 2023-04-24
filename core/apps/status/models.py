@@ -25,6 +25,9 @@ class Status(BasisModel):
         self.full_clean()
         return super().save(*args, **kwargs)
 
+    def __str__(self) -> str:
+        return f"{self.naam}({self.pk})"
+
     def volgende_statussen(self):
         return workflow.ALLOWED_STATUS_CHANGES[self.naam]
 

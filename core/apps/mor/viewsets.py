@@ -85,8 +85,9 @@ class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
 @extend_schema(
     parameters=[
         OpenApiParameter("omschrijving", OpenApiTypes.STR, OpenApiParameter.QUERY),
-        OpenApiParameter("onderwerp", OpenApiTypes.STR, OpenApiParameter.QUERY),
-        OpenApiParameter("begraafplaats", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("onderwerp", OpenApiTypes.INT, OpenApiParameter.QUERY),
+        OpenApiParameter("status", OpenApiTypes.STR, OpenApiParameter.QUERY),
+        OpenApiParameter("begraafplaats", OpenApiTypes.INT, OpenApiParameter.QUERY),
         OpenApiParameter("begraafplaats_vak", OpenApiTypes.STR, OpenApiParameter.QUERY),
         OpenApiParameter(
             "begraafplaats_grafnummer", OpenApiTypes.STR, OpenApiParameter.QUERY
@@ -158,8 +159,18 @@ class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     ]
 )
 class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = (
+        Melding.objects.select_related(
+            "status",
+        )
+        .prefetch_related(
+            "locaties_voor_melding",
+            "bijlagen",
+            "onderwerpen",
+        )
+        .all()
+    )
 
-    queryset = Melding.objects.all()
     serializer_class = MeldingSerializer
     serializer_detail_class = MeldingDetailSerializer
     filter_backends = (
@@ -168,6 +179,19 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     )
     ordering_fields = "__all_related__"
     filterset_class = MeldingFilter
+
+    filter_options_fields = (
+        (
+            "begraafplaats",
+            "locaties_voor_melding__begraafplaats",
+            "meta_uitgebreid__begraafplaats__choices",
+        ),
+        (
+            "status",
+            "status__naam",
+        ),
+        ("onderwerp", "onderwerpen", "onderwerpen__response_json__naam"),
+    )
 
     def get_serializer_class(self):
         if self.action == "retrieve":

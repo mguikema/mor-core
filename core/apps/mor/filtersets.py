@@ -93,6 +93,7 @@ class MeldingFilter(BasisFilter):
 
     actieve_meldingen = filters.BooleanFilter(method="get_actieve_meldingen")
     onderwerp = MultipleValueFilter(field_class=CharField, method="get_onderwerpen")
+    status = MultipleValueFilter(field_class=CharField, method="get_statussen")
     melding_context = MultipleValueFilter(
         field_class=IntegerField, method="get_melding_context"
     )
@@ -100,10 +101,10 @@ class MeldingFilter(BasisFilter):
         field_class=CharField, method="get_begraafplaatsen"
     )
     begraafplaats_vak = filters.CharFilter(
-        field_name="graven__vak", lookup_expr="icontains"
+        field_name="locaties_voor_melding__vak", lookup_expr="icontains"
     )
     begraafplaats_grafnummer = filters.CharFilter(
-        field_name="locaties__grafnummer", lookup_expr="icontains"
+        field_name="locaties_voor_melding__grafnummer", lookup_expr="icontains"
     )
     begraafplaats_grafnummer_gte = filters.NumberFilter(
         method="get_begraafplaats_grafnummer"
@@ -134,9 +135,9 @@ class MeldingFilter(BasisFilter):
                 if lookup_expr in valid_lookup_expr
                 else valid_lookup_expr[0]
             )
-            return queryset.filter(locaties__grafnummer__regex="^[0-9]+$").filter(
-                Q(**{f"locaties__grafnummer__{lookup_expr}": value})
-            )
+            return queryset.filter(
+                locaties_voor_melding__grafnummer__regex="^[0-9]+$"
+            ).filter(Q(**{f"locaties_voor_melding__grafnummer__{lookup_expr}": value}))
         return queryset
 
     def get_omschrijving(self, queryset, name, value):
@@ -153,7 +154,7 @@ class MeldingFilter(BasisFilter):
 
     def get_begraafplaatsen(self, queryset, name, value):
         if value:
-            return queryset.filter(locaties__begraafplaats__in=value)
+            return queryset.filter(locaties_voor_melding__begraafplaats__in=value)
         return queryset
 
     def get_melding_context(self, queryset, name, value):
@@ -161,12 +162,14 @@ class MeldingFilter(BasisFilter):
             return queryset.filter(melding_context__id__in=value)
         return queryset
 
+    def get_statussen(self, queryset, name, value):
+        if value:
+            return queryset.filter(status__naam__in=value)
+        return queryset
+
     def get_onderwerpen(self, queryset, name, value):
         if value:
-            q = Q()
-            for v in value:
-                q |= Q(onderwerp__icontains=v)
-            return queryset.filter(q)
+            return queryset.filter(onderwerpen__in=value)
         return queryset
 
     def get_categories(self, queryset, name, value):

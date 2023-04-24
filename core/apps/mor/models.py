@@ -3,7 +3,7 @@ import os
 from os.path import exists
 
 import pyheif
-from apps.locatie.models import Locatie
+import requests
 from apps.mor.managers import MeldingManager
 from apps.mor.querysets import MeldingQuerySet, SignaalQuerySet
 from django.conf import settings
@@ -135,6 +135,38 @@ class MeldingGebeurtenis(BasisModel):
         verbose_name_plural = "Melding gebeurtenissen"
 
 
+class OnderwerpAlias(BasisModel):
+    bron_url = models.CharField(max_length=500)
+    response_json = models.JSONField(
+        default=dict,
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = "Onderwerp alias"
+        verbose_name_plural = "Onderwerp aliassen"
+
+    class OnderwerpNietValide(Exception):
+        pass
+
+    def _valideer_bron_url(self, bron_url: str):
+        response = requests.get(bron_url)
+        if response.status_code != 200:
+            raise OnderwerpAlias.OnderwerpNietValide
+        return response.json()
+
+    def save(self, *args, **kwargs):
+        self.response_json = self._valideer_bron_url(self.bron_url)
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        try:
+            return self.response_json.get("naam", self.bron_url)
+        except Exception:
+            return self.bron_url
+
+
 class Melder(BasisModel):
     naam = models.CharField(max_length=100, blank=True, null=True)
     voornaam = models.CharField(max_length=50, blank=True, null=True)
@@ -156,12 +188,19 @@ class MeldingContext(BasisModel):
         editable=False,
         unique=True,
     )
-    onderwerpen = ArrayField(base_field=models.CharField(max_length=300))
+    onderwerpen = models.ManyToManyField(
+        to="mor.OnderwerpAlias",
+        related_name="meldingcontexten_voor_onderwerpen",
+        blank=True,
+    )
     veld_waardes = models.JSONField(default=dict)
 
     class Meta:
         verbose_name = "Melding context"
         verbose_name_plural = "Melding contexten"
+
+    def __str__(self) -> str:
+        return f"{self.naam}({self.pk})"
 
     def veld_waardes_toevoegen(self, extra_veld_waardes: dict):
         for k, v in extra_veld_waardes.items():
@@ -241,6 +280,11 @@ class Melding(MeldingBasis):
         blank=True,
         null=True,
     )
+    onderwerpen = models.ManyToManyField(
+        to="mor.OnderwerpAlias",
+        related_name="meldingen_voor_onderwerpen",
+        blank=True,
+    )
     melding_context = models.ForeignKey(
         to="mor.MeldingContext",
         related_name="meldingen_voor_meldingcontext",
@@ -248,7 +292,6 @@ class Melding(MeldingBasis):
         null=True,
         blank=True,
     )
-    locaties = GenericRelation(Locatie)
 
     objects = MeldingQuerySet.as_manager()
     acties = MeldingManager()

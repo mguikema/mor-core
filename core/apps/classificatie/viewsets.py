@@ -12,5 +12,7 @@ class OnderwerpViewSet(
 
     queryset = Onderwerp.objects.all()
 
+    permission_classes = ()
+
     serializer_class = OnderwerpSerializer
     lookup_field = "slug"
