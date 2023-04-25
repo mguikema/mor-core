@@ -154,7 +154,9 @@ class MeldingFilter(BasisFilter):
 
     def get_begraafplaatsen(self, queryset, name, value):
         if value:
-            return queryset.filter(locaties_voor_melding__begraafplaats__in=value)
+            return queryset.filter(
+                locaties_voor_melding__begraafplaats__in=value
+            ).distinct()
         return queryset
 
     def get_melding_context(self, queryset, name, value):
