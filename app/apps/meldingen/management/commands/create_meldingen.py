@@ -2,8 +2,14 @@
 Management utility to create superusers.
 """
 
+import base64
+import os
+import random
+
 import requests
 from django.core.management.base import BaseCommand
+from django.utils.text import slugify
+from faker import Faker
 
 
 class NotRunningInTTYException(Exception):
@@ -14,8 +20,22 @@ PASSWORD_FIELD = "password"
 
 
 class Command(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--token",
+            help="Gebruiker token",
+        )
+        parser.add_argument(
+            "--env-url",
+            help="Waar moeten de meldingen aangemaakt worden",
+        )
+        parser.add_argument(
+            "--aantal",
+            help="Hoeveel meldingen moeten er aangemaakt worden",
+        )
+
     def handle(self, *args, **options):
-        b64_file = "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyNTgwClxjb2NvYXRleHRzY2FsaW5nMFxjb2NvYXBsYXRmb3JtMHtcZm9udHRibFxmMFxmc3dpc3NcZmNoYXJzZXQwIEhlbHZldGljYTt9CntcY29sb3J0Ymw7XHJlZDI1NVxncmVlbjI1NVxibHVlMjU1O30Ke1wqXGV4cGFuZGVkY29sb3J0Ymw7O30KXHBhcGVydzExOTAwXHBhcGVyaDE2ODQwXG1hcmdsMTQ0MFxtYXJncjE0NDBcdmlld3cxMTUyMFx2aWV3aDg0MDBcdmlld2tpbmQwClxwYXJkXHR4NTY2XHR4MTEzM1x0eDE3MDBcdHgyMjY3XHR4MjgzNFx0eDM0MDFcdHgzOTY4XHR4NDUzNVx0eDUxMDJcdHg1NjY5XHR4NjIzNlx0eDY4MDNccGFyZGlybmF0dXJhbFxwYXJ0aWdodGVuZmFjdG9yMAoKXGYwXGZzMjQgXGNmMCBUZXN0IGZpbGV9Cg=="
+        base_url = options.get("env-url")
 
         data = {
             "melder": {
@@ -24,11 +44,6 @@ class Command(BaseCommand):
                 "email": "user@example.com",
                 "telefoonnummer": "string",
             },
-            "bijlagen": [
-                {
-                    "bestand": b64_file,
-                }
-            ],
             "origineel_aangemaakt": "2023-03-09T11:56:04.036Z",
             "tekst": "string",
             "ruwe_informatie": {
@@ -95,7 +110,7 @@ class Command(BaseCommand):
                     },
                     "naam_overledene": {"label": "Naam overledene", "choices": None},
                     "telefoon_melder": {"label": "Telefoonnummer", "choices": None},
-                    "terugkoppeling_gewenst2": {
+                    "terugkoppeling_gewenst": {
                         "label": "Is terugkoppeling gewenst?",
                         "choices": {"0": "Nee", "11": "Ja"},
                     },
@@ -115,25 +130,155 @@ class Command(BaseCommand):
                 "terugkoppeling_gewenst2": "0",
             },
             "bron": "mock_bron",
-            "onderwerpen": [
-                "http://mor-core.forzamor.local:8002/v1/onderwerp/verzakking-eigen-graf/"
-            ],
-            "graven": [
-                {
-                    "bron": "string",
-                    "plaatsnaam": "string",
-                    "begraafplaats": "7",
-                    "grafnummer": "string",
-                    "vak": "string",
-                    "geometrieen": [],
-                }
-            ],
         }
-        headers = {"Authorization": "Token de54d4cd5de6e87748bf51560a9345ee42a0076a"}
-        for i in range(0, 1000):
-            response = requests.post(
-                "http://host.docker.internal:8002/v1/signaal/",
-                json=data,
+
+        def randomize(d):
+            onderwerpen_choices = (
+                d.get("ruwe_informatie", {})
+                .get("labels", {})
+                .get("categorie", {})
+                .get("choices", {})
+            )
+            begraafplaats_choices = (
+                d.get("ruwe_informatie", {})
+                .get("labels", {})
+                .get("begraafplaats", {})
+                .get("choices", {})
+            )
+            medewerker_choices = {
+                "1": "C.M. Hendriks",
+                "2": "A. van de Graaf",
+                "3": "I. Addicks",
+                "4": "A.J. Verhoeven",
+                "5": "M. van Berkum",
+                "onbekend": "Onbekend",
+            }
+            begraafplaats_choices.pop("", None)
+            d["onderwerpen"] = [
+                f"{base_url}/v1/onderwerp/{slugify(onderwerpen_choices.get(random.choice(list(onderwerpen_choices.keys()))))}/"
+            ]
+            d["onderwerpen"] = (
+                d["onderwerpen"]
+                + [
+                    f"{base_url}/v1/onderwerp/{slugify(onderwerpen_choices.get(random.choice(list(onderwerpen_choices.keys()))))}/"
+                ]
+                if random.choice([0, 0, 0, 1])
+                else d["onderwerpen"]
+            )
+            d["ruwe_informatie"]["begraafplaats"] = random.choice(
+                list(begraafplaats_choices.keys())
+            )
+            d["ruwe_informatie"]["grafnummer"] = str(random.choice(range(1, 200)))
+            d["ruwe_informatie"]["specifiek_graf"] = str(random.choice(["Ja", "Nee"]))
+            d["ruwe_informatie"]["aannemer"] = medewerker_choices.get(
+                random.choice(list(medewerker_choices.keys()))
+            )
+            d["ruwe_informatie"]["terugkoppeling_gewenst"] = str(
+                random.choice(["Ja", "Nee"])
+            )
+            d["ruwe_informatie"]["rechthebbende"] = str(
+                random.choice(["Ja", "Nee", "Onbekend"])
+            )
+            d["ruwe_informatie"]["vak"] = str(random.choice(list("ABCDEFGHIJKLMNOP")))
+            d["ruwe_informatie"]["naam_overledene"] = get_name()
+            d["ruwe_informatie"]["naam_melder"] = get_name()
+            d["ruwe_informatie"]["email_melder"] = get_email()
+            d["ruwe_informatie"]["telefoon_melder"] = get_phone_number()
+            d["melder"]["voornaam"] = ""
+            d["melder"]["achternaam"] = ""
+            d["melder"]["email"] = get_email()
+            d["melder"]["naam"] = get_name()
+            d["melder"]["telefoonnummer"] = get_phone_number()
+            d["ruwe_informatie"]["toelichting"] = get_paragraph()
+            d["tekst"] = get_paragraph()
+            d["origineel_aangemaakt"] = get_past_datetime().isoformat()
+            d["bijlagen"] = [{"bestand": _to_base64(random.choice(files))}]
+
+            return d
+
+        headers = {"Authorization": f"Token {options['token']}"}
+
+        dir_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "bestanden/"
+        )
+        files = [
+            os.path.join(dir_path, f)
+            for f in os.listdir(dir_path)
+            if os.path.isfile(os.path.join(dir_path, f))
+        ]
+        for i in range(0, int(options.get("aantal", 1))):
+            d = randomize(data)
+            requests.post(
+                f"{base_url}/v1/signaal/",
+                json=d,
                 headers=headers,
             )
-            print(response.status_code)
+
+
+def _to_base64(file):
+    with open(file, "rb") as binary_file:
+        binary_file_data = binary_file.read()
+        base64_encoded_data = base64.b64encode(binary_file_data)
+        base64_message = base64_encoded_data.decode("utf-8")
+    return base64_message
+
+
+def get_street_name():
+    fake = Faker()
+    return fake.street_name()
+
+
+def get_past_datetime():
+    fake = Faker()
+    return fake.past_datetime()
+
+
+def get_building_number():
+    fake = Faker()
+    return fake.building_number()
+
+
+def get_url():
+    fake = Faker()
+    return fake.url()
+
+
+def get_postal_code():
+    fake = Faker()
+    postal_codes = range(1000, 1109)
+    return f"{str(random.choice(postal_codes))}{fake.bothify(text='??').upper()}"
+
+
+def get_phone_number():
+    fake = Faker()
+    return fake.msisdn()
+
+
+def get_sentence():
+    fake = Faker()
+    return fake.sentence(nb_words=2)
+
+
+def get_paragraph():
+    fake = Faker()
+    return fake.paragraph(nb_sentences=2)
+
+
+def get_name():
+    fake = Faker()
+    return fake.name()
+
+
+def get_first_name():
+    fake = Faker()
+    return fake.first_name()
+
+
+def get_last_name():
+    fake = Faker()
+    return fake.last_name()
+
+
+def get_email():
+    fake = Faker()
+    return fake.ascii_email()

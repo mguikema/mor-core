@@ -43,6 +43,7 @@ django-rename-app
 
 # development
 django-debug-toolbar==4.0.0
+Faker==8.13.2
 
 # tests
 requests_mock
