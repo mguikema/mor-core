@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     "health_check.contrib.migrations",
     "sorl.thumbnail",
     "debug_toolbar",
+    "django_prometheus",
     # Apps
     "apps.mor",
     "apps.health",
@@ -63,6 +64,7 @@ INSTALLED_APPS = (
 
 
 MIDDLEWARE = (
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django_permissions_policy.PermissionsPolicyMiddleware",
@@ -75,6 +77,7 @@ MIDDLEWARE = (
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 )
 
 # django-permissions-policy settings
