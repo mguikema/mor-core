@@ -1,5 +1,7 @@
 import copy
 
+from apps.mor.managers import aangemaakt, status_aangepast
+from apps.mor.metrics import Metrics
 from apps.mor.models import Bijlage, Melding, Signaal
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_save
@@ -43,3 +45,25 @@ def add_relation_to_melding(sender, instance, created, **kwargs):
             }
         )
         sender.objects.create(**data)
+
+
+@receiver(status_aangepast, dispatch_uid="melding_status_aangepast")
+def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kwargs):
+    Metrics.morcore_meldingen_aantal.labels(
+        onderwerp=", ".join(
+            melding.onderwerpen.values_list("response_json__naam", flat=True)
+        ),
+        status=melding.status.naam,
+        actie="status_aangepast",
+    ).inc()
+
+
+@receiver(aangemaakt, dispatch_uid="melding_aangemaakt")
+def aangemaakt_handler(sender, melding, *args, **kwargs):
+    Metrics.morcore_meldingen_aantal.labels(
+        onderwerp=", ".join(
+            melding.onderwerpen.values_list("response_json__naam", flat=True)
+        ),
+        status=melding.status.naam,
+        actie="aangemaakt",
+    ).inc()

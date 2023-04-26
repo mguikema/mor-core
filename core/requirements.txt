@@ -45,3 +45,7 @@ django-debug-toolbar==4.0.0
 
 # tests
 requests_mock
+
+# monitoring
+django-prometheus
+prometheus-client
