@@ -43,7 +43,7 @@ class MeldingTransactionTest(TransactionTestCase):
         "origineel_aangemaakt": timezone.now().isoformat(),
         "onderwerpen": ["http://mock_url"],
     }
-    status_aanpassen_data = {"status": {"naam": workflow.IN_BEHANDELING}}
+    status_aanpassen_data = {"status": {"naam": workflow.AFGEHANDELD}}
 
     @requests_mock.Mocker()
     def setUp(self, m):

@@ -3,6 +3,7 @@ import copy
 from django.contrib.gis.db import models
 from django.db import OperationalError, transaction
 from django.dispatch import Signal as DjangoSignal
+from django.utils import timezone
 
 aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
@@ -144,6 +145,8 @@ class MeldingManager(models.Manager):
             )
             melding_gebeurtenis.save()
             locked_melding.status = status_instance
+            if not locked_melding.status.volgende_statussen():
+                locked_melding.afgesloten_op = timezone.now().isoformat()
             locked_melding.save()
             transaction.on_commit(
                 lambda: status_aangepast.send_robust(
