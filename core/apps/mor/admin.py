@@ -26,7 +26,7 @@ class MeldingContextAdmin(admin.ModelAdmin):
 
 
 class MeldingAdmin(admin.ModelAdmin):
-    list_display = ("id", "status_naam", "aangemaakt_op", "aangepast_op")
+    list_display = ("id", "status_naam", "aangemaakt_op", "afgesloten_op")
 
     def status_naam(self, obj):
         try:
