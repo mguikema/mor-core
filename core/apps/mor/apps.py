@@ -6,4 +6,5 @@ class MORConfig(AppConfig):
     verbose_name = "MOR modellen"
 
     def ready(self):
+        import apps.mor.metrics_collectors  # noqa
         import apps.mor.signal_receivers  # noqa
