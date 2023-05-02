@@ -224,6 +224,7 @@ CSP_IMG_SRC = (
 )
 CSP_STYLE_SRC = (
     "'self'",
+    "data:",
     "'unsafe-inline'",
     "cdnjs.cloudflare.com",
     "cdn.jsdelivr.net",
@@ -261,7 +262,7 @@ TEMPLATES = [
 
 THUMBNAIL_BACKEND = "utils.images.ThumbnailBackend"
 THUMBNAIL_PREFIX = "afbeeldingen-verkleind"
-THUMBNAIL_KLEIN = "96x128"
+THUMBNAIL_KLEIN = "128x128"
 BESTANDEN_PREFIX = "bestanden"
 
 

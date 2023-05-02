@@ -1,7 +1,7 @@
 version: "3.5"
 services:
-  core:
-    build: ./core
+  app:
+    build: ./app
     # hostname: core
     # image: core
     ports:

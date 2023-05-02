@@ -70,7 +70,7 @@ class Bijlage(BasisModel):
                     im = get_thumbnail(
                         self.bestand.path,
                         settings.THUMBNAIL_KLEIN,
-                        crop="center",
+                        # crop="noop",
                         quality=99,
                     )
                     self.afbeelding_verkleind.name = im.name
