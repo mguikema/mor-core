@@ -132,7 +132,7 @@ class Command(BaseCommand):
             "bron": "mock_bron",
         }
 
-        def randomize(d):
+        def randomize(d, base_url):
             onderwerpen_choices = (
                 d.get("ruwe_informatie", {})
                 .get("labels", {})
@@ -207,7 +207,7 @@ class Command(BaseCommand):
             if os.path.isfile(os.path.join(dir_path, f))
         ]
         for i in range(0, int(options.get("aantal", 1))):
-            d = randomize(data)
+            d = randomize(data, base_url)
             requests.post(
                 f"{base_url}/v1/signaal/",
                 json=d,
