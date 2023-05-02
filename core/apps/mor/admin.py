@@ -26,11 +26,25 @@ class MeldingContextAdmin(admin.ModelAdmin):
 
 
 class MeldingAdmin(admin.ModelAdmin):
-    list_display = ("id", "status_naam", "aangemaakt_op", "afgesloten_op")
+    list_display = (
+        "id",
+        "status_naam",
+        "onderwerp_naam",
+        "aangemaakt_op",
+        "afgesloten_op",
+    )
 
     def status_naam(self, obj):
         try:
             return obj.status.naam
+        except Exception:
+            return "- leeg -"
+
+    def onderwerp_naam(self, obj):
+        try:
+            return ", ".join(
+                list(obj.onderwerpen.values_list("response_json__naam", flat=True))
+            )
         except Exception:
             return "- leeg -"
 
