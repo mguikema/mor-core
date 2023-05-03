@@ -175,9 +175,7 @@ REST_FRAMEWORK = dict(
     ],
     DEFAULT_SCHEMA_CLASS="drf_spectacular.openapi.AutoSchema",
     DEFAULT_PERMISSION_CLASSES=("rest_framework.permissions.IsAuthenticated",),
-    DEFAULT_AUTHENTICATION_CLASSES=(
-        "rest_framework.authentication.TokenAuthentication",
-    ),
+    DEFAULT_AUTHENTICATION_CLASSES=("apps.auth.authentication.AuthenticationClass",),
 )
 SPECTACULAR_SETTINGS = {
     "TITLE": "MOR CORE",
