@@ -1,4 +1,5 @@
 from apps.classificatie.viewsets import OnderwerpViewSet
+from apps.mor.views import serve_media
 from apps.mor.viewsets import (
     BijlageViewSet,
     MelderViewSet,
@@ -10,9 +11,8 @@ from apps.mor.viewsets import (
     TaakApplicatieViewSet,
 )
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
 from django_db_schema_renderer.urls import schema_urls
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -60,11 +60,12 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
+    re_path(r"^media", serve_media, name="protected_media"),
     path("", include("django_prometheus.urls")),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [
         path("__debug__/", include("debug_toolbar.urls")),
     ]
