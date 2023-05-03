@@ -1,5 +1,5 @@
 from apps.classificatie.viewsets import OnderwerpViewSet
-from apps.mor.views import serve_media
+from apps.mor.views import serve_protected_media
 from apps.mor.viewsets import (
     BijlageViewSet,
     MelderViewSet,
@@ -23,21 +23,9 @@ from rest_framework.authtoken import views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-# router.register(r"bijlage", BijlageViewSet, basename="bijlage")
-# router.register(r"taak-applicatie", TaakApplicatieViewSet, basename="taak_applicatie")
-# router.register(
-#     r"melding-gebeurtenis-type",
-#     MeldingGebeurtenisTypeViewSet,
-#     basename="melding_gebeurtenis_type",
-# )
-# router.register(
-#     r"melding-gebeurtenis", MeldingGebeurtenisViewSet, basename="melding_gebeurtenis"
-# )
-# router.register(r"geometrie", GeometrieViewSet, basename="geometrie")
 router.register(r"signaal", SignaalViewSet, basename="signaal")
 router.register(r"melding-context", MeldingContextViewSet, basename="melding_context")
 router.register(r"melding", MeldingViewSet, basename="melding")
-# router.register(r"melder", MelderViewSet, basename="melder")
 router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 
 urlpatterns = [
@@ -60,7 +48,7 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    re_path(r"^media", serve_media, name="protected_media"),
+    re_path(r"^media", serve_protected_media, name="protected_media"),
     path("", include("django_prometheus.urls")),
 ]
 

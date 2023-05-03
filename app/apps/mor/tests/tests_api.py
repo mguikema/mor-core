@@ -1,7 +1,3 @@
-import base64
-import io
-import os
-
 import requests_mock
 from apps.mor.models import Bijlage, Melding, MeldingContext, OnderwerpAlias
 from django.urls import reverse
@@ -15,6 +11,41 @@ B64_IMAGE = "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwY
 
 
 class SignaalApiTest(APITestCase):
+
+    b64_file = "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyNTgwClxjb2NvYXRleHRzY2FsaW5nMFxjb2NvYXBsYXRmb3JtMHtcZm9udHRibFxmMFxmc3dpc3NcZmNoYXJzZXQwIEhlbHZldGljYTt9CntcY29sb3J0Ymw7XHJlZDI1NVxncmVlbjI1NVxibHVlMjU1O30Ke1wqXGV4cGFuZGVkY29sb3J0Ymw7O30KXHBhcGVydzExOTAwXHBhcGVyaDE2ODQwXG1hcmdsMTQ0MFxtYXJncjE0NDBcdmlld3cxMTUyMFx2aWV3aDg0MDBcdmlld2tpbmQwClxwYXJkXHR4NTY2XHR4MTEzM1x0eDE3MDBcdHgyMjY3XHR4MjgzNFx0eDM0MDFcdHgzOTY4XHR4NDUzNVx0eDUxMDJcdHg1NjY5XHR4NjIzNlx0eDY4MDNccGFyZGlybmF0dXJhbFxwYXJ0aWdodGVuZmFjdG9yMAoKXGYwXGZzMjQgXGNmMCBUZXN0IGZpbGV9Cg=="
+    signaal_data = {
+        "melder": {
+            "voornaam": "string",
+            "achternaam": "string",
+            "email": "user@example.com",
+            "telefoonnummer": "string",
+        },
+        "bijlagen": [
+            {
+                "bestand": b64_file,
+            }
+        ],
+        "origineel_aangemaakt": "2023-03-09T11:56:04.036Z",
+        "tekst": "string",
+        "meta": {
+            "additionalProp1": "string",
+            "additionalProp2": "string",
+            "additionalProp3": "string",
+        },
+        "bron": "mock_bron",
+        "onderwerpen": ["http://mock_url"],
+        "graven": [
+            {
+                "bron": "string",
+                "plaatsnaam": "string",
+                "begraafplaats": "string",
+                "grafnummer": "string",
+                "vak": "string",
+                "geometrieen": [],
+            }
+        ],
+    }
+
     @requests_mock.Mocker()
     def setUp(self, m):
         m.get("http://mock_url", json={}, status_code=200)
@@ -34,56 +65,41 @@ class SignaalApiTest(APITestCase):
         client = get_authenticated_client()
         url = reverse("app:signaal-list")
 
-        file = "tekst.rtf"
-        b64_file = "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyNTgwClxjb2NvYXRleHRzY2FsaW5nMFxjb2NvYXBsYXRmb3JtMHtcZm9udHRibFxmMFxmc3dpc3NcZmNoYXJzZXQwIEhlbHZldGljYTt9CntcY29sb3J0Ymw7XHJlZDI1NVxncmVlbjI1NVxibHVlMjU1O30Ke1wqXGV4cGFuZGVkY29sb3J0Ymw7O30KXHBhcGVydzExOTAwXHBhcGVyaDE2ODQwXG1hcmdsMTQ0MFxtYXJncjE0NDBcdmlld3cxMTUyMFx2aWV3aDg0MDBcdmlld2tpbmQwClxwYXJkXHR4NTY2XHR4MTEzM1x0eDE3MDBcdHgyMjY3XHR4MjgzNFx0eDM0MDFcdHgzOTY4XHR4NDUzNVx0eDUxMDJcdHg1NjY5XHR4NjIzNlx0eDY4MDNccGFyZGlybmF0dXJhbFxwYXJ0aWdodGVuZmFjdG9yMAoKXGYwXGZzMjQgXGNmMCBUZXN0IGZpbGV9Cg=="
-        base_dir = os.path.dirname(os.path.realpath(__file__))
-        with open(f"{base_dir}/bestanden/{file}", "rb") as fp:
-            fio = io.FileIO(fp.fileno())
-            fio.name = fp.name
-
-        with open(f"{base_dir}/bestanden/{file}", "rb") as binary_file:
-            binary_file_data = binary_file.read()
-            base64_encoded_data = base64.b64encode(binary_file_data)
-            base64_encoded_data.decode("utf-8")
-
-        data = {
-            "melder": {
-                "voornaam": "string",
-                "achternaam": "string",
-                "email": "user@example.com",
-                "telefoonnummer": "string",
-            },
-            "bijlagen": [
-                {
-                    "bestand": b64_file,
-                }
-            ],
-            "origineel_aangemaakt": "2023-03-09T11:56:04.036Z",
-            "tekst": "string",
-            "meta": {
-                "additionalProp1": "string",
-                "additionalProp2": "string",
-                "additionalProp3": "string",
-            },
-            "bron": "mock_bron",
-            "onderwerpen": ["http://mock_url"],
-            "graven": [
-                {
-                    "bron": "string",
-                    "plaatsnaam": "string",
-                    "begraafplaats": "string",
-                    "grafnummer": "string",
-                    "vak": "string",
-                    "geometrieen": [],
-                }
-            ],
-        }
-        response = client.post(url, data=data, format="json")
+        response = client.post(url, data=self.signaal_data, format="json")
         melding = Melding.objects.all()
 
         self.assertEqual(Bijlage.objects.all().count(), 2)
         self.assertEqual(melding.first().locaties_voor_melding.all().count(), 1)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_download_afbeelding_unauthenticated(self):
+        client = get_authenticated_client()
+        unauthenticated_client = get_unauthenticated_client()
+        signaal_url = reverse("app:signaal-list")
+
+        client.post(signaal_url, data=self.signaal_data, format="json")
+        melding = Melding.objects.first()
+        melding_url = reverse("app:melding-detail", kwargs={"pk": melding.pk})
+        melding_response = client.get(melding_url, format="json")
+        unauthenticated_response = unauthenticated_client.get(
+            melding_response.json().get("bijlagen", [])[0].get("bestand")
+        )
+        self.assertEqual(
+            unauthenticated_response.status_code, status.HTTP_403_FORBIDDEN
+        )
+
+    def test_download_afbeelding_authenticated(self):
+        client = get_authenticated_client()
+        signaal_url = reverse("app:signaal-list")
+
+        client.post(signaal_url, data=self.signaal_data, format="json")
+        melding = Melding.objects.first()
+        melding_url = reverse("app:melding-detail", kwargs={"pk": melding.pk})
+        melding_response = client.get(melding_url, format="json")
+        authenticated_response = client.get(
+            melding_response.json().get("bijlagen", [])[0].get("bestand")
+        )
+        self.assertEqual(authenticated_response.status_code, status.HTTP_200_OK)
 
 
 class MeldingApiTest(APITestCase):
