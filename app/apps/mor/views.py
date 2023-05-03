@@ -1,11 +1,14 @@
-from django.http import HttpResponse
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseForbidden
+from rest_framework.authentication import TokenAuthentication
 
 
 def serve_media(request):
-    request.path.replace("media", "protected")
-    print(request.path)
-    response = HttpResponse("")
-    # response['X-Accel-Redirect'] = url
-    response["X-Accel-Redirect"] = request.path
-    response["Content-Type"] = ""
-    return response
+    user = TokenAuthentication().authenticate(request)
+    if user or settings.ALLOW_UNAUTHORIZED_MEDIA_ACCESS:
+        url = request.path.replace("media", "media-protected")
+        response = HttpResponse("")
+        response["X-Accel-Redirect"] = url
+        response["Content-Type"] = ""
+        return response
+    return HttpResponseForbidden()
