@@ -4,5 +4,5 @@ set -e   # stop on any error
 set -x
 
 echo Test python app
-python manage.py test apps.mor.tests.tests_api
-python manage.py test apps.mor.tests.tests_models
+python3 manage.py test apps.mor.tests.tests_api
+python3 manage.py test apps.mor.tests.tests_models

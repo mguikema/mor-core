@@ -24,4 +24,4 @@ jobs:
     - name: Start images
       run: docker compose -f docker-compose.test.yaml up -d
     - name: Run Tests
-      run: docker compose -f docker-compose.test.yaml exec -T app bash ./deploy/tests.sh
+      run: docker compose -f docker-compose.test.yaml exec -T app python manage.py test apps.mor.tests.tests_api
