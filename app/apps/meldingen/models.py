@@ -4,8 +4,8 @@ from os.path import exists
 
 import pyheif
 import requests
-from apps.mor.managers import MeldingManager
-from apps.mor.querysets import MeldingQuerySet, SignaalQuerySet
+from apps.meldingen.managers import MeldingManager
+from apps.meldingen.querysets import MeldingQuerySet, SignaalQuerySet
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -103,7 +103,7 @@ class MeldingGebeurtenisType(BasisModel):
         choices=TypeNaamOpties.choices,
     )
     melding_gebeurtenis = models.ForeignKey(
-        to="mor.MeldingGebeurtenis",
+        to="meldingen.MeldingGebeurtenis",
         related_name="melding_gebeurtenistypes",
         on_delete=models.CASCADE,
     )
@@ -125,7 +125,7 @@ class MeldingGebeurtenis(BasisModel):
     )
     omschrijving = models.CharField(max_length=5000, null=True, blank=True)
     melding = models.ForeignKey(
-        to="mor.Melding",
+        to="meldingen.Melding",
         related_name="melding_gebeurtenissen",
         on_delete=models.CASCADE,
     )
@@ -189,7 +189,7 @@ class MeldingContext(BasisModel):
         unique=True,
     )
     onderwerpen = models.ManyToManyField(
-        to="mor.OnderwerpAlias",
+        to="meldingen.OnderwerpAlias",
         related_name="meldingcontexten_voor_onderwerpen",
         blank=True,
     )
@@ -243,11 +243,11 @@ class Signaal(MeldingBasis):
     bron = models.CharField(max_length=200)
     onderwerpen = ArrayField(base_field=models.CharField(max_length=300), default=list)
     melder = models.OneToOneField(
-        to="mor.Melder", on_delete=models.SET_NULL, null=True, blank=True
+        to="meldingen.Melder", on_delete=models.SET_NULL, null=True, blank=True
     )
     ruwe_informatie = models.JSONField(default=dict)
     melding = models.ForeignKey(
-        to="mor.Melding",
+        to="meldingen.Melding",
         related_name="signalen_voor_melding",
         on_delete=models.CASCADE,
         blank=True,
@@ -281,12 +281,12 @@ class Melding(MeldingBasis):
         null=True,
     )
     onderwerpen = models.ManyToManyField(
-        to="mor.OnderwerpAlias",
+        to="meldingen.OnderwerpAlias",
         related_name="meldingen_voor_onderwerpen",
         blank=True,
     )
     melding_context = models.ForeignKey(
-        to="mor.MeldingContext",
+        to="meldingen.MeldingContext",
         related_name="meldingen_voor_meldingcontext",
         on_delete=models.SET_NULL,
         null=True,

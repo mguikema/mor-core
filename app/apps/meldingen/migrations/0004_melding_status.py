@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("status", "0001_initial"),
-        ("mor", "0003_auto_20230329_1622"),
+        ("meldingen", "0003_auto_20230329_1622"),
     ]
 
     operations = [

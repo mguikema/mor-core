@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("status", "0001_initial"),
-        ("mor", "0004_melding_status"),
+        ("meldingen", "0004_melding_status"),
     ]
 
     operations = [
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="signalen_voor_melding",
-                to="mor.melding",
+                to="meldingen.melding",
             ),
         ),
     ]

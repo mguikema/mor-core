@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("mor", "0009_alter_meldingcontext_slug"),
+        ("meldingen", "0009_alter_meldingcontext_slug"),
     ]
 
     operations = [
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 null=True,
                 related_name="meldingcontexten_voor_onderwerpen",
-                to="mor.OnderwerpAlias",
+                to="meldingen.OnderwerpAlias",
             ),
         ),
     ]

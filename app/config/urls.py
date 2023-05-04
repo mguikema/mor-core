@@ -1,6 +1,6 @@
 from apps.classificatie.viewsets import OnderwerpViewSet
-from apps.mor.views import serve_protected_media
-from apps.mor.viewsets import (
+from apps.meldingen.views import serve_protected_media
+from apps.meldingen.viewsets import (
     BijlageViewSet,
     MelderViewSet,
     MeldingContextViewSet,

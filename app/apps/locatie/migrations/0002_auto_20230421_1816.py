@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("mor", "0009_alter_meldingcontext_slug"),
+        ("meldingen", "0009_alter_meldingcontext_slug"),
         ("locatie", "0001_initial"),
     ]
 
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 default=1,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="locaties_voor_melding",
-                to="mor.melding",
+                to="meldingen.melding",
             ),
             preserve_default=False,
         ),

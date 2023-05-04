@@ -7,7 +7,7 @@ from apps.locatie.serializers import (
     LichtmastSerializer,
     LocatieRelatedField,
 )
-from apps.mor.models import (
+from apps.meldingen.models import (
     Bijlage,
     Melder,
     Melding,

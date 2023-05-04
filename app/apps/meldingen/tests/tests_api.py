@@ -1,5 +1,5 @@
 import requests_mock
-from apps.mor.models import Bijlage, Melding, MeldingContext, OnderwerpAlias
+from apps.meldingen.models import Bijlage, Melding, MeldingContext, OnderwerpAlias
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status

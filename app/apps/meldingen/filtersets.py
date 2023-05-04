@@ -2,7 +2,7 @@ import operator
 from functools import reduce
 from typing import List, Tuple
 
-from apps.mor.models import Melding
+from apps.meldingen.models import Melding
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
 from django.db.models import Q

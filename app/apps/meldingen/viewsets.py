@@ -1,5 +1,5 @@
-from apps.mor.filtersets import MeldingFilter, RelatedOrderingFilter
-from apps.mor.models import (
+from apps.meldingen.filtersets import MeldingFilter, RelatedOrderingFilter
+from apps.meldingen.models import (
     Bijlage,
     Melder,
     Melding,
@@ -9,7 +9,7 @@ from apps.mor.models import (
     Signaal,
     TaakApplicatie,
 )
-from apps.mor.serializers import (
+from apps.meldingen.serializers import (
     BijlageSerializer,
     GeometrieSerializer,
     MelderSerializer,

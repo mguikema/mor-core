@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("mor", "0011_auto_20230424_1115"),
+        ("meldingen", "0011_auto_20230424_1115"),
     ]
 
     operations = [
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(
                 blank=True,
                 related_name="meldingen_voor_onderwerpen",
-                to="mor.OnderwerpAlias",
+                to="meldingen.OnderwerpAlias",
             ),
         ),
     ]

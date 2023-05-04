@@ -1,7 +1,7 @@
 import copy
 
-from apps.mor.managers import aangemaakt, status_aangepast
-from apps.mor.models import Bijlage, Melding, Signaal
+from apps.meldingen.managers import aangemaakt, status_aangepast
+from apps.meldingen.models import Bijlage, Melding, Signaal
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
