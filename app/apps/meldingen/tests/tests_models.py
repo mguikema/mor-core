@@ -1,6 +1,6 @@
 import requests_mock
-from apps.mor.managers import MeldingManager
-from apps.mor.models import (
+from apps.meldingen.managers import MeldingManager
+from apps.meldingen.models import (
     Melding,
     MeldingContext,
     MeldingGebeurtenis,

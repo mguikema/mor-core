@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("mor", "0002_bijlage_afbeelding_verkleind"),
+        ("meldingen", "0002_bijlage_afbeelding_verkleind"),
     ]
 
     operations = [

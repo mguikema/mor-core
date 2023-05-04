@@ -40,7 +40,7 @@ LOCATIE_TYPE_CHOICES = (
 
 class Locatie(BasisModel):
     melding = models.ForeignKey(
-        to="mor.Melding",
+        to="meldingen.Melding",
         related_name="locaties_voor_melding",
         on_delete=models.CASCADE,
     )

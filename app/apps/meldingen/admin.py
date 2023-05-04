@@ -1,4 +1,4 @@
-from apps.mor.models import (
+from apps.meldingen.models import (
     Bijlage,
     Bron,
     Melder,

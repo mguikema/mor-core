@@ -1,4 +1,4 @@
-from apps.mor.models import Melding
+from apps.meldingen.models import Melding
 from django.db.models import Count
 from prometheus_client.core import REGISTRY, CounterMetricFamily
 

@@ -39,6 +39,7 @@ djangorestframework-simplejwt==4.8.0
 python-box[all]~=7.0
 sorl-thumbnail==12.8.0
 pyheif==0.7.1
+django-rename-app
 
 # development
 django-debug-toolbar==4.0.0

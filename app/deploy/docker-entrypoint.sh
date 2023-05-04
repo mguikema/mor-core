@@ -3,6 +3,9 @@ set -u   # crash on missing env variables
 set -e   # stop on any error
 set -x
 
+echo App rename
+python manage.py rename_app mor meldingen
+
 echo Collecting static files
 python manage.py collectstatic --no-input
 

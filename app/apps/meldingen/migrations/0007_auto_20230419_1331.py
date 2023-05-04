@@ -10,7 +10,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("mor", "0006_auto_20230418_1110"),
+        ("meldingen", "0006_auto_20230418_1110"),
     ]
 
     operations = [
@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.SET_NULL,
                 related_name="meldingen_voor_meldingcontext",
-                to="mor.meldingcontext",
+                to="meldingen.meldingcontext",
             ),
         ),
     ]

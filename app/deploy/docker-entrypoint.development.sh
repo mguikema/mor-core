@@ -10,6 +10,9 @@ until PGPASSWORD=$DATABASE_PASSWORD psql  -d $DATABASE_NAME -h $DATABASE_HOST_OV
 done
 echo "Postgres is up!"
 
+echo App rename
+python manage.py rename_app mor meldingen
+
 echo Collecting static files
 python manage.py collectstatic --no-input
 

@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("mor", "0003_auto_20230329_1622"),
+        ("meldingen", "0003_auto_20230329_1622"),
     ]
 
     operations = [
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="statussen_voor_melding",
-                        to="mor.melding",
+                        to="meldingen.melding",
                     ),
                 ),
             ],

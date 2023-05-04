@@ -1,4 +1,4 @@
-from apps.mor.utils import get_q_objects_from_qs
+from apps.meldingen.utils import get_q_objects_from_qs
 from django.db.models import QuerySet
 
 

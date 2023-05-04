@@ -13,7 +13,7 @@ class Status(BasisModel):
         help_text="Melding status",
     )
     melding = models.ForeignKey(
-        to="mor.Melding",
+        to="meldingen.Melding",
         related_name="statussen_voor_melding",
         on_delete=models.CASCADE,
     )

@@ -126,7 +126,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="melding_gebeurtenissen",
-                        to="mor.melding",
+                        to="meldingen.melding",
                     ),
                 ),
             ],
@@ -186,7 +186,7 @@ class Migration(migrations.Migration):
                         blank=True,
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
-                        to="mor.melder",
+                        to="meldingen.melder",
                     ),
                 ),
                 (
@@ -195,7 +195,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="signalen_voor_melding",
-                        to="mor.melding",
+                        to="meldingen.melding",
                     ),
                 ),
             ],
@@ -237,7 +237,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="melding_gebeurtenistypes",
-                        to="mor.meldinggebeurtenis",
+                        to="meldingen.meldinggebeurtenis",
                     ),
                 ),
             ],

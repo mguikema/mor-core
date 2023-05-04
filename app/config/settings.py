@@ -57,8 +57,9 @@ INSTALLED_APPS = (
     "sorl.thumbnail",
     "debug_toolbar",
     "django_prometheus",
+    "django_rename_app",
     # Apps
-    "apps.mor",
+    "apps.meldingen",
     "apps.health",
     "apps.classificatie",
     "apps.locatie",
@@ -239,7 +240,7 @@ CSP_FONT_SRC = (
 
 SPAGHETTI_SAUCE = {
     "apps": [
-        "mor",
+        "meldingen",
     ],
     "show_fields": False,
 }

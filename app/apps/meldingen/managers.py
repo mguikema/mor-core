@@ -27,7 +27,7 @@ class MeldingManager(models.Manager):
 
     def aanmaken(self, signaal, db="default"):
         from apps.locatie.models import Graf
-        from apps.mor.models import (
+        from apps.meldingen.models import (
             Melding,
             MeldingContext,
             MeldingGebeurtenis,
@@ -106,7 +106,7 @@ class MeldingManager(models.Manager):
         return melding
 
     def status_aanpassen(self, data, melding, db="default"):
-        from apps.mor.models import Melding, MeldingGebeurtenis
+        from apps.meldingen.models import Melding, MeldingGebeurtenis
         from apps.status.models import Status
 
         nieuwe_status_naam = data.get("status", {}).get("naam")
