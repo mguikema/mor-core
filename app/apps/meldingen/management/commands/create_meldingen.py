@@ -35,7 +35,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        base_url = options.get("env-url")
+        base_url = options.get("env_url")
+        aantal = options.get("aantal", 1) if options.get("aantal") else 1
 
         data = {
             "melder": {
@@ -132,7 +133,7 @@ class Command(BaseCommand):
             "bron": "mock_bron",
         }
 
-        def randomize(d, base_url):
+        def randomize(d):
             onderwerpen_choices = (
                 d.get("ruwe_informatie", {})
                 .get("labels", {})
@@ -165,6 +166,7 @@ class Command(BaseCommand):
                 if random.choice([0, 0, 0, 1])
                 else d["onderwerpen"]
             )
+            print(d["onderwerpen"])
             d["ruwe_informatie"]["begraafplaats"] = random.choice(
                 list(begraafplaats_choices.keys())
             )
@@ -206,13 +208,15 @@ class Command(BaseCommand):
             for f in os.listdir(dir_path)
             if os.path.isfile(os.path.join(dir_path, f))
         ]
-        for i in range(0, int(options.get("aantal", 1))):
-            d = randomize(data, base_url)
-            requests.post(
+        for i in range(0, int(aantal)):
+            d = randomize(data)
+            response = requests.post(
                 f"{base_url}/v1/signaal/",
                 json=d,
                 headers=headers,
             )
+            print(response.status_code)
+            print(response.text)
 
 
 def _to_base64(file):
