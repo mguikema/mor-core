@@ -7,6 +7,7 @@ from apps.meldingen.models import (
     OnderwerpAlias,
     Signaal,
 )
+from apps.meldingen.serializers import MeldingGebeurtenisStatusSerializer
 from apps.status import workflow
 from apps.status.models import Status
 from django.db import transaction
@@ -53,29 +54,27 @@ class MeldingTransactionTest(TransactionTestCase):
             MeldingContext, onderwerpen=OnderwerpAlias.objects.all(), slug="slug"
         )
         self.melding_id = Signaal.objects.create(**self.signaal_data).melding.id
+        data = {"melding": self.melding_id}
+        data.update(self.status_aanpassen_data)
+        data["status"]["melding"] = self.melding_id
+
+        self.serializer = MeldingGebeurtenisStatusSerializer(data=data)
+        self.serializer.is_valid()
 
     def test_dubbele_status_verandering_serieel(self):
         with transaction.atomic(using=self.DB1):
             melding = Melding.objects.using(self.DB1).get(id=self.melding_id)
-            Melding.acties.status_aanpassen(
-                self.status_aanpassen_data, melding, self.DB1
-            )
+            Melding.acties.status_aanpassen(self.serializer, melding, self.DB1)
         with transaction.atomic(using=self.DB2):
             melding = Melding.objects.using(self.DB2).get(id=self.melding_id)
             with self.assertRaises(Status.StatusVeranderingNietToegestaan):
-                Melding.acties.status_aanpassen(
-                    self.status_aanpassen_data, melding, self.DB1
-                )
+                Melding.acties.status_aanpassen(self.serializer, melding, self.DB1)
 
     def test_dubbele_status_verandering_parallel(self):
         with transaction.atomic(using=self.DB1):
             melding = Melding.objects.using(self.DB1).get(id=self.melding_id)
-            Melding.acties.status_aanpassen(
-                self.status_aanpassen_data, melding, self.DB1
-            )
+            Melding.acties.status_aanpassen(self.serializer, melding, self.DB1)
             with transaction.atomic(using=self.DB2):
                 melding = Melding.objects.using(self.DB2).get(id=self.melding_id)
                 with self.assertRaises(MeldingManager.MeldingInGebruik):
-                    Melding.acties.status_aanpassen(
-                        self.status_aanpassen_data, melding, self.DB2
-                    )
+                    Melding.acties.status_aanpassen(self.serializer, melding, self.DB2)

@@ -16,6 +16,7 @@ from apps.meldingen.serializers import (
     MeldingContextSerializer,
     MeldingDetailSerializer,
     MeldingGebeurtenisSerializer,
+    MeldingGebeurtenisStatusSerializer,
     MeldingGebeurtenisTypeSerializer,
     MeldingSerializer,
     SignaalSerializer,
@@ -200,24 +201,59 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
 
     @extend_schema(
         description="Verander de status van een melding",
-        request=MeldingGebeurtenisSerializer,
+        request=MeldingGebeurtenisStatusSerializer,
         responses={status.HTTP_200_OK: MeldingDetailSerializer},
         parameters=None,
     )
     @action(detail=True, methods=["patch"], url_path="status-aanpassen")
     def status_aanpassen(self, request, pk):
-        serializer = MeldingGebeurtenisSerializer(
-            data=request.data,
+        data = {"melding": pk}
+        data.update(request.data)
+        data["status"]["melding"] = pk
+        data["gebeurtenis_type"] = MeldingGebeurtenis.GebeurtenisType.STATUS_WIJZIGING
+        serializer = MeldingGebeurtenisStatusSerializer(
+            data=data,
             context={"request": request},
         )
         if serializer.is_valid():
-            melding = self.get_object()
-            Melding.acties.status_aanpassen(serializer.validated_data, melding)
+            Melding.acties.status_aanpassen(serializer, self.get_object())
 
             serializer = MeldingDetailSerializer(
                 self.get_object(), context={"request": request}
             )
             return Response(serializer.data)
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    @extend_schema(
+        description="Gebeurtneis voor een melding toevoegen",
+        request=MeldingGebeurtenisSerializer,
+        responses={status.HTTP_200_OK: MeldingDetailSerializer},
+        parameters=None,
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="gebeurtenis-toevoegen",
+        serializer_class=MeldingGebeurtenisSerializer,
+    )
+    def gebeurtenis_toevoegen(self, request, pk):
+        data = {"melding": pk}
+        data.update(request.data)
+        serializer = self.serializer_class(
+            data=data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            Melding.acties.gebeurtenis_toevoegen(serializer, self.get_object())
+            serializer.save()
+            serializer = MeldingDetailSerializer(
+                self.get_object(), context={"request": request}
+            )
+            return Response(serializer.data)
+
         return Response(
             data=serializer.errors,
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,

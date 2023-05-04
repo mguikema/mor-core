@@ -7,6 +7,7 @@ from django.utils import timezone
 
 aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
+gebeurtenis_toegevoegd = DjangoSignal()
 
 
 class MeldingManager(models.Manager):
@@ -81,8 +82,9 @@ class MeldingManager(models.Manager):
             melding_gebeurtenis = MeldingGebeurtenis(
                 **dict(
                     melding=melding,
+                    gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.MELDING_AANGEMAAKT,
                     status=status_instance,
-                    omschrijving="Melding aangemaakt",
+                    omschrijving_intern="Melding aangemaakt",
                 )
             )
             melding_gebeurtenis.save()
@@ -105,16 +107,8 @@ class MeldingManager(models.Manager):
 
         return melding
 
-    def status_aanpassen(self, data, melding, db="default"):
-        from apps.meldingen.models import Melding, MeldingGebeurtenis
-        from apps.status.models import Status
-
-        nieuwe_status_naam = data.get("status", {}).get("naam")
-
-        if melding.status and not melding.status.status_verandering_toegestaan(
-            nieuwe_status_naam
-        ):
-            raise Status.StatusVeranderingNietToegestaan
+    def status_aanpassen(self, serializer, melding, db="default"):
+        from apps.meldingen.models import Melding
 
         with transaction.atomic():
             try:
@@ -126,25 +120,11 @@ class MeldingManager(models.Manager):
             except OperationalError:
                 raise MeldingManager.MeldingInGebruik
 
-            if melding.status and not melding.status.status_verandering_toegestaan(
-                nieuwe_status_naam
-            ):
-                raise Status.StatusVeranderingNietToegestaan
+            vorige_status = locked_melding.status
 
-            vorige_status = melding.status
-            status_instance = Status(
-                melding=melding, naam=data.get("status", {}).get("naam")
-            )
-            status_instance.save()
-            melding_gebeurtenis = MeldingGebeurtenis(
-                **dict(
-                    melding=locked_melding,
-                    status=status_instance,
-                    omschrijving=data.get("omschrijving"),
-                )
-            )
-            melding_gebeurtenis.save()
-            locked_melding.status = status_instance
+            melding_gebeurtenis = serializer.save()
+
+            locked_melding.status = melding_gebeurtenis.status
             if not locked_melding.status.volgende_statussen():
                 locked_melding.afgesloten_op = timezone.now().isoformat()
             locked_melding.save()
@@ -152,7 +132,30 @@ class MeldingManager(models.Manager):
                 lambda: status_aangepast.send_robust(
                     sender=self.__class__,
                     melding=locked_melding,
-                    status=status_instance,
+                    status=melding_gebeurtenis.status,
                     vorige_status=vorige_status,
+                )
+            )
+
+    def gebeurtenis_toevoegen(self, serializer, melding, db="default"):
+        from apps.meldingen.models import Melding
+
+        with transaction.atomic():
+            try:
+                locked_melding = (
+                    Melding.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=melding.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.MeldingInGebruik
+
+            serializer.save()
+
+            locked_melding.save()
+            transaction.on_commit(
+                lambda: gebeurtenis_toegevoegd.send_robust(
+                    sender=self.__class__,
+                    melding=locked_melding,
                 )
             )

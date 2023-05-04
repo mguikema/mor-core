@@ -115,6 +115,17 @@ class MeldingGebeurtenis(BasisModel):
     MeldingGebeurtenissen bouwen de history op van van de melding
     """
 
+    class GebeurtenisType(models.TextChoices):
+        STANDAARD = "standaard", "Standaard"
+        STATUS_WIJZIGING = "status_verandering", "Status verandering"
+        MELDING_AANGEMAAKT = "melding_aangemaakt", "Melding aangemaakt"
+
+    gebeurtenis_type = models.CharField(
+        max_length=20,
+        choices=GebeurtenisType.choices,
+        default=GebeurtenisType.STANDAARD,
+    )
+
     bijlagen = GenericRelation(Bijlage)
     status = models.OneToOneField(
         to="status.Status",
@@ -123,7 +134,8 @@ class MeldingGebeurtenis(BasisModel):
         blank=True,
         null=True,
     )
-    omschrijving = models.CharField(max_length=5000, null=True, blank=True)
+    omschrijving_intern = models.CharField(max_length=5000, null=True, blank=True)
+    omschrijving_extern = models.CharField(max_length=5000, null=True, blank=True)
     melding = models.ForeignKey(
         to="meldingen.Melding",
         related_name="melding_gebeurtenissen",
@@ -131,6 +143,7 @@ class MeldingGebeurtenis(BasisModel):
     )
 
     class Meta:
+        ordering = ("-aangemaakt_op",)
         verbose_name = "Melding gebeurtenis"
         verbose_name_plural = "Melding gebeurtenissen"
 

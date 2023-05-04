@@ -1,6 +1,6 @@
 import copy
 
-from apps.meldingen.managers import aangemaakt, status_aangepast
+from apps.meldingen.managers import aangemaakt, gebeurtenis_toegevoegd, status_aangepast
 from apps.meldingen.models import Bijlage, Melding, Signaal
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_save
@@ -53,4 +53,9 @@ def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kw
 
 @receiver(aangemaakt, dispatch_uid="melding_aangemaakt")
 def aangemaakt_handler(sender, melding, *args, **kwargs):
+    ...
+
+
+@receiver(gebeurtenis_toegevoegd, dispatch_uid="melding_gebeurtenis_toegevoegd")
+def gebeurtenis_toegevoegd_handler(sender, melding, *args, **kwargs):
     ...

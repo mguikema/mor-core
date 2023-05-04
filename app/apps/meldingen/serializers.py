@@ -83,17 +83,45 @@ class MeldingGebeurtenisTypeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class MeldingGebeurtenisSerializer(serializers.ModelSerializer):
+class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
-    status = StatusSerializer(required=False)
+    status = StatusSerializer(required=True)
+    gebeurtenis_type = serializers.CharField(required=False)
 
     class Meta:
         model = MeldingGebeurtenis
         fields = (
+            "aangemaakt_op",
+            "gebeurtenis_type",
             "bijlagen",
             "status",
-            "omschrijving",
+            "omschrijving_intern",
+            "omschrijving_extern",
+            "melding",
         )
+        read_only_fields = ("aangemaakt_op",)
+
+
+class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
+    bijlagen = BijlageSerializer(many=True, required=False)
+
+    class Meta:
+        model = MeldingGebeurtenis
+        fields = (
+            "aangemaakt_op",
+            "gebeurtenis_type",
+            "bijlagen",
+            "status",
+            "omschrijving_intern",
+            "omschrijving_extern",
+            "melding",
+        )
+        read_only_fields = (
+            "aangemaakt_op",
+            "gebeurtenis_type",
+            "status",
+        )
+        validators = []
 
 
 class SignaalSerializer(WritableNestedModelSerializer):
@@ -156,6 +184,7 @@ class MeldingDetailSerializer(MeldingSerializer):
         child=serializers.CharField(),
         read_only=True,
     )
+    melding_gebeurtenissen = MeldingGebeurtenisSerializer(many=True, read_only=True)
 
     class Meta:
         model = Melding
@@ -174,4 +203,5 @@ class MeldingDetailSerializer(MeldingSerializer):
             "locaties_voor_melding",
             "status",
             "volgende_statussen",
+            "melding_gebeurtenissen",
         )
