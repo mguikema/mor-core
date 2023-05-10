@@ -1,12 +1,7 @@
 import requests_mock
+from apps.aliassen.models import OnderwerpAlias
 from apps.meldingen.managers import MeldingManager
-from apps.meldingen.models import (
-    Melding,
-    MeldingContext,
-    MeldingGebeurtenis,
-    OnderwerpAlias,
-    Signaal,
-)
+from apps.meldingen.models import Melding, MeldingContext, MeldingGebeurtenis, Signaal
 from apps.meldingen.serializers import MeldingGebeurtenisStatusSerializer
 from apps.status import workflow
 from apps.status.models import Status

@@ -10,12 +10,6 @@ until PGPASSWORD=$DATABASE_PASSWORD psql  -d $DATABASE_NAME -h $DATABASE_HOST_OV
 done
 echo "Postgres is up!"
 
-echo App rename
-python manage.py rename_app mor meldingen
-
-echo Collecting static files
-python manage.py collectstatic --no-input
-
 # echo "Start with a fresh database"
 # export PGPASSWORD=${DATABASE_PASSWORD}
 # psql -h ${DATABASE_HOST_OVERRIDE} -p 5432 -d ${DATABASE_NAME} -U ${DATABASE_USER} -c "drop schema public cascade;"
@@ -23,6 +17,9 @@ python manage.py collectstatic --no-input
 
 echo Apply migrations
 python manage.py migrate --noinput
+
+echo Collecting static files
+python manage.py collectstatic --no-input
 
 echo Load initial data
 python manage.py loaddata initial_data
