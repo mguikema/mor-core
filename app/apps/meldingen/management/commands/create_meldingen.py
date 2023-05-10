@@ -166,7 +166,6 @@ class Command(BaseCommand):
                 if random.choice([0, 0, 0, 1])
                 else d["onderwerpen"]
             )
-            print(d["onderwerpen"])
             d["ruwe_informatie"]["begraafplaats"] = random.choice(
                 list(begraafplaats_choices.keys())
             )
@@ -210,13 +209,11 @@ class Command(BaseCommand):
         ]
         for i in range(0, int(aantal)):
             d = randomize(data)
-            response = requests.post(
+            requests.post(
                 f"{base_url}/v1/signaal/",
                 json=d,
                 headers=headers,
             )
-            print(response.status_code)
-            print(response.text)
 
 
 def _to_base64(file):

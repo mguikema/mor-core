@@ -27,13 +27,9 @@ class MeldingManager(models.Manager):
         pass
 
     def aanmaken(self, signaal, db="default"):
+        from apps.aliassen.models import OnderwerpAlias
         from apps.locatie.models import Graf
-        from apps.meldingen.models import (
-            Melding,
-            MeldingContext,
-            MeldingGebeurtenis,
-            OnderwerpAlias,
-        )
+        from apps.meldingen.models import Melding, MeldingContext, MeldingGebeurtenis
         from apps.status.models import Status
 
         if signaal.melding:

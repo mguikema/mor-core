@@ -37,6 +37,14 @@ class BijlageSerializer(serializers.ModelSerializer):
     """
 
     bestand = DefaultBase64File()
+    bestand_relative_url = serializers.SerializerMethodField()
+    afbeelding_verkleind_relative_url = serializers.SerializerMethodField()
+
+    def get_bestand_relative_url(self, obj):
+        return obj.bestand.url if obj.bestand else None
+
+    def get_afbeelding_verkleind_relative_url(self, obj):
+        return obj.afbeelding_verkleind.url if obj.afbeelding_verkleind else None
 
     class Meta:
         model = Bijlage
@@ -45,17 +53,21 @@ class BijlageSerializer(serializers.ModelSerializer):
             "afbeelding_verkleind",
             "mimetype",
             "is_afbeelding",
+            "bestand_relative_url",
+            "afbeelding_verkleind_relative_url",
         )
         read_only_fields = (
             "afbeelding_verkleind",
             "is_afbeelding",
             "mimetype",
+            "bestand_relative_url",
+            "afbeelding_verkleind_relative_url",
         )
 
 
 class BijlageRelatedField(serializers.RelatedField):
     def to_representation(self, value):
-        serializer = BijlageSerializer(value)
+        serializer = BijlageSerializer(value, context=self.context)
         return serializer.data
 
 
