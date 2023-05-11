@@ -1,4 +1,5 @@
 import filetype
+from apps.aliassen.serializers import OnderwerpAliasSerializer
 from apps.locatie.serializers import (
     AdresSerializer,
     GeometrieSerializer,
@@ -116,6 +117,7 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
 
 class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
+    status = StatusSerializer()
 
     class Meta:
         model = MeldingGebeurtenis
@@ -189,6 +191,7 @@ class MeldingSerializer(serializers.ModelSerializer):
 
 class MeldingDetailSerializer(MeldingSerializer):
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
+    onderwerpen = OnderwerpAliasSerializer(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
     status = StatusSerializer()
     volgende_statussen = serializers.ListField(
