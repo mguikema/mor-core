@@ -3,6 +3,8 @@ import os
 import sys
 from os.path import join
 
+from celery.schedules import crontab
+
 locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -54,10 +56,13 @@ INSTALLED_APPS = (
     "health_check",
     "health_check.db",
     "health_check.contrib.migrations",
+    "health_check.contrib.celery_ping",
     "sorl.thumbnail",
     "debug_toolbar",
     "django_prometheus",
     "django_rename_app",
+    "django_celery_beat",
+    "django_celery_results",
     # Apps
     "apps.meldingen",
     "apps.health",
@@ -147,6 +152,21 @@ DATABASES.update(
     if ENVIRONMENT == "test"
     else {}
 )
+
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = "redis://redis:6379/0"
+
+BROKER_URL = CELERY_BROKER_URL
+CELERY_TASK_TRACK_STARTED = True
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERYBEAT_SCHEDULE = {
+    "queue_every_five_mins": {
+        "task": "apps.health.tasks.query_every_five_mins",
+        "schedule": crontab(minute=5),
+    },
+}
 
 if ENVIRONMENT == "test":
     DJANGO_TEST_USERNAME = os.getenv("DJANGO_TEST_USERNAME", "test")
@@ -269,6 +289,8 @@ THUMBNAIL_KLEIN = "128x128"
 BESTANDEN_PREFIX = "bestanden"
 
 
+LOG_LEVEL = "DEBUG" if DEBUG else "INFO"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -279,17 +301,27 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "INFO",
+            "level": "DEBUG",
             "class": "logging.StreamHandler",
             "stream": sys.stdout,
+            "formatter": "verbose",
+        },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "/app/uwsgi.log",
             "formatter": "verbose",
         },
     },
     "loggers": {
         "": {
             "handlers": ["console"],
-            "level": "INFO",
+            "level": LOG_LEVEL,
             "propagate": True,
+        },
+        "celery": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
         },
     },
 }
