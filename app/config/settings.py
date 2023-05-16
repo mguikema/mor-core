@@ -65,6 +65,7 @@ INSTALLED_APPS = (
     "apps.locatie",
     "apps.status",
     "apps.aliassen",
+    "apps.applicaties",
 )
 
 
