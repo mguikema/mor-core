@@ -117,7 +117,7 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
 
 class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
-    status = StatusSerializer()
+    status = StatusSerializer(required=False)
 
     class Meta:
         model = MeldingGebeurtenis
