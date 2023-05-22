@@ -14,9 +14,7 @@ from apps.meldingen.models import (
     Melding,
     MeldingContext,
     MeldingGebeurtenis,
-    MeldingGebeurtenisType,
     Signaal,
-    TaakApplicatie,
 )
 from apps.status.serializers import StatusSerializer
 from drf_extra_fields.fields import Base64FileField
@@ -84,22 +82,11 @@ class MelderSerializer(WritableNestedModelSerializer):
         )
 
 
-class TaakApplicatieSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TaakApplicatie
-        fields = "__all__"
-
-
-class MeldingGebeurtenisTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MeldingGebeurtenisType
-        fields = "__all__"
-
-
 class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(required=True)
     gebeurtenis_type = serializers.CharField(required=False)
+    resolutie = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = MeldingGebeurtenis
@@ -108,6 +95,7 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
             "gebeurtenis_type",
             "bijlagen",
             "status",
+            "resolutie",
             "omschrijving_intern",
             "omschrijving_extern",
             "melding",
@@ -175,6 +163,7 @@ class MeldingSerializer(serializers.ModelSerializer):
         model = Melding
         fields = (
             "id",
+            "uuid",
             "aangemaakt_op",
             "aangepast_op",
             "origineel_aangemaakt",
@@ -185,6 +174,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "bijlagen",
             "locaties_voor_melding",
             "status",
+            "resolutie",
             "volgende_statussen",
         )
 
@@ -200,11 +190,23 @@ class MeldingDetailSerializer(MeldingSerializer):
         read_only=True,
     )
     melding_gebeurtenissen = MeldingGebeurtenisSerializer(many=True, read_only=True)
+    taakapplicaties = serializers.SerializerMethodField()
+
+    def get_taakapplicaties(self, obj):
+        from apps.applicaties.models import Taakapplicatie
+
+        self.context.get("request").user.taakapplicatie_voor_gebruiker.all()
+        taakapplicaties = Taakapplicatie.objects.filter(
+            onderwerpen__in=obj.onderwerpen.all()
+        ).distinct()
+
+        return taakapplicaties.values_list("naam", flat=True)
 
     class Meta:
         model = Melding
         fields = (
             "id",
+            "uuid",
             "aangemaakt_op",
             "aangepast_op",
             "origineel_aangemaakt",
@@ -217,6 +219,8 @@ class MeldingDetailSerializer(MeldingSerializer):
             "bijlagen",
             "locaties_voor_melding",
             "status",
+            "resolutie",
             "volgende_statussen",
             "melding_gebeurtenissen",
+            "taakapplicaties",
         )

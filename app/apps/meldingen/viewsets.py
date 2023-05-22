@@ -5,9 +5,7 @@ from apps.meldingen.models import (
     Melding,
     MeldingContext,
     MeldingGebeurtenis,
-    MeldingGebeurtenisType,
     Signaal,
-    TaakApplicatie,
 )
 from apps.meldingen.serializers import (
     BijlageSerializer,
@@ -17,11 +15,10 @@ from apps.meldingen.serializers import (
     MeldingDetailSerializer,
     MeldingGebeurtenisSerializer,
     MeldingGebeurtenisStatusSerializer,
-    MeldingGebeurtenisTypeSerializer,
     MeldingSerializer,
     SignaalSerializer,
-    TaakApplicatieSerializer,
 )
+from apps.taken.serializers import TaakopdrachtSerializer
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -38,20 +35,6 @@ class BijlageViewSet(viewsets.ModelViewSet):
     queryset = Bijlage.objects.all()
 
     serializer_class = BijlageSerializer
-
-
-class TaakApplicatieViewSet(viewsets.ModelViewSet):
-
-    queryset = TaakApplicatie.objects.all()
-
-    serializer_class = TaakApplicatieSerializer
-
-
-class MeldingGebeurtenisTypeViewSet(viewsets.ModelViewSet):
-
-    queryset = MeldingGebeurtenisType.objects.all()
-
-    serializer_class = MeldingGebeurtenisTypeSerializer
 
 
 class MeldingGebeurtenisViewSet(viewsets.ModelViewSet):
@@ -160,6 +143,7 @@ class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     ]
 )
 class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
+    lookup_field = "uuid"
     queryset = (
         Melding.objects.select_related(
             "status",
@@ -206,10 +190,11 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         parameters=None,
     )
     @action(detail=True, methods=["patch"], url_path="status-aanpassen")
-    def status_aanpassen(self, request, pk):
-        data = {"melding": pk}
+    def status_aanpassen(self, request, uuid):
+        melding = self.get_object()
+        data = {"melding": melding.id}
         data.update(request.data)
-        data["status"]["melding"] = pk
+        data["status"]["melding"] = melding.id
         data["gebeurtenis_type"] = MeldingGebeurtenis.GebeurtenisType.STATUS_WIJZIGING
         serializer = MeldingGebeurtenisStatusSerializer(
             data=data,
@@ -239,16 +224,50 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         url_path="gebeurtenis-toevoegen",
         serializer_class=MeldingGebeurtenisSerializer,
     )
-    def gebeurtenis_toevoegen(self, request, pk):
-        data = {"melding": pk}
+    def gebeurtenis_toevoegen(self, request, uuid):
+        melding = self.get_object()
+        data = {"melding": melding.id}
         data.update(request.data)
         serializer = self.serializer_class(
             data=data,
             context={"request": request},
         )
         if serializer.is_valid():
-            Melding.acties.gebeurtenis_toevoegen(serializer, self.get_object())
-            serializer.save()
+            Melding.acties.gebeurtenis_toevoegen(serializer, melding)
+
+            serializer = MeldingDetailSerializer(
+                self.get_object(), context={"request": request}
+            )
+            return Response(serializer.data)
+
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    @extend_schema(
+        description="Taakopdracht voor een melding toevoegen",
+        request=TaakopdrachtSerializer,
+        responses={status.HTTP_200_OK: MeldingDetailSerializer},
+        parameters=None,
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="taakopdracht",
+        serializer_class=TaakopdrachtSerializer,
+    )
+    def taakopdracht_aanmaken(self, request, uuid):
+        melding = self.get_object()
+        data = {"melding": melding.id}
+        data.update(request.data)
+        serializer = self.serializer_class(
+            data=data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            Melding.acties.taakopdracht_aanmaken(serializer, self.get_object())
+
             serializer = MeldingDetailSerializer(
                 self.get_object(), context={"request": request}
             )
