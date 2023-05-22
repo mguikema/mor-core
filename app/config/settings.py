@@ -71,6 +71,8 @@ INSTALLED_APPS = (
     "apps.status",
     "apps.aliassen",
     "apps.applicaties",
+    "apps.notificaties",
+    "apps.taken",
 )
 
 

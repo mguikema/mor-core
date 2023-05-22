@@ -81,34 +81,6 @@ class Bijlage(BasisModel):
         verbose_name_plural = "Bijlagen"
 
 
-class TaakApplicatie(BasisModel):
-    """
-    Representeerd externe applicaite die de afhandling van de melden op zich nemen.
-    """
-
-    naam = models.CharField(
-        max_length=100,
-        default="Taak applicatie",
-    )
-
-
-class MeldingGebeurtenisType(BasisModel):
-    class TypeNaamOpties(models.TextChoices):
-        META_DATA_WIJZIGING = "META_DATA_WIJZIGING", "Meta data wijziging"
-        STATUS_WIJZIGING = "STATUS_WIJZIGING", "Status change"
-
-    type_naam = models.CharField(
-        max_length=50,
-        choices=TypeNaamOpties.choices,
-    )
-    melding_gebeurtenis = models.ForeignKey(
-        to="meldingen.MeldingGebeurtenis",
-        related_name="melding_gebeurtenistypes",
-        on_delete=models.CASCADE,
-    )
-    meta = models.JSONField(default=dict)
-
-
 class MeldingGebeurtenis(BasisModel):
     """
     MeldingGebeurtenissen bouwen de history op van van de melding
@@ -248,6 +220,11 @@ class Melding(MeldingBasis):
     """
     Als er geen taak_applicaties zijn linked aan deze melding, kan b.v. MidOffice deze handmatig toewijzen
     """
+
+    class ResolutieOpties(models.TextChoices):
+        OPGELOST = "opgelost", "Opgelost"
+        NIET_OPGELOST = "niet_opgelost", "Niet opgelost"
+
     omschrijving_kort = models.CharField(max_length=500)
     omschrijving = models.CharField(max_length=5000, null=True, blank=True)
     afgesloten_op = models.DateTimeField(null=True, blank=True)
@@ -259,6 +236,11 @@ class Melding(MeldingBasis):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
+    )
+    resolutie = models.CharField(
+        max_length=50,
+        choices=ResolutieOpties.choices,
+        default=ResolutieOpties.NIET_OPGELOST,
     )
     onderwerpen = models.ManyToManyField(
         to="aliassen.OnderwerpAlias",

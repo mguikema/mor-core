@@ -4,11 +4,9 @@ from apps.meldingen.viewsets import (
     BijlageViewSet,
     MelderViewSet,
     MeldingContextViewSet,
-    MeldingGebeurtenisTypeViewSet,
     MeldingGebeurtenisViewSet,
     MeldingViewSet,
     SignaalViewSet,
-    TaakApplicatieViewSet,
 )
 from django.conf import settings
 from django.contrib import admin

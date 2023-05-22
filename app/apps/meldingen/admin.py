@@ -1,13 +1,10 @@
 from apps.meldingen.models import (
     Bijlage,
-    Bron,
     Melder,
     Melding,
     MeldingContext,
     MeldingGebeurtenis,
-    MeldingGebeurtenisType,
     Signaal,
-    TaakApplicatie,
 )
 from django.contrib import admin
 
@@ -48,12 +45,9 @@ class DefaultAdmin(admin.ModelAdmin):
     pass
 
 
-# admin.site.register(TaakApplicatie, DefaultAdmin)
-# admin.site.register(MeldingGebeurtenisType, DefaultAdmin)
 admin.site.register(MeldingGebeurtenis, DefaultAdmin)
 admin.site.register(Melding, MeldingAdmin)
 admin.site.register(Signaal, SignaalAdmin)
 admin.site.register(Bijlage, DefaultAdmin)
 admin.site.register(Melder, DefaultAdmin)
 admin.site.register(MeldingContext, MeldingContextAdmin)
-# admin.site.register(Bron, DefaultAdmin)

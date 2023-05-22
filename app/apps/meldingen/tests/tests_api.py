@@ -80,7 +80,7 @@ class SignaalApiTest(APITestCase):
 
         client.post(signaal_url, data=self.signaal_data, format="json")
         melding = Melding.objects.first()
-        melding_url = reverse("app:melding-detail", kwargs={"pk": melding.pk})
+        melding_url = reverse("app:melding-detail", kwargs={"uuid": melding.uuid})
         melding_response = client.get(melding_url, format="json")
         unauthenticated_response = unauthenticated_client.get(
             melding_response.json().get("bijlagen", [])[0].get("bestand")
@@ -95,7 +95,7 @@ class SignaalApiTest(APITestCase):
 
         client.post(signaal_url, data=self.signaal_data, format="json")
         melding = Melding.objects.first()
-        melding_url = reverse("app:melding-detail", kwargs={"pk": melding.pk})
+        melding_url = reverse("app:melding-detail", kwargs={"uuid": melding.uuid})
         melding_response = client.get(melding_url, format="json")
         authenticated_response = client.get(
             melding_response.json().get("bijlagen", [])[0].get("bestand")
@@ -107,7 +107,7 @@ class MeldingApiTest(APITestCase):
     def test_get_melding_unauthenticated(self):
         client = get_unauthenticated_client()
         instance = baker.make(Melding)
-        url = reverse("app:melding-detail", kwargs={"pk": instance.pk})
+        url = reverse("app:melding-detail", kwargs={"uuid": instance.uuid})
 
         response = client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -115,14 +115,14 @@ class MeldingApiTest(APITestCase):
     def test_get_melding_authenticated(self):
         client = get_authenticated_client()
         instance = baker.make(Melding)
-        url = reverse("app:melding-detail", kwargs={"pk": instance.pk})
+        url = reverse("app:melding-detail", kwargs={"uuid": instance.uuid})
 
         response = client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_melding_not_found(self):
         client = get_authenticated_client()
-        url = reverse("app:melding-detail", kwargs={"pk": 99})
+        url = reverse("app:melding-detail", kwargs={"uuid": 99})
 
         response = client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
