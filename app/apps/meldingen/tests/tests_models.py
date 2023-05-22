@@ -22,7 +22,9 @@ class SignaalTest(TestCase):
         self.instance = baker.make(Signaal, onderwerpen=[onderwerp_alias.bron_url])
 
     def test_default_status(self):
-        self.assertEqual(self.instance.melding.status.naam, workflow.GEMELD)
+        self.assertEqual(
+            self.instance.melding.status.naam, Status.NaamOpties.OPENSTAAND
+        )
 
     def test_melding_gebeurtenis_aangemaakt(self):
         self.assertEqual(MeldingGebeurtenis.objects.all().count(), 1)
