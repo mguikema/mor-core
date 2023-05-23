@@ -28,6 +28,9 @@ class Bijlage(BasisModel):
     bestand = models.FileField(
         upload_to=get_upload_path, null=False, blank=False, max_length=255
     )
+    afbeelding = models.ImageField(
+        upload_to=get_upload_path, null=True, blank=True, max_length=255
+    )
     afbeelding_verkleind = models.ImageField(
         upload_to=get_upload_path, null=True, blank=True, max_length=255
     )
@@ -56,25 +59,25 @@ class Bijlage(BasisModel):
         image.save(os.path.join(settings.MEDIA_ROOT, new_file_name), "JPEG")
         return new_file_name
 
-    def save(self, *args, **kwargs):
-        if self.pk is None:
-            mt = mimetypes.guess_type(self.bestand.path, strict=True)
-            if exists(self.bestand.path):
-                if mt:
-                    self.mimetype = mt[0]
-                if self.mimetype == "image/heic":
-                    self.bestand = self._heic_to_jpeg(self.bestand)
-                self.is_afbeelding = self._is_afbeelding()
-                if self.is_afbeelding:
-                    im = get_thumbnail(
-                        self.bestand.path,
-                        settings.THUMBNAIL_KLEIN,
-                        # crop="noop",
-                        quality=99,
-                    )
-                    self.afbeelding_verkleind.name = im.name
-
-        super().save(*args, **kwargs)
+    def aanmaken_afbeelding_versies(self):
+        mt = mimetypes.guess_type(self.bestand.path, strict=True)
+        if exists(self.bestand.path):
+            if mt:
+                self.mimetype = mt[0]
+            if self.mimetype == "image/heic":
+                self.bestand = self._heic_to_jpeg(self.bestand)
+            self.is_afbeelding = self._is_afbeelding()
+            if self.is_afbeelding:
+                self.afbeelding_verkleind.name = get_thumbnail(
+                    self.bestand.path,
+                    settings.THUMBNAIL_KLEIN,
+                    quality=99,
+                ).name
+                self.afbeelding.name = get_thumbnail(
+                    self.bestand.path,
+                    settings.THUMBNAIL_STANDAARD,
+                    quality=80,
+                ).name
 
     class Meta:
         verbose_name = "Bijlage"

@@ -287,8 +287,9 @@ TEMPLATES = [
 ]
 
 THUMBNAIL_BACKEND = "utils.images.ThumbnailBackend"
-THUMBNAIL_PREFIX = "afbeeldingen-verkleind"
+THUMBNAIL_PREFIX = "afbeeldingen"
 THUMBNAIL_KLEIN = "128x128"
+THUMBNAIL_STANDAARD = "1480x1480"
 BESTANDEN_PREFIX = "bestanden"
 
 

@@ -7,6 +7,7 @@ from apps.meldingen.managers import (
     taakopdracht_aanmaken,
 )
 from apps.meldingen.models import Bijlage, Melding, Signaal
+from apps.meldingen.tasks import task_aanmaken_afbeelding_versies
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -48,7 +49,8 @@ def add_relation_to_melding(sender, instance, created, **kwargs):
                 "object_id": instance.content_object.melding.id,
             }
         )
-        sender.objects.create(**data)
+        bijlage = sender.objects.create(**data)
+        task_aanmaken_afbeelding_versies.delay(bijlage.id)
 
 
 @receiver(status_aangepast, dispatch_uid="melding_status_aangepast")

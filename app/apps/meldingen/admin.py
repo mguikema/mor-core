@@ -6,7 +6,26 @@ from apps.meldingen.models import (
     MeldingGebeurtenis,
     Signaal,
 )
+from apps.meldingen.tasks import task_aanmaken_afbeelding_versies
 from django.contrib import admin
+
+
+@admin.action(description="Maak afbeelding versies voor selectie")
+def action_aanmaken_afbeelding_versies(modeladmin, request, queryset):
+    for bijlage in queryset.all():
+        task_aanmaken_afbeelding_versies.delay(bijlage.id)
+
+
+class BijlageAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "bestand",
+        "is_afbeelding",
+        "mimetype",
+        "content_object",
+        "afbeelding",
+    )
+    actions = (action_aanmaken_afbeelding_versies,)
 
 
 class SignaalAdmin(admin.ModelAdmin):
@@ -48,6 +67,6 @@ class DefaultAdmin(admin.ModelAdmin):
 admin.site.register(MeldingGebeurtenis, DefaultAdmin)
 admin.site.register(Melding, MeldingAdmin)
 admin.site.register(Signaal, SignaalAdmin)
-admin.site.register(Bijlage, DefaultAdmin)
+admin.site.register(Bijlage, BijlageAdmin)
 admin.site.register(Melder, DefaultAdmin)
 admin.site.register(MeldingContext, MeldingContextAdmin)
