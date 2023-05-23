@@ -36,11 +36,11 @@ class BijlageSerializer(serializers.ModelSerializer):
     """
 
     bestand = DefaultBase64File()
-    bestand_relative_url = serializers.SerializerMethodField()
+    afbeelding_relative_url = serializers.SerializerMethodField()
     afbeelding_verkleind_relative_url = serializers.SerializerMethodField()
 
-    def get_bestand_relative_url(self, obj):
-        return obj.bestand.url if obj.bestand else None
+    def get_afbeelding_relative_url(self, obj):
+        return obj.afbeelding.url if obj.afbeelding else None
 
     def get_afbeelding_verkleind_relative_url(self, obj):
         return obj.afbeelding_verkleind.url if obj.afbeelding_verkleind else None
@@ -50,7 +50,7 @@ class BijlageSerializer(serializers.ModelSerializer):
         fields = (
             "bestand",
             "afbeelding",
-            "afbeelding_verkleind",
+            "afbeelding_relative_url",
             "mimetype",
             "is_afbeelding",
             "bestand_relative_url",
@@ -61,7 +61,7 @@ class BijlageSerializer(serializers.ModelSerializer):
             "afbeelding_verkleind",
             "is_afbeelding",
             "mimetype",
-            "bestand_relative_url",
+            "afbeelding_relative_url",
             "afbeelding_verkleind_relative_url",
         )
 
