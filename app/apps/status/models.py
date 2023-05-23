@@ -32,6 +32,10 @@ class Status(BasisModel):
         return f"{self.naam}({self.pk})"
 
     def volgende_statussen(self):
+        naam_opties = [no[0] for no in Status.NaamOpties.choices]
+        if self.naam not in naam_opties:
+            return naam_opties
+
         match self.naam:
             case Status.NaamOpties.IN_BEHANDELING:
                 return [
