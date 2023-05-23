@@ -63,6 +63,8 @@ services:
         condition: service_started
       redis:
         condition: service_started
+    volumes:
+      - ./media:/media
     env_file:
       - .env.local
     networks:
@@ -79,6 +81,8 @@ services:
         condition: service_started
       redis:
         condition: service_started
+    volumes:
+      - ./media:/media
     env_file:
       - .env.local
     networks:
