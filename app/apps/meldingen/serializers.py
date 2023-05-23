@@ -49,6 +49,7 @@ class BijlageSerializer(serializers.ModelSerializer):
         model = Bijlage
         fields = (
             "bestand",
+            "afbeelding",
             "afbeelding_verkleind",
             "mimetype",
             "is_afbeelding",
@@ -56,6 +57,7 @@ class BijlageSerializer(serializers.ModelSerializer):
             "afbeelding_verkleind_relative_url",
         )
         read_only_fields = (
+            "afbeelding",
             "afbeelding_verkleind",
             "is_afbeelding",
             "mimetype",
