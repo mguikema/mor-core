@@ -1,5 +1,15 @@
-from apps.taken.models import Taakopdracht
+from apps.taken.models import Taakgebeurtenis, Taakopdracht
 from django.contrib import admin
+
+
+class TaakgebeurtenisAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "taakstatus",
+        "aangemaakt_op",
+        "aangepast_op",
+        "taakopdracht",
+    )
 
 
 class TaakopdrachtAdmin(admin.ModelAdmin):
@@ -13,3 +23,4 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Taakopdracht, TaakopdrachtAdmin)
+admin.site.register(Taakgebeurtenis, TaakgebeurtenisAdmin)

@@ -27,8 +27,8 @@ class Taakgebeurtenis(BasisModel):
 
     class Meta:
         ordering = ("-aangemaakt_op",)
-        verbose_name = "Melding gebeurtenis"
-        verbose_name_plural = "Melding gebeurtenissen"
+        verbose_name = "Taakgebeurtenis"
+        verbose_name_plural = "Taakgebeurtenissen"
 
 
 class Taakstatus(BasisModel):
@@ -114,7 +114,6 @@ class Taakopdracht(BasisModel):
         blank=True,
         null=True,
     )
-    # laatst_ontvangen_update = models.DateTimeField()
     additionele_informatie = models.JSONField(default=dict)
 
     taak_url = models.CharField(

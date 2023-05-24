@@ -49,8 +49,10 @@ def add_relation_to_melding(sender, instance, created, **kwargs):
                 "object_id": instance.content_object.melding.id,
             }
         )
-        bijlage = sender.objects.create(**data)
-        task_aanmaken_afbeelding_versies.delay(bijlage.id)
+        sender.objects.create(**data)
+
+    elif created and valid_relation and instance.content_type == mct:
+        task_aanmaken_afbeelding_versies.delay(instance.id)
 
 
 @receiver(status_aangepast, dispatch_uid="melding_status_aangepast")

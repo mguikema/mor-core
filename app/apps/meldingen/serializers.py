@@ -26,6 +26,12 @@ class DefaultBase64File(Base64FileField):
     ALLOWED_TYPES = ["jpg", "jpeg", "png", "rtf", "doc", "docx", "heic"]
 
     def get_file_extension(self, filename, decoded_file):
+        # TODO nadenken over beter upload van bestanden, vooral grote bestanden komen niet heel door
+        # f = magic.Magic(extension=True)
+        # extensions = f.from_buffer(io.BytesIO(decoded_file).read(2048))
+        # print("get_file_extension")
+        # print(extensions)
+        # return extensions.split("/")[0] if extensions != "???" else "jpg"
         kind = filetype.guess(decoded_file)
         return kind.extension
 

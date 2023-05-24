@@ -23,7 +23,7 @@ def get_upload_path_base(filename):
 class ThumbnailBackend(SorlThumbnailBackend):
     def _get_thumbnail_filename(self, source, geometry_string, options):
         filename, _ext = os.path.splitext(os.path.basename(source.name))
-        filename_full = f"{filename}_{geometry_string}{_ext}"
+        filename_full = f"{filename}_{geometry_string}.jpg"
         return os.path.join(
             sorl_settings.THUMBNAIL_PREFIX, get_date_file_path(), filename_full
         )
