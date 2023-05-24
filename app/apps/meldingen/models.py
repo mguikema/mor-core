@@ -46,7 +46,7 @@ class Bijlage(BasisModel):
         return True
 
     def _heic_to_jpeg(self, file_field):
-        heif_file = pyheif.read(file_field)
+        heif_file = pyheif.read(file_field.path)
         image = Image.frombytes(
             heif_file.mode,
             heif_file.size,
@@ -62,20 +62,24 @@ class Bijlage(BasisModel):
     def aanmaken_afbeelding_versies(self):
         mt = mimetypes.guess_type(self.bestand.path, strict=True)
         if exists(self.bestand.path):
+            bestand = self.bestand.path
+            self.is_afbeelding = self._is_afbeelding()
             if mt:
                 self.mimetype = mt[0]
             if self.mimetype == "image/heic":
-                self.bestand = self._heic_to_jpeg(self.bestand)
-            self.is_afbeelding = self._is_afbeelding()
+                bestand = self._heic_to_jpeg(self.bestand)
+                self.is_afbeelding = True
             if self.is_afbeelding:
                 self.afbeelding_verkleind.name = get_thumbnail(
-                    self.bestand.path,
+                    bestand,
                     settings.THUMBNAIL_KLEIN,
+                    format="JPEG",
                     quality=99,
                 ).name
                 self.afbeelding.name = get_thumbnail(
-                    self.bestand.path,
+                    bestand,
                     settings.THUMBNAIL_STANDAARD,
+                    format="JPEG",
                     quality=80,
                 ).name
 

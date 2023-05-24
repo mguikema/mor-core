@@ -165,6 +165,7 @@ class MeldingManager(models.Manager):
 
     def taakopdracht_aanmaken(self, serializer, melding, db="default"):
         from apps.meldingen.models import Melding
+        from apps.taken.models import Taakgebeurtenis, Taakstatus
         from apps.taken.serializers import TaakSerializerExtern
 
         with transaction.atomic():
@@ -194,7 +195,17 @@ class MeldingManager(models.Manager):
                 if taak_aanmaken_response.status_code == 201:
                     taakopdracht = serializer.save()
                     taakopdracht.taak_url = taak_aanmaken_response.json().get("link")
+                    taakstatus_instance = Taakstatus()
+                    taakstatus_instance.save()
+                    taakgebeurtenis_instance = Taakgebeurtenis(
+                        taakopdracht=taakopdracht,
+                        taakstatus=taakstatus_instance,
+                        omschrijving_intern="Taak aangemaakt",
+                    )
+                    taakopdracht.status = taakstatus_instance
                     taakopdracht.save()
+                    taakgebeurtenis_instance.save()
+
                     locked_melding.save()
 
             transaction.on_commit(
