@@ -1,4 +1,5 @@
 import copy
+import logging
 
 from django.contrib.gis.db import models
 from django.contrib.sites.models import Site
@@ -6,6 +7,8 @@ from django.db import OperationalError, transaction
 from django.dispatch import Signal as DjangoSignal
 from django.urls import reverse
 from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
@@ -32,35 +35,31 @@ class MeldingManager(models.Manager):
     def aanmaken(self, signaal, db="default"):
         from apps.aliassen.models import OnderwerpAlias
         from apps.locatie.models import Graf
-        from apps.meldingen.models import Melding, MeldingContext, MeldingGebeurtenis
+        from apps.meldingen.models import Melding, MeldingGebeurtenis
         from apps.status.models import Status
 
         if signaal.melding:
             return signaal.melding
 
-        gevalideerde_onderwerpen = OnderwerpAlias.objects.filter(
-            bron_url__in=signaal.onderwerpen
-        )
+        gevalideerde_onderwerpen = []
+        for onderwerp in signaal.onderwerpen:
+            try:
+                (
+                    onderwerp_alias,
+                    onderwerp_alias_aangemaakt,
+                ) = OnderwerpAlias.objects.get_or_create(bron_url=onderwerp)
+                gevalideerde_onderwerpen.append(onderwerp_alias)
+                logger.debug(f"{onderwerp_alias}: {onderwerp_alias_aangemaakt}")
+            except Exception as e:
+                logger.info(f"{onderwerp} werd niet gevonden: {e}")
+
         if not gevalideerde_onderwerpen:
             raise MeldingManager.OnderwerpenNietValide
 
         with transaction.atomic():
-            try:
-                melding_context = (
-                    MeldingContext.objects.using(db)
-                    .select_for_update(nowait=True)
-                    .filter(onderwerpen__in=gevalideerde_onderwerpen)
-                    .first()
-                )
-            except OperationalError:
-                raise MeldingManager.MeldingContextInGebruik
-
             data = copy.deepcopy(signaal.ruwe_informatie)
             meta_uitgebreid = data.pop("labels", {})
             melding = Melding()
-
-            melding.melding_context = melding_context
-
             status_instance = Status()
             melding.origineel_aangemaakt = signaal.origineel_aangemaakt
             melding.omschrijving_kort = data.get("toelichting", "")[:200]
@@ -73,10 +72,6 @@ class MeldingManager(models.Manager):
             status_instance.save()
             melding.status = status_instance
             melding.save()
-
-            if melding_context:
-                melding_context.veld_waardes_toevoegen(meta_uitgebreid)
-                melding_context.save()
 
             melding_gebeurtenis = MeldingGebeurtenis(
                 **dict(
