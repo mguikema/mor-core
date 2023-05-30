@@ -48,12 +48,13 @@ class Taakapplicatie(BasisModel):
     )
 
     def haal_taaktypes(self):
-        taaktypes_response = self.taaktypes_halen()
-        if taaktypes_response.status_code != 200:
-            logger.info(
-                f"taaktypes voor taakapplicatie {self.naam} konden niet worden gahaalt: {taaktypes_response.status_code}"
-            )
-        self.taaktypes = self.taaktypes_halen().json().get("results", [])
+        if self.basis_url:
+            taaktypes_response = self.taaktypes_halen()
+            if taaktypes_response.status_code != 200:
+                logger.info(
+                    f"taaktypes voor taakapplicatie {self.naam} konden niet worden gahaalt: {taaktypes_response.status_code}"
+                )
+            self.taaktypes = self.taaktypes_halen().json().get("results", [])
 
     class ApplicationAuthResponseException(Exception):
         pass
