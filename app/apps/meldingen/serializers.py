@@ -18,8 +18,23 @@ from apps.meldingen.models import (
 )
 from apps.status.serializers import StatusSerializer
 from drf_extra_fields.fields import Base64FileField
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
+from rest_framework.reverse import reverse
+
+
+class MeldingLinksSerializer(serializers.Serializer):
+    self = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_self(self, obj):
+        return reverse(
+            "v1:melding-detail",
+            kwargs={"uuid": obj.uuid},
+            request=self.context.get("request"),
+        )
 
 
 class DefaultBase64File(Base64FileField):
@@ -158,6 +173,7 @@ class MeldingContextSerializer(serializers.ModelSerializer):
 
 
 class MeldingSerializer(serializers.ModelSerializer):
+    _links = MeldingLinksSerializer(source="*")
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
     status = StatusSerializer()
@@ -170,6 +186,7 @@ class MeldingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Melding
         fields = (
+            "_links",
             "id",
             "uuid",
             "aangemaakt_op",
@@ -188,6 +205,7 @@ class MeldingSerializer(serializers.ModelSerializer):
 
 
 class MeldingDetailSerializer(MeldingSerializer):
+    _links = MeldingLinksSerializer(source="*")
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     onderwerpen = OnderwerpAliasSerializer(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
@@ -213,6 +231,7 @@ class MeldingDetailSerializer(MeldingSerializer):
     class Meta:
         model = Melding
         fields = (
+            "_links",
             "id",
             "uuid",
             "aangemaakt_op",

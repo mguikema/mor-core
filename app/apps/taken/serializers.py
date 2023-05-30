@@ -15,59 +15,48 @@ from apps.meldingen.models import (
     Signaal,
 )
 from apps.taken.models import Taakopdracht
-from django.core.exceptions import ValidationError
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
+from rest_framework.reverse import reverse
+
+
+class TaakopdrachtLinksSerializer(serializers.Serializer):
+    taakapplicatie = serializers.SerializerMethodField()
+    melding = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_taakapplicatie(self, obj):
+        return reverse(
+            "v1:taakapplicatie-detail",
+            kwargs={"uuid": obj.taakapplicatie.uuid},
+            request=self.context.get("request"),
+        )
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_melding(self, obj):
+        return reverse(
+            "v1:melding-detail",
+            kwargs={"uuid": obj.melding.uuid},
+            request=self.context.get("request"),
+        )
 
 
 class TaakopdrachtSerializer(serializers.ModelSerializer):
+    _links = TaakopdrachtLinksSerializer(source="*", read_only=True)
     taaktype = serializers.URLField()
 
     class Meta:
         model = Taakopdracht
         fields = (
+            "_links",
             "taaktype",
             "titel",
             "bericht",
             "additionele_informatie",
             "status",
-            "taakapplicatie",
-            "melding",
         )
-        read_only_fields = ("status",)
-
-    def to_internal_value(self, data):
-        taakapplicatie = None
-        try:
-            taakapplicatie = (
-                self.context.get("request")
-                .user.taakapplicatie_voor_gebruiker.all()
-                .first()
-            )
-        except Exception:
-            raise Exception("Er is geen taakapplicatie gedefinieerd voor de gebruiker")
-        data.update(
-            {
-                "taakapplicatie": taakapplicatie.id,
-            }
+        read_only_fields = (
+            "_links",
+            "status",
         )
-        return super().to_internal_value(data)
-
-    def validate(self, attrs):
-        validated_attrs = super().validate(attrs)
-        errors = {}
-
-        if errors:
-            raise ValidationError(errors)
-
-        return validated_attrs
-
-    def create(self, validated_data):
-        return Taakopdracht.objects.create(**validated_data)
-
-
-class TaakSerializerExtern(serializers.Serializer):
-    taaktype = serializers.URLField()
-    melding = serializers.URLField()
-    titel = serializers.CharField()
-    bericht = serializers.CharField(required=False)
-    additionele_informatie = serializers.JSONField(required=False)

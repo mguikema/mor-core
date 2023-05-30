@@ -5,6 +5,7 @@ from django.contrib import admin
 class TaakgebeurtenisAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "uuid",
         "taakstatus",
         "aangemaakt_op",
         "aangepast_op",
@@ -15,6 +16,7 @@ class TaakgebeurtenisAdmin(admin.ModelAdmin):
 class TaakopdrachtAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "uuid",
         "titel",
         "aangemaakt_op",
         "aangepast_op",
