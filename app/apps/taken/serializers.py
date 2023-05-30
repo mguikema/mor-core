@@ -14,7 +14,7 @@ from apps.meldingen.models import (
     MeldingGebeurtenis,
     Signaal,
 )
-from apps.taken.models import Taakopdracht
+from apps.taken.models import Taakopdracht, Taakstatus
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
@@ -42,21 +42,33 @@ class TaakopdrachtLinksSerializer(serializers.Serializer):
         )
 
 
+class TaakstatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Taakstatus
+        fields = ("naam",)
+        read_only_fields = ("naam",)
+
+
 class TaakopdrachtSerializer(serializers.ModelSerializer):
     _links = TaakopdrachtLinksSerializer(source="*", read_only=True)
     taaktype = serializers.URLField()
+    status = TaakstatusSerializer()
 
     class Meta:
         model = Taakopdracht
         fields = (
             "_links",
+            "uuid",
             "taaktype",
             "titel",
             "bericht",
             "additionele_informatie",
             "status",
+            "melding",
         )
         read_only_fields = (
             "_links",
+            "uuid",
             "status",
+            "melding",
         )

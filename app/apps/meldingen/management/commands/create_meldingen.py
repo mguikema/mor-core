@@ -156,12 +156,12 @@ class Command(BaseCommand):
             }
             begraafplaats_choices.pop("", None)
             d["onderwerpen"] = [
-                f"{base_url}/v1/onderwerp/{slugify(onderwerpen_choices.get(random.choice(list(onderwerpen_choices.keys()))))}/"
+                f"{base_url}/api/v1/onderwerp/{slugify(onderwerpen_choices.get(random.choice(list(onderwerpen_choices.keys()))))}/"
             ]
             d["onderwerpen"] = (
                 d["onderwerpen"]
                 + [
-                    f"{base_url}/v1/onderwerp/{slugify(onderwerpen_choices.get(random.choice(list(onderwerpen_choices.keys()))))}/"
+                    f"{base_url}/api/v1/onderwerp/{slugify(onderwerpen_choices.get(random.choice(list(onderwerpen_choices.keys()))))}/"
                 ]
                 if random.choice([0, 0, 0, 1])
                 else d["onderwerpen"]
@@ -210,7 +210,7 @@ class Command(BaseCommand):
         for i in range(0, int(aantal)):
             d = randomize(data)
             requests.post(
-                f"{base_url}/v1/signaal/",
+                f"{base_url}/api/v1/signaal/",
                 json=d,
                 headers=headers,
             )
