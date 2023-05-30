@@ -1,11 +1,11 @@
 import copy
 import logging
+from urllib.parse import urlparse
 
+from apps.applicaties.models import Taakapplicatie
 from django.contrib.gis.db import models
-from django.contrib.sites.models import Site
 from django.db import OperationalError, transaction
 from django.dispatch import Signal as DjangoSignal
-from django.urls import reverse
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -158,10 +158,9 @@ class MeldingManager(models.Manager):
                 )
             )
 
-    def taakopdracht_aanmaken(self, serializer, melding, db="default"):
+    def taakopdracht_aanmaken(self, serializer, melding, request, db="default"):
         from apps.meldingen.models import Melding
         from apps.taken.models import Taakgebeurtenis, Taakstatus
-        from apps.taken.serializers import TaakSerializerExtern
 
         with transaction.atomic():
             try:
@@ -175,34 +174,47 @@ class MeldingManager(models.Manager):
 
             taak_data = {}
             taak_data.update(serializer.validated_data)
-            taak_data.update(
-                {
-                    "melding": f'{Site.objects.get_current().domain}{reverse("app:melding-detail", kwargs={"uuid": melding.uuid})}',
-                }
+            url_o = urlparse(taak_data.get("taaktype", ""))
+            taakapplicatie = Taakapplicatie.objects.filter(
+                basis_url=f"{url_o.scheme}://{url_o.netloc}"
+            ).first()
+
+            taakopdracht = serializer.save(
+                taakapplicatie=taakapplicatie,
+                melding=melding,
             )
+            taakstatus_instance = Taakstatus(
+                taakopdracht=taakopdracht,
+            )
+            taakstatus_instance.save()
 
-            taak_serializer_extern = TaakSerializerExtern(data=taak_data)
-            taakopdracht = None
-            if taak_serializer_extern.is_valid():
-                taak_aanmaken_response = serializer.validated_data.get(
-                    "taakapplicatie"
-                ).taak_aanmaken(taak_serializer_extern.validated_data)
-                if taak_aanmaken_response.status_code == 201:
-                    taakopdracht = serializer.save()
-                    taakopdracht.taak_url = taak_aanmaken_response.json().get("link")
-                    taakstatus_instance = Taakstatus()
-                    taakstatus_instance.save()
-                    taakgebeurtenis_instance = Taakgebeurtenis(
-                        taakopdracht=taakopdracht,
-                        taakstatus=taakstatus_instance,
-                        omschrijving_intern="Taak aangemaakt",
-                    )
-                    taakopdracht.status = taakstatus_instance
-                    taakopdracht.save()
-                    taakgebeurtenis_instance.save()
+            taakopdracht.status = taakstatus_instance
+            taakopdracht.save()
 
-                    locked_melding.save()
+            taakgebeurtenis_instance = Taakgebeurtenis(
+                taakopdracht=taakopdracht,
+                taakstatus=taakstatus_instance,
+                omschrijving_intern="Taak aangemaakt",
+            )
+            taakgebeurtenis_instance.save()
 
+            taakapplicatie_data = serializer.__class__(
+                taakopdracht, context={"request": request}
+            ).data
+            taakapplicatie_data["melding"] = taakapplicatie_data.get("_links", {}).get(
+                "melding"
+            )
+            taak_aanmaken_response = taakapplicatie.taak_aanmaken(taakapplicatie_data)
+
+            if taak_aanmaken_response.status_code == 201:
+                taakopdracht.taak_url = taak_aanmaken_response.json().get("link")
+                taakopdracht.save()
+            else:
+                raise Exception(
+                    f"De taak kon niet worden aangemaakt in de taakapplicatie: {taak_aanmaken_response.status_code}"
+                )
+
+            locked_melding.save()
             transaction.on_commit(
                 lambda: taakopdracht_aanmaken.send_robust(
                     sender=self.__class__,
@@ -210,3 +222,5 @@ class MeldingManager(models.Manager):
                     melding=locked_melding,
                 )
             )
+
+        return taakopdracht

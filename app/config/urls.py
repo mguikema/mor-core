@@ -1,3 +1,4 @@
+from apps.applicaties.viewsets import TaakapplicatieViewSet
 from apps.classificatie.viewsets import OnderwerpViewSet
 from apps.meldingen.views import serve_protected_media
 from apps.meldingen.viewsets import (
@@ -25,6 +26,7 @@ router.register(r"signaal", SignaalViewSet, basename="signaal")
 router.register(r"melding-context", MeldingContextViewSet, basename="melding_context")
 router.register(r"melding", MeldingViewSet, basename="melding")
 router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
+router.register(r"taakapplicatie", TaakapplicatieViewSet, basename="taakapplicatie")
 
 urlpatterns = [
     path("v1/", include((router.urls, "app"), namespace="v1")),

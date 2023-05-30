@@ -39,6 +39,7 @@ class MeldingContextAdmin(admin.ModelAdmin):
 class MeldingAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "uuid",
         "status_naam",
         "onderwerp_naam",
         "aangemaakt_op",

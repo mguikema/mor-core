@@ -248,7 +248,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     @extend_schema(
         description="Taakopdracht voor een melding toevoegen",
         request=TaakopdrachtSerializer,
-        responses={status.HTTP_200_OK: MeldingDetailSerializer},
+        responses={status.HTTP_200_OK: TaakopdrachtSerializer},
         parameters=None,
     )
     @action(
@@ -259,17 +259,17 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     )
     def taakopdracht_aanmaken(self, request, uuid):
         melding = self.get_object()
-        data = {"melding": melding.id}
-        data.update(request.data)
         serializer = self.serializer_class(
-            data=data,
+            data=request.data,
             context={"request": request},
         )
         if serializer.is_valid():
-            Melding.acties.taakopdracht_aanmaken(serializer, self.get_object())
+            taakopdracht = Melding.acties.taakopdracht_aanmaken(
+                serializer, melding, request
+            )
 
-            serializer = MeldingDetailSerializer(
-                self.get_object(), context={"request": request}
+            serializer = TaakopdrachtSerializer(
+                taakopdracht, context={"request": request}
             )
             return Response(serializer.data)
 
