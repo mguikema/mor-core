@@ -62,7 +62,8 @@ class Taakapplicatie(BasisModel):
         return (5, 10)
 
     def _get_token(self):
-        return self.gebruiker.auth_token.key
+        # TODO haal token van taakapplicatie token endpoint
+        return "token"
 
     def _get_url(self, url):
         return f"{self.basis_url}{url}"
@@ -85,7 +86,7 @@ class Taakapplicatie(BasisModel):
         return response.json()
 
     def taak_aanmaken(self, data):
-        return self._do_request("/v1/taak/", method="post", data=data)
+        return self._do_request("/api/v1/taak/", method="post", data=data)
 
     def taaktypes_halen(self):
-        return self._do_request("/v1/taaktype/", method="get")
+        return self._do_request("/api/v1/taaktype/", method="get")

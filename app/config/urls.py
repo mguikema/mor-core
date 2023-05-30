@@ -29,7 +29,7 @@ router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 router.register(r"taakapplicatie", TaakapplicatieViewSet, basename="taakapplicatie")
 
 urlpatterns = [
-    path("v1/", include((router.urls, "app"), namespace="v1")),
+    path("api/v1/", include((router.urls, "app"), namespace="v1")),
     path("api-token-auth/", views.obtain_auth_token),
     path("health/", include("health_check.urls")),
     path("db-schema/", include((schema_urls, "db-schema"))),

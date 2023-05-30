@@ -207,7 +207,9 @@ class MeldingManager(models.Manager):
             taak_aanmaken_response = taakapplicatie.taak_aanmaken(taakapplicatie_data)
 
             if taak_aanmaken_response.status_code == 201:
-                taakopdracht.taak_url = taak_aanmaken_response.json().get("link")
+                taakopdracht.taak_url = (
+                    taak_aanmaken_response.json().get("_links", {}).get("self")
+                )
                 taakopdracht.save()
             else:
                 raise Exception(

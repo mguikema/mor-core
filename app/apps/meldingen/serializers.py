@@ -17,6 +17,7 @@ from apps.meldingen.models import (
     Signaal,
 )
 from apps.status.serializers import StatusSerializer
+from apps.taken.serializers import TaakopdrachtSerializer
 from drf_extra_fields.fields import Base64FileField
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
@@ -69,6 +70,7 @@ class BijlageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bijlage
         fields = (
+            "uuid",
             "bestand",
             "afbeelding",
             "afbeelding_verkleind",
@@ -78,6 +80,7 @@ class BijlageSerializer(serializers.ModelSerializer):
             "afbeelding_verkleind_relative_url",
         )
         read_only_fields = (
+            "uuid",
             "afbeelding",
             "afbeelding_verkleind",
             "is_afbeelding",
@@ -216,17 +219,7 @@ class MeldingDetailSerializer(MeldingSerializer):
         read_only=True,
     )
     melding_gebeurtenissen = MeldingGebeurtenisSerializer(many=True, read_only=True)
-    taakapplicaties = serializers.SerializerMethodField()
-
-    def get_taakapplicaties(self, obj):
-        from apps.applicaties.models import Taakapplicatie
-
-        self.context.get("request").user.taakapplicatie_voor_gebruiker.all()
-        taakapplicaties = Taakapplicatie.objects.filter(
-            onderwerpen__in=obj.onderwerpen.all()
-        ).distinct()
-
-        return taakapplicaties.values_list("naam", flat=True)
+    taakopdrachten_voor_melding = TaakopdrachtSerializer(many=True, read_only=True)
 
     class Meta:
         model = Melding
@@ -249,5 +242,5 @@ class MeldingDetailSerializer(MeldingSerializer):
             "resolutie",
             "volgende_statussen",
             "melding_gebeurtenissen",
-            "taakapplicaties",
+            "taakopdrachten_voor_melding",
         )
