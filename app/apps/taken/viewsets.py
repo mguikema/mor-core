@@ -1,0 +1,54 @@
+from apps.meldingen.models import Melding
+from apps.taken.models import Taakopdracht
+from apps.taken.serializers import (
+    TaakgebeurtenisStatusSerializer,
+    TaakopdrachtSerializer,
+)
+from drf_spectacular.utils import extend_schema
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+
+class TaakopdrachtViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Taakopdracht
+    """
+
+    lookup_field = "uuid"
+    queryset = Taakopdracht.objects.all()
+
+    serializer_class = TaakopdrachtSerializer
+
+    @extend_schema(
+        description="Verander de status van een taak",
+        request=TaakgebeurtenisStatusSerializer,
+        responses={status.HTTP_200_OK: TaakopdrachtSerializer},
+        parameters=None,
+    )
+    @action(detail=True, methods=["patch"], url_path="status-aanpassen")
+    def status_aanpassen(self, request, uuid):
+        print("TaakopdrachtViewSet: status_aanpassen")
+        taakopdracht = self.get_object()
+        data = {}
+        data.update(request.data)
+        data["taakstatus"]["taakopdracht"] = taakopdracht.id
+        print(data)
+        serializer = TaakgebeurtenisStatusSerializer(
+            data=data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            print("VALID")
+            Melding.acties.taakopdracht_status_aanpassen(
+                serializer, taakopdracht, request=request
+            )
+
+            serializer = TaakopdrachtSerializer(
+                self.get_object(), context={"request": request}
+            )
+            return Response(serializer.data)
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

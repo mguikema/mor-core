@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse
 
 import requests
 from django.contrib.auth import get_user_model
@@ -57,7 +58,10 @@ class Taakapplicatie(BasisModel):
             self.taaktypes = self.taaktypes_halen().json().get("results", [])
 
     class ApplicationAuthResponseException(Exception):
-        pass
+        ...
+
+    class ApplicatieBasisUrlFout(Exception):
+        ...
 
     def _get_timeout(self):
         return (5, 10)
@@ -67,7 +71,14 @@ class Taakapplicatie(BasisModel):
         return "token"
 
     def _get_url(self, url):
-        return f"{self.basis_url}{url}"
+        url_o = urlparse(url)
+        if not url_o.scheme and not url_o.netloc:
+            return f"{self.basis_url}{url}"
+        if f"{url_o.scheme}://{url_o.netloc}" == self.basis_url:
+            return url
+        raise Taakapplicatie.ApplicatieBasisUrlFout(
+            f"url: {url}, basis_url: {self.basis_url}"
+        )
 
     def _get_headers(self):
         headers = {"Authorization": f"Token {self._get_token()}"}
@@ -91,3 +102,6 @@ class Taakapplicatie(BasisModel):
 
     def taaktypes_halen(self):
         return self._do_request("/api/v1/taaktype/", method="get")
+
+    def taak_status_aanpassen(self, url, data):
+        return self._do_request(url, method="patch", data=data)

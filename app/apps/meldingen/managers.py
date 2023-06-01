@@ -7,6 +7,7 @@ from django.contrib.gis.db import models
 from django.db import OperationalError, transaction
 from django.dispatch import Signal as DjangoSignal
 from django.utils import timezone
+from rest_framework.reverse import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +160,8 @@ class MeldingManager(models.Manager):
             )
 
     def taakopdracht_aanmaken(self, serializer, melding, request, db="default"):
-        from apps.meldingen.models import Melding
+        from apps.meldingen.models import Melding, MeldingGebeurtenis
+        from apps.status.models import Status
         from apps.taken.models import Taakgebeurtenis, Taakstatus
 
         with transaction.atomic():
@@ -179,6 +181,10 @@ class MeldingManager(models.Manager):
                 basis_url=f"{url_o.scheme}://{url_o.netloc}"
             ).first()
 
+            if not taakapplicatie:
+                raise Exception(
+                    f"De taakapplicatie kon niet worden geonden op basis van dit taaktype: {taak_data.get('taaktype', '')}"
+                )
             taakopdracht = serializer.save(
                 taakapplicatie=taakapplicatie,
                 melding=melding,
@@ -204,6 +210,11 @@ class MeldingManager(models.Manager):
             taakapplicatie_data["melding"] = taakapplicatie_data.get("_links", {}).get(
                 "melding"
             )
+            taakapplicatie_data["taakopdracht"] = reverse(
+                "v1:taakopdracht-detail",
+                kwargs={"uuid": taakopdracht.uuid},
+                request=request,
+            )
             taak_aanmaken_response = taakapplicatie.taak_aanmaken(taakapplicatie_data)
 
             if taak_aanmaken_response.status_code == 201:
@@ -216,11 +227,119 @@ class MeldingManager(models.Manager):
                     f"De taak kon niet worden aangemaakt in de taakapplicatie: {taak_aanmaken_response.status_code}"
                 )
 
+            melding_gebeurtenis = MeldingGebeurtenis(
+                melding=locked_melding,
+                gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.TAAKOPDRACHT_AANGEMAAKT,
+                taakopdracht=taakopdracht,
+            )
+
+            # zet status van de melding naar in_behandeling als dit niet de huidige status is
+            if locked_melding.status.naam != Status.NaamOpties.IN_BEHANDELING:
+                status_instance = Status(naam=Status.NaamOpties.IN_BEHANDELING)
+                status_instance.melding = locked_melding
+                status_instance.save()
+                locked_melding.status = status_instance
+                melding_gebeurtenis.status = status_instance
+                melding_gebeurtenis.gebeurtenis_type = (
+                    MeldingGebeurtenis.GebeurtenisType.STATUS_WIJZIGING
+                )
+
+            melding_gebeurtenis.save()
             locked_melding.save()
             transaction.on_commit(
                 lambda: taakopdracht_aanmaken.send_robust(
                     sender=self.__class__,
                     taakopdracht=taakopdracht,
+                    melding=locked_melding,
+                )
+            )
+
+        return taakopdracht
+
+    def taakopdracht_status_aanpassen(
+        self, serializer, taakopdracht, request, db="default"
+    ):
+        from apps.meldingen.models import Melding, MeldingGebeurtenis
+        from apps.status.models import Status
+        from apps.taken.models import Taakopdracht
+
+        with transaction.atomic():
+            try:
+                locked_melding = (
+                    Melding.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=taakopdracht.melding.pk)
+                )
+                locked_taakopdracht = (
+                    Taakopdracht.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=taakopdracht.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.MeldingInGebruik
+
+            resolutie = serializer.validated_data.pop("resolutie", None)
+            taakgebeurtenis = serializer.save(
+                taakopdracht=locked_taakopdracht,
+            )
+
+            locked_taakopdracht.status = taakgebeurtenis.taakstatus
+
+            if not locked_taakopdracht.status.volgende_statussen():
+                locked_melding.afgesloten_op = timezone.now().isoformat()
+                if resolutie in [ro[0] for ro in Taakopdracht.ResolutieOpties.choices]:
+                    locked_taakopdracht.resolutie = resolutie
+
+            taak_status_aanpassen_data = {
+                "taakstatus": {"naam": taakgebeurtenis.taakstatus.naam},
+                "bijlagen": [
+                    reverse(
+                        "v1:bijlage-detail",
+                        kwargs={"uuid": bijlage.uuid},
+                        request=request,
+                    )
+                    for bijlage in taakgebeurtenis.bijlagen.all()
+                ],
+                "resolutie": resolutie,
+                "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
+            }
+            taak_status_aanpassen_response = (
+                locked_taakopdracht.taakapplicatie.taak_status_aanpassen(
+                    f"{locked_taakopdracht.taak_url}status-aanpassen/",
+                    data=taak_status_aanpassen_data,
+                )
+            )
+
+            if taak_status_aanpassen_response.status_code != 200:
+                raise Exception(
+                    f"De taakstatus kon niet worden aangepast: {locked_taakopdracht.taak_url}status-aanpassen/"
+                )
+
+            melding_gebeurtenis = MeldingGebeurtenis(
+                melding=locked_melding,
+                gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING,
+                taakopdracht=locked_taakopdracht,
+            )
+
+            # zet status van de melding naar in_behandeling als dit niet de huidige status is
+            if not locked_melding.actieve_taakopdrachten():
+                status_instance = Status(naam=Status.NaamOpties.CONTROLE)
+                status_instance.melding = locked_melding
+                status_instance.save()
+                locked_melding.status = status_instance
+                melding_gebeurtenis.status = status_instance
+                melding_gebeurtenis.gebeurtenis_type = (
+                    MeldingGebeurtenis.GebeurtenisType.STATUS_WIJZIGING
+                )
+
+            melding_gebeurtenis.save()
+
+            locked_melding.save()
+            locked_taakopdracht.save()
+            transaction.on_commit(
+                lambda: taakopdracht_aanmaken.send_robust(
+                    sender=self.__class__,
+                    taakopdracht=locked_taakopdracht,
                     melding=locked_melding,
                 )
             )

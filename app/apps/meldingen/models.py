@@ -95,11 +95,16 @@ class MeldingGebeurtenis(BasisModel):
 
     class GebeurtenisType(models.TextChoices):
         STANDAARD = "standaard", "Standaard"
-        STATUS_WIJZIGING = "status_verandering", "Status verandering"
+        STATUS_WIJZIGING = "status_wijziging", "Status wijziging"
         MELDING_AANGEMAAKT = "melding_aangemaakt", "Melding aangemaakt"
+        TAAKOPDRACHT_AANGEMAAKT = "taakopdracht_aangemaakt", "Taakopdracht aangemaakt"
+        TAAKOPDRACHT_STATUS_WIJZIGING = (
+            "taakopdracht_status_wijziging",
+            "Taakopdracht status wijziging",
+        )
 
     gebeurtenis_type = models.CharField(
-        max_length=20,
+        max_length=40,
         choices=GebeurtenisType.choices,
         default=GebeurtenisType.STANDAARD,
     )
@@ -118,6 +123,13 @@ class MeldingGebeurtenis(BasisModel):
         to="meldingen.Melding",
         related_name="melding_gebeurtenissen",
         on_delete=models.CASCADE,
+    )
+    taakopdracht = models.ForeignKey(
+        to="taken.Taakopdracht",
+        related_name="taakopdrachten_voor_meldinggebeurtenissen",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
 
     class Meta:
@@ -264,6 +276,9 @@ class Melding(MeldingBasis):
 
     objects = MeldingQuerySet.as_manager()
     acties = MeldingManager()
+
+    def actieve_taakopdrachten(self):
+        return self.taakopdrachten_voor_melding.exclude(status__naam="voltooid")
 
     class Meta:
         verbose_name = "Melding"
