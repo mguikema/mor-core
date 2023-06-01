@@ -1,7 +1,6 @@
 from apps.meldingen.models import Bijlage
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
-from django.core.exceptions import ValidationError
 from utils.models import BasisModel
 
 
@@ -51,28 +50,26 @@ class Taakstatus(BasisModel):
     class Meta:
         ordering = ("-aangemaakt_op",)
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        return super().save(*args, **kwargs)
-
     def __str__(self) -> str:
         return f"{self.naam}({self.pk})"
 
-    def clean(self):
-        errors = {}
-        huidige_status = (
-            self.taakopdracht.status.naam if self.taakopdracht.status else ""
-        )
-        nieuwe_status = self.naam
+    def volgende_statussen(self):
+        naam_opties = [no[0] for no in Taakstatus.NaamOpties.choices]
+        if self.naam not in naam_opties:
+            return naam_opties
 
-        if nieuwe_status == huidige_status:
-            error_msg = "Status verandering niet toegestaan: van `{from_state}` naar `{to_state}`.".format(
-                from_state=huidige_status, to_state=nieuwe_status
-            )
-            errors["taakstatus"] = ValidationError(error_msg, code="invalid")
-
-        if errors:
-            raise ValidationError(errors)
+        match self.naam:
+            case Taakstatus.NaamOpties.NIEUW:
+                return [
+                    Taakstatus.NaamOpties.BEZIG,
+                    Taakstatus.NaamOpties.VOLTOOID,
+                ]
+            case Taakstatus.NaamOpties.BEZIG:
+                return [
+                    Taakstatus.NaamOpties.VOLTOOID,
+                ]
+            case _:
+                return []
 
     class TaakStatusVeranderingNietToegestaan(Exception):
         pass
@@ -86,6 +83,11 @@ class Taakopdracht(BasisModel):
     Zo worden taakopdrachten aan taken gelinked.
     """
 
+    class ResolutieOpties(models.TextChoices):
+        OPGELOST = "opgelost", "Opgelost"
+        NIET_OPGELOST = "niet_opgelost", "Niet opgelost"
+
+    afgesloten_op = models.DateTimeField(null=True, blank=True)
     melding = models.ForeignKey(
         to="meldingen.Melding",
         related_name="taakopdrachten_voor_melding",
@@ -113,6 +115,11 @@ class Taakopdracht(BasisModel):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
+    )
+    resolutie = models.CharField(
+        max_length=50,
+        choices=ResolutieOpties.choices,
+        default=ResolutieOpties.NIET_OPGELOST,
     )
     additionele_informatie = models.JSONField(default=dict)
 

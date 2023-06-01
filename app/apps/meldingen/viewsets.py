@@ -7,9 +7,7 @@ from apps.meldingen.models import (
     MeldingGebeurtenis,
     Signaal,
 )
-from apps.meldingen.serializers import (
-    BijlageSerializer,
-    GeometrieSerializer,
+from apps.meldingen.serializers import (  # BijlageSerializer,
     MelderSerializer,
     MeldingContextSerializer,
     MeldingDetailSerializer,
@@ -18,7 +16,7 @@ from apps.meldingen.serializers import (
     MeldingSerializer,
     SignaalSerializer,
 )
-from apps.taken.serializers import TaakopdrachtSerializer
+from apps.taken.serializers import BijlageSerializer, TaakopdrachtSerializer
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema

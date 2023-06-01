@@ -1,5 +1,5 @@
-import filetype
 from apps.aliassen.serializers import OnderwerpAliasSerializer
+from apps.bijlagen.serializers import BijlageSerializer
 from apps.locatie.serializers import (
     AdresSerializer,
     GeometrieSerializer,
@@ -18,7 +18,6 @@ from apps.meldingen.models import (
 )
 from apps.status.serializers import StatusSerializer
 from apps.taken.serializers import TaakopdrachtSerializer
-from drf_extra_fields.fields import Base64FileField
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from drf_writable_nested.serializers import WritableNestedModelSerializer
@@ -35,58 +34,6 @@ class MeldingLinksSerializer(serializers.Serializer):
             "v1:melding-detail",
             kwargs={"uuid": obj.uuid},
             request=self.context.get("request"),
-        )
-
-
-class DefaultBase64File(Base64FileField):
-    ALLOWED_TYPES = ["jpg", "jpeg", "png", "rtf", "doc", "docx", "heic"]
-
-    def get_file_extension(self, filename, decoded_file):
-        # TODO nadenken over beter upload van bestanden, vooral grote bestanden komen niet heel door
-        # f = magic.Magic(extension=True)
-        # extensions = f.from_buffer(io.BytesIO(decoded_file).read(2048))
-        # print("get_file_extension")
-        # print(extensions)
-        # return extensions.split("/")[0] if extensions != "???" else "jpg"
-        kind = filetype.guess(decoded_file)
-        return kind.extension
-
-
-class BijlageSerializer(serializers.ModelSerializer):
-    """
-    Bijlage comment van serializer
-    """
-
-    bestand = DefaultBase64File()
-    afbeelding_relative_url = serializers.SerializerMethodField()
-    afbeelding_verkleind_relative_url = serializers.SerializerMethodField()
-
-    def get_afbeelding_relative_url(self, obj):
-        return obj.afbeelding.url if obj.afbeelding else None
-
-    def get_afbeelding_verkleind_relative_url(self, obj):
-        return obj.afbeelding_verkleind.url if obj.afbeelding_verkleind else None
-
-    class Meta:
-        model = Bijlage
-        fields = (
-            "uuid",
-            "bestand",
-            "afbeelding",
-            "afbeelding_verkleind",
-            "mimetype",
-            "is_afbeelding",
-            "afbeelding_relative_url",
-            "afbeelding_verkleind_relative_url",
-        )
-        read_only_fields = (
-            "uuid",
-            "afbeelding",
-            "afbeelding_verkleind",
-            "is_afbeelding",
-            "mimetype",
-            "afbeelding_relative_url",
-            "afbeelding_verkleind_relative_url",
         )
 
 
@@ -132,6 +79,7 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
 class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(required=False)
+    taakopdracht = TaakopdrachtSerializer()
 
     class Meta:
         model = MeldingGebeurtenis
@@ -143,11 +91,13 @@ class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
             "omschrijving_intern",
             "omschrijving_extern",
             "melding",
+            "taakopdracht",
         )
         read_only_fields = (
             "aangemaakt_op",
             "gebeurtenis_type",
             "status",
+            "taakopdracht",
         )
         validators = []
 
@@ -219,7 +169,9 @@ class MeldingDetailSerializer(MeldingSerializer):
         read_only=True,
     )
     melding_gebeurtenissen = MeldingGebeurtenisSerializer(many=True, read_only=True)
-    taakopdrachten_voor_melding = TaakopdrachtSerializer(many=True, read_only=True)
+    taakopdrachten_voor_melding = TaakopdrachtSerializer(
+        source="actieve_taakopdrachten", many=True, read_only=True
+    )
 
     class Meta:
         model = Melding
