@@ -8,6 +8,7 @@ class BijlageViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     Bijlage viewset
     """
 
+    lookup_field = "uuid"
     queryset = Bijlage.objects.all()
 
     serializer_class = BijlageSerializer

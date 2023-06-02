@@ -18,6 +18,50 @@ class TaakstatusSerializer(serializers.ModelSerializer):
         # read_only_fields = ("taakopdracht",)
 
 
+class TaakgebeurtenisLinksSerializer(serializers.Serializer):
+    self = serializers.SerializerMethodField()
+    taakopdracht = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_self(self, obj):
+        return reverse(
+            "v1:taakgebeurtenis-detail",
+            kwargs={"uuid": obj.uuid},
+            request=self.context.get("request"),
+        )
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_taakopdracht(self, obj):
+        return reverse(
+            "v1:taakopdracht-detail",
+            kwargs={"uuid": obj.taakopdracht.uuid},
+            request=self.context.get("request"),
+        )
+
+
+class TaakgebeurtenisSerializer(serializers.ModelSerializer):
+    _links = TaakgebeurtenisLinksSerializer(source="*", read_only=True)
+    bijlagen = BijlageSerializer(many=True, required=False)
+    taakstatus = TaakstatusSerializer(required=False)
+
+    class Meta:
+        model = Taakgebeurtenis
+        fields = (
+            "_links",
+            "aangemaakt_op",
+            "bijlagen",
+            "taakstatus",
+            "omschrijving_intern",
+        )
+        read_only_fields = (
+            "_links",
+            "aangemaakt_op",
+            "bijlagen",
+            "taakstatus",
+            "omschrijving_intern",
+        )
+
+
 class TaakgebeurtenisStatusSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     taakstatus = TaakstatusSerializer(required=True)
@@ -67,6 +111,9 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
     _links = TaakopdrachtLinksSerializer(source="*", read_only=True)
     taaktype = serializers.URLField()
     status = TaakstatusSerializer(read_only=True)
+    taakgebeurtenissen_voor_taakopdracht = TaakgebeurtenisSerializer(
+        many=True, read_only=True
+    )
 
     class Meta:
         model = Taakopdracht
@@ -79,10 +126,12 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
             "additionele_informatie",
             "status",
             "melding",
+            "taakgebeurtenissen_voor_taakopdracht",
         )
         read_only_fields = (
             "_links",
             "uuid",
             "status",
             "melding",
+            "taakgebeurtenissen_voor_taakopdracht",
         )
