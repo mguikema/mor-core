@@ -78,7 +78,7 @@ class Taakstatus(BasisModel):
 class Taakopdracht(BasisModel):
     """
     Taakapplicaties kunnen een taakopdracht aanmaken in more-core.
-    Op basis van de taakopdracht wordt er een taak aangemaakt in een taakapplicatie.
+    Op basis van de taakopdracht wordt er een taak aangemaakt in een applicatie.
     In de response zit de taak_url, die weer opgeslagen wordt in deze taakopdracht.
     Zo worden taakopdrachten aan taken gelinked.
     """
@@ -93,9 +93,9 @@ class Taakopdracht(BasisModel):
         related_name="taakopdrachten_voor_melding",
         on_delete=models.CASCADE,
     )
-    taakapplicatie = models.ForeignKey(
-        to="applicaties.Taakapplicatie",
-        related_name="taakopdrachten_voor_taakapplicatie",
+    applicatie = models.ForeignKey(
+        to="applicaties.Applicatie",
+        related_name="taakopdrachten_voor_applicatie",
         on_delete=models.CASCADE,
     )
     taaktype = models.CharField(

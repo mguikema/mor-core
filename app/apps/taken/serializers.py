@@ -79,7 +79,7 @@ class TaakgebeurtenisStatusSerializer(WritableNestedModelSerializer):
 
 class TaakopdrachtLinksSerializer(serializers.Serializer):
     self = serializers.SerializerMethodField()
-    taakapplicatie = serializers.SerializerMethodField()
+    applicatie = serializers.SerializerMethodField()
     melding = serializers.SerializerMethodField()
 
     @extend_schema_field(OpenApiTypes.URI)
@@ -93,8 +93,8 @@ class TaakopdrachtLinksSerializer(serializers.Serializer):
     @extend_schema_field(OpenApiTypes.URI)
     def get_taakapplicatie(self, obj):
         return reverse(
-            "v1:taakapplicatie-detail",
-            kwargs={"uuid": obj.taakapplicatie.uuid},
+            "v1:applicatie-detail",
+            kwargs={"uuid": obj.applicatie.uuid},
             request=self.context.get("request"),
         )
 
