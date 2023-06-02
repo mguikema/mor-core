@@ -1,4 +1,4 @@
-from apps.applicaties.models import Taakapplicatie
+from apps.applicaties.models import Applicatie
 from django.contrib import admin
 
 
@@ -11,4 +11,4 @@ class TaakapplicatieAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Taakapplicatie, TaakapplicatieAdmin)
+admin.site.register(Applicatie, TaakapplicatieAdmin)

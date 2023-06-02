@@ -2,7 +2,7 @@ import copy
 import logging
 from urllib.parse import urlparse
 
-from apps.applicaties.models import Taakapplicatie
+from apps.applicaties.models import Applicatie
 from django.contrib.gis.db import models
 from django.db import OperationalError, transaction
 from django.dispatch import Signal as DjangoSignal
@@ -177,16 +177,16 @@ class MeldingManager(models.Manager):
             taak_data = {}
             taak_data.update(serializer.validated_data)
             url_o = urlparse(taak_data.get("taaktype", ""))
-            taakapplicatie = Taakapplicatie.objects.filter(
+            applicatie = Applicatie.objects.filter(
                 basis_url=f"{url_o.scheme}://{url_o.netloc}"
             ).first()
 
-            if not taakapplicatie:
+            if not applicatie:
                 raise Exception(
-                    f"De taakapplicatie kon niet worden geonden op basis van dit taaktype: {taak_data.get('taaktype', '')}"
+                    f"De applicatie kon niet worden geonden op basis van dit taaktype: {taak_data.get('taaktype', '')}"
                 )
             taakopdracht = serializer.save(
-                taakapplicatie=taakapplicatie,
+                applicatie=applicatie,
                 melding=melding,
             )
             taakstatus_instance = Taakstatus(
@@ -215,7 +215,7 @@ class MeldingManager(models.Manager):
                 kwargs={"uuid": taakopdracht.uuid},
                 request=request,
             )
-            taak_aanmaken_response = taakapplicatie.taak_aanmaken(taakapplicatie_data)
+            taak_aanmaken_response = applicatie.taak_aanmaken(taakapplicatie_data)
 
             if taak_aanmaken_response.status_code == 201:
                 taakopdracht.taak_url = (
@@ -224,7 +224,7 @@ class MeldingManager(models.Manager):
                 taakopdracht.save()
             else:
                 raise Exception(
-                    f"De taak kon niet worden aangemaakt in de taakapplicatie: {taak_aanmaken_response.status_code}"
+                    f"De taak kon niet worden aangemaakt in de applicatie: {taak_aanmaken_response.status_code}"
                 )
 
             melding_gebeurtenis = MeldingGebeurtenis(
@@ -305,7 +305,7 @@ class MeldingManager(models.Manager):
                 "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
             }
             taak_status_aanpassen_response = (
-                locked_taakopdracht.taakapplicatie.taak_status_aanpassen(
+                locked_taakopdracht.applicatie.taak_status_aanpassen(
                     f"{locked_taakopdracht.taak_url}status-aanpassen/",
                     data=taak_status_aanpassen_data,
                 )
