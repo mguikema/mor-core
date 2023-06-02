@@ -112,7 +112,7 @@ class MeldingGebeurtenis(BasisModel):
     bijlagen = GenericRelation(Bijlage)
     status = models.OneToOneField(
         to="status.Status",
-        related_name="melding_gebeurtenis_voor_status",
+        related_name="meldinggebeurtenis_voor_status",
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
@@ -121,12 +121,19 @@ class MeldingGebeurtenis(BasisModel):
     omschrijving_extern = models.CharField(max_length=5000, null=True, blank=True)
     melding = models.ForeignKey(
         to="meldingen.Melding",
-        related_name="melding_gebeurtenissen",
+        related_name="meldinggebeurtenissen_voor_melding",
         on_delete=models.CASCADE,
     )
     taakopdracht = models.ForeignKey(
         to="taken.Taakopdracht",
-        related_name="taakopdrachten_voor_meldinggebeurtenissen",
+        related_name="meldinggebeurtenissen_voor_taakopdracht",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+    taakgebeurtenis = models.ForeignKey(
+        to="taken.Taakgebeurtenis",
+        related_name="meldinggebeurtenissen_voor_taakgebeurtenis",
         on_delete=models.CASCADE,
         blank=True,
         null=True,

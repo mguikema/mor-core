@@ -7,7 +7,7 @@ from apps.meldingen.viewsets import (
     MeldingViewSet,
     SignaalViewSet,
 )
-from apps.taken.viewsets import TaakopdrachtViewSet
+from apps.taken.viewsets import TaakgebeurtenisViewSet, TaakopdrachtViewSet
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path, re_path
@@ -27,6 +27,7 @@ router.register(r"melding", MeldingViewSet, basename="melding")
 router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 router.register(r"taakapplicatie", TaakapplicatieViewSet, basename="taakapplicatie")
 router.register(r"taakopdracht", TaakopdrachtViewSet, basename="taakopdracht")
+router.register(r"taakgebeurtenis", TaakgebeurtenisViewSet, basename="taakgebeurtenis")
 router.register(r"bijlage", BijlageViewSet, basename="bijlage")
 
 urlpatterns = [

@@ -16,23 +16,13 @@ from apps.meldingen.serializers import (  # BijlageSerializer,
     MeldingSerializer,
     SignaalSerializer,
 )
-from apps.taken.serializers import BijlageSerializer, TaakopdrachtSerializer
+from apps.taken.serializers import TaakopdrachtSerializer
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-
-class BijlageViewSet(viewsets.ModelViewSet):
-    """
-    Bijlage comment van viewset
-    """
-
-    queryset = Bijlage.objects.all()
-
-    serializer_class = BijlageSerializer
 
 
 class MeldingGebeurtenisViewSet(viewsets.ModelViewSet):
@@ -270,6 +260,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
                 taakopdracht, context={"request": request}
             )
             return Response(serializer.data)
+        print(serializer.errors)
 
         return Response(
             data=serializer.errors,

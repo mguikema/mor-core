@@ -19,6 +19,8 @@ def action_aanmaken_afbeelding_versies(modeladmin, request, queryset):
 class BijlageAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "uuid",
+        "aangemaakt_op",
         "bestand",
         "is_afbeelding",
         "mimetype",

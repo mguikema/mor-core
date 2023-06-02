@@ -1,13 +1,25 @@
 from apps.meldingen.models import Melding
-from apps.taken.models import Taakopdracht
+from apps.taken.models import Taakgebeurtenis, Taakopdracht
 from apps.taken.serializers import (
+    TaakgebeurtenisSerializer,
     TaakgebeurtenisStatusSerializer,
     TaakopdrachtSerializer,
 )
 from drf_spectacular.utils import extend_schema
-from rest_framework import status, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+
+class TaakgebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """
+    Taakgebeurtenis viewset
+    """
+
+    lookup_field = "uuid"
+    queryset = Taakgebeurtenis.objects.all()
+
+    serializer_class = TaakgebeurtenisSerializer
 
 
 class TaakopdrachtViewSet(viewsets.ReadOnlyModelViewSet):

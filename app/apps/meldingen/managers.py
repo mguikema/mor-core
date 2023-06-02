@@ -231,6 +231,7 @@ class MeldingManager(models.Manager):
                 melding=locked_melding,
                 gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.TAAKOPDRACHT_AANGEMAAKT,
                 taakopdracht=taakopdracht,
+                taakgebeurtenis=taakgebeurtenis_instance,
             )
 
             # zet status van de melding naar in_behandeling als dit niet de huidige status is
@@ -286,7 +287,7 @@ class MeldingManager(models.Manager):
             locked_taakopdracht.status = taakgebeurtenis.taakstatus
 
             if not locked_taakopdracht.status.volgende_statussen():
-                locked_melding.afgesloten_op = timezone.now().isoformat()
+                locked_taakopdracht.afgesloten_op = timezone.now().isoformat()
                 if resolutie in [ro[0] for ro in Taakopdracht.ResolutieOpties.choices]:
                     locked_taakopdracht.resolutie = resolutie
 
@@ -319,9 +320,12 @@ class MeldingManager(models.Manager):
                 melding=locked_melding,
                 gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING,
                 taakopdracht=locked_taakopdracht,
+                taakgebeurtenis=taakgebeurtenis,
             )
 
             # zet status van de melding naar in_behandeling als dit niet de huidige status is
+            locked_taakopdracht.save()
+
             if not locked_melding.actieve_taakopdrachten():
                 status_instance = Status(naam=Status.NaamOpties.CONTROLE)
                 status_instance.melding = locked_melding
@@ -335,7 +339,6 @@ class MeldingManager(models.Manager):
             melding_gebeurtenis.save()
 
             locked_melding.save()
-            locked_taakopdracht.save()
             transaction.on_commit(
                 lambda: taakopdracht_aanmaken.send_robust(
                     sender=self.__class__,

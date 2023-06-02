@@ -17,7 +17,7 @@ from apps.meldingen.models import (
     Signaal,
 )
 from apps.status.serializers import StatusSerializer
-from apps.taken.serializers import TaakopdrachtSerializer
+from apps.taken.serializers import TaakgebeurtenisSerializer, TaakopdrachtSerializer
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from drf_writable_nested.serializers import WritableNestedModelSerializer
@@ -79,7 +79,7 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
 class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(required=False)
-    taakopdracht = TaakopdrachtSerializer()
+    taakgebeurtenis = TaakgebeurtenisSerializer()
 
     class Meta:
         model = MeldingGebeurtenis
@@ -91,13 +91,13 @@ class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
             "omschrijving_intern",
             "omschrijving_extern",
             "melding",
-            "taakopdracht",
+            "taakgebeurtenis",
         )
         read_only_fields = (
             "aangemaakt_op",
             "gebeurtenis_type",
             "status",
-            "taakopdracht",
+            "taakgebeurtenis",
         )
         validators = []
 
@@ -135,6 +135,11 @@ class MeldingSerializer(serializers.ModelSerializer):
         child=serializers.CharField(),
         read_only=True,
     )
+    aantal_actieve_taken = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.INT)
+    def get_aantal_actieve_taken(self, obj):
+        return obj.actieve_taakopdrachten().count()
 
     class Meta:
         model = Melding
@@ -154,6 +159,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "status",
             "resolutie",
             "volgende_statussen",
+            "aantal_actieve_taken",
         )
 
 
@@ -168,7 +174,9 @@ class MeldingDetailSerializer(MeldingSerializer):
         child=serializers.CharField(),
         read_only=True,
     )
-    melding_gebeurtenissen = MeldingGebeurtenisSerializer(many=True, read_only=True)
+    meldinggebeurtenissen = MeldingGebeurtenisSerializer(
+        source="meldinggebeurtenissen_voor_melding", many=True, read_only=True
+    )
     taakopdrachten_voor_melding = TaakopdrachtSerializer(
         source="actieve_taakopdrachten", many=True, read_only=True
     )
@@ -193,6 +201,6 @@ class MeldingDetailSerializer(MeldingSerializer):
             "status",
             "resolutie",
             "volgende_statussen",
-            "melding_gebeurtenissen",
+            "meldinggebeurtenissen",
             "taakopdrachten_voor_melding",
         )
