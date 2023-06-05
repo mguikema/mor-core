@@ -55,6 +55,18 @@ class MelderSerializer(WritableNestedModelSerializer):
         )
 
 
+class MeldingGebeurtenisLinksSerializer(serializers.Serializer):
+    self = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_self(self, obj):
+        return reverse(
+            "v1:meldinggebeurtenis-detail",
+            kwargs={"uuid": obj.uuid},
+            request=self.context.get("request"),
+        )
+
+
 class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(required=True)
@@ -77,13 +89,15 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
 
 
 class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
+    _links = MeldingGebeurtenisLinksSerializer(source="*")
     bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(required=False)
-    taakgebeurtenis = TaakgebeurtenisSerializer()
+    taakgebeurtenis = TaakgebeurtenisSerializer(required=False)
 
     class Meta:
         model = MeldingGebeurtenis
         fields = (
+            "_links",
             "aangemaakt_op",
             "gebeurtenis_type",
             "bijlagen",
@@ -94,21 +108,37 @@ class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
             "taakgebeurtenis",
         )
         read_only_fields = (
+            "_links",
             "aangemaakt_op",
             "gebeurtenis_type",
             "status",
+            "melding",
             "taakgebeurtenis",
         )
         validators = []
 
 
+class SignaalLinksSerializer(serializers.Serializer):
+    self = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_self(self, obj):
+        return reverse(
+            "v1:signaal-detail",
+            kwargs={"uuid": obj.uuid},
+            request=self.context.get("request"),
+        )
+
+
 class SignaalSerializer(WritableNestedModelSerializer):
+    _links = SignaalLinksSerializer(source="*")
     bijlagen = BijlageSerializer(many=True, required=False)
     melder = MelderSerializer(required=False)
 
     class Meta:
         model = Signaal
         fields = (
+            "_links",
             "origineel_aangemaakt",
             "onderwerpen",
             "ruwe_informatie",

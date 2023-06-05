@@ -6,8 +6,9 @@ from apps.meldingen.managers import (
     status_aangepast,
     taakopdracht_aanmaken,
 )
-from apps.meldingen.models import Bijlage, Melding, Signaal
+from apps.meldingen.models import Bijlage, Melding, MeldingGebeurtenis, Signaal
 from apps.meldingen.tasks import task_aanmaken_afbeelding_versies
+from apps.taken.models import Taakgebeurtenis
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -27,6 +28,8 @@ def add_relation_to_melding(sender, instance, created, **kwargs):
         return
     sct = ContentType.objects.get_for_model(Signaal)
     mct = ContentType.objects.get_for_model(Melding)
+    taakgebeurtenis_type = ContentType.objects.get_for_model(Taakgebeurtenis)
+    meldinggebeurtenis_type = ContentType.objects.get_for_model(MeldingGebeurtenis)
     valid_relation = sender.__name__ in ("Bijlage",)
     if created and valid_relation and instance.content_type == sct:
         data = copy.deepcopy(instance.__dict__)
@@ -51,7 +54,12 @@ def add_relation_to_melding(sender, instance, created, **kwargs):
         )
         sender.objects.create(**data)
 
-    elif created and valid_relation and instance.content_type == mct:
+    elif (
+        created
+        and valid_relation
+        and instance.content_type
+        in [mct, taakgebeurtenis_type, meldinggebeurtenis_type]
+    ):
         task_aanmaken_afbeelding_versies.delay(instance.id)
 
 

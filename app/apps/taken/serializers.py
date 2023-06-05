@@ -91,7 +91,7 @@ class TaakopdrachtLinksSerializer(serializers.Serializer):
         )
 
     @extend_schema_field(OpenApiTypes.URI)
-    def get_taakapplicatie(self, obj):
+    def get_applicatie(self, obj):
         return reverse(
             "v1:applicatie-detail",
             kwargs={"uuid": obj.applicatie.uuid},
