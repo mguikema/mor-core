@@ -149,7 +149,9 @@ class MeldingManager(models.Manager):
             except OperationalError:
                 raise MeldingManager.MeldingInGebruik
 
-            serializer.save()
+            serializer.save(
+                melding=melding,
+            )
 
             locked_melding.save()
             transaction.on_commit(

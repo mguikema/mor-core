@@ -3,7 +3,7 @@ from apps.bijlagen.viewsets import BijlageViewSet
 from apps.classificatie.viewsets import OnderwerpViewSet
 from apps.meldingen.views import serve_protected_media
 from apps.meldingen.viewsets import (
-    MeldingContextViewSet,
+    MeldingGebeurtenisViewSet,
     MeldingViewSet,
     SignaalViewSet,
 )
@@ -22,10 +22,13 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r"signaal", SignaalViewSet, basename="signaal")
-router.register(r"melding-context", MeldingContextViewSet, basename="melding_context")
 router.register(r"melding", MeldingViewSet, basename="melding")
+router.register(
+    r"meldinggebeurtenis", MeldingGebeurtenisViewSet, basename="meldinggebeurtenis"
+)
 router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 router.register(r"applicatie", TaakapplicatieViewSet, basename="applicatie")
+router.register(r"taakapplicatie", TaakapplicatieViewSet, basename="taakapplicatie")
 router.register(r"taakopdracht", TaakopdrachtViewSet, basename="taakopdracht")
 router.register(r"taakgebeurtenis", TaakgebeurtenisViewSet, basename="taakgebeurtenis")
 router.register(r"bijlage", BijlageViewSet, basename="bijlage")

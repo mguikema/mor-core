@@ -25,29 +25,16 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
-class MeldingGebeurtenisViewSet(viewsets.ModelViewSet):
+class MeldingGebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
+    lookup_field = "uuid"
     queryset = MeldingGebeurtenis.objects.all()
 
     serializer_class = MeldingGebeurtenisSerializer
 
 
-class MelderViewSet(viewsets.ModelViewSet):
-
-    queryset = Melder.objects.all()
-
-    serializer_class = MelderSerializer
-
-
-class MeldingContextViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-
-    queryset = MeldingContext.objects.all()
-
-    serializer_class = MeldingContextSerializer
-    lookup_field = "slug"
-
-
 class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    lookup_field = "uuid"
 
     queryset = Signaal.objects.all()
 
@@ -213,21 +200,17 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         serializer_class=MeldingGebeurtenisSerializer,
     )
     def gebeurtenis_toevoegen(self, request, uuid):
-        melding = self.get_object()
-        data = {"melding": melding.id}
-        data.update(request.data)
         serializer = self.serializer_class(
-            data=data,
+            data=request.data,
             context={"request": request},
         )
         if serializer.is_valid():
-            Melding.acties.gebeurtenis_toevoegen(serializer, melding)
+            Melding.acties.gebeurtenis_toevoegen(serializer, self.get_object())
 
             serializer = MeldingDetailSerializer(
                 self.get_object(), context={"request": request}
             )
             return Response(serializer.data)
-
         return Response(
             data=serializer.errors,
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
