@@ -7,7 +7,7 @@ from apps.meldingen.models import (
     MeldingGebeurtenis,
     Signaal,
 )
-from apps.meldingen.serializers import (  # BijlageSerializer,
+from apps.meldingen.serializers import (
     MelderSerializer,
     MeldingContextSerializer,
     MeldingDetailSerializer,
@@ -33,7 +33,9 @@ class MeldingGebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewS
     serializer_class = MeldingGebeurtenisSerializer
 
 
-class SignaalViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+class SignaalViewSet(
+    mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+):
     lookup_field = "uuid"
 
     queryset = Signaal.objects.all()

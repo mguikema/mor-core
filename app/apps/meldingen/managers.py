@@ -1,4 +1,3 @@
-import copy
 import logging
 from urllib.parse import urlparse
 
@@ -33,65 +32,54 @@ class MeldingManager(models.Manager):
     class MeldingContextOnderwerpNietGevonden(Exception):
         pass
 
-    def aanmaken(self, signaal, db="default"):
-        from apps.aliassen.models import OnderwerpAlias
-        from apps.locatie.models import Graf
-        from apps.meldingen.models import Melding, MeldingGebeurtenis
+    def aanmaken(self, signaal_validated_data, signaal_initial_data, db="default"):
+        from apps.meldingen.models import MeldingGebeurtenis, Signaal
+        from apps.meldingen.serializers import MeldingAanmakenSerializer
         from apps.status.models import Status
 
-        if signaal.melding:
-            return signaal.melding
-
-        gevalideerde_onderwerpen = []
-        for onderwerp in signaal.onderwerpen:
-            try:
-                (
-                    onderwerp_alias,
-                    onderwerp_alias_aangemaakt,
-                ) = OnderwerpAlias.objects.get_or_create(bron_url=onderwerp)
-                gevalideerde_onderwerpen.append(onderwerp_alias)
-                logger.debug(f"{onderwerp_alias}: {onderwerp_alias_aangemaakt}")
-            except Exception as e:
-                logger.info(f"{onderwerp} werd niet gevonden: {e}")
-
-        if not gevalideerde_onderwerpen:
-            raise MeldingManager.OnderwerpenNietValide
-
         with transaction.atomic():
-            data = copy.deepcopy(signaal.ruwe_informatie)
-            meta_uitgebreid = data.pop("labels", {})
-            melding = Melding()
+
+            gevalideerde_onderwerpen = []
+            for onderwerp in signaal_validated_data.get("onderwerpen", []):
+                gevalideerde_onderwerpen.append(
+                    {
+                        "bron_url": onderwerp,
+                    }
+                )
+            if not gevalideerde_onderwerpen:
+                raise MeldingManager.OnderwerpenNietValide
+
+            melding_data = {}
+            melding_data.update(signaal_initial_data)
+            signaal_initial_data.pop("bijlagen", None)
+
+            melding_data["onderwerpen"] = gevalideerde_onderwerpen
+            melding_serializer = MeldingAanmakenSerializer(data=melding_data)
+            if melding_serializer.is_valid():
+                melding = melding_serializer.save()
+            else:
+                raise Exception(melding_serializer.errors)
+
             status_instance = Status()
-            melding.origineel_aangemaakt = signaal.origineel_aangemaakt
-            melding.omschrijving_kort = data.get("toelichting", "")[:200]
-            melding.omschrijving = data.get("toelichting")
-            melding.meta = data
-            melding.meta_uitgebreid = meta_uitgebreid
-            melding.save()
-            melding.onderwerpen.set(gevalideerde_onderwerpen)
             status_instance.melding = melding
             status_instance.save()
             melding.status = status_instance
             melding.save()
 
             melding_gebeurtenis = MeldingGebeurtenis(
-                **dict(
-                    melding=melding,
-                    gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.MELDING_AANGEMAAKT,
-                    status=status_instance,
-                    omschrijving_intern="Melding aangemaakt",
-                )
+                melding=melding,
+                gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.MELDING_AANGEMAAKT,
+                status=status_instance,
+                omschrijving_intern="Melding aangemaakt",
             )
             melding_gebeurtenis.save()
-            Graf.objects.create(
-                **{
-                    "melding": melding,
-                    "plaatsnaam": "Rotterdam",
-                    "begraafplaats": data.get("begraafplaats"),
-                    "grafnummer": data.get("grafnummer"),
-                    "vak": data.get("vak"),
-                }
+
+            signaal = Signaal.objects.create(
+                signaal_url=signaal_initial_data.get("signaal_url"),
+                signaal_data=signaal_initial_data,
+                melding=melding,
             )
+
             transaction.on_commit(
                 lambda: aangemaakt.send_robust(
                     sender=self.__class__,
@@ -99,8 +87,7 @@ class MeldingManager(models.Manager):
                     status=status_instance,
                 )
             )
-
-        return melding
+        return signaal
 
     def status_aanpassen(self, serializer, melding, db="default"):
         from apps.meldingen.models import Melding

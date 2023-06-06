@@ -1,75 +1,21 @@
-import copy
-
 from apps.meldingen.managers import (
     aangemaakt,
     gebeurtenis_toegevoegd,
     status_aangepast,
     taakopdracht_aanmaken,
 )
-from apps.meldingen.models import Bijlage, Melding, MeldingGebeurtenis, Signaal
 from apps.meldingen.tasks import task_aanmaken_afbeelding_versies
-from apps.taken.models import Taakgebeurtenis
-from django.contrib.contenttypes.models import ContentType
-from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
-
-
-@receiver(pre_save, sender=Signaal, dispatch_uid="add_melding_to_signaal")
-def add_melding_to_signaal(sender, instance, **kwargs):
-    if kwargs.get("raw"):
-        return
-    if not instance.melding:
-        instance.melding = Melding.acties.aanmaken(instance)
-
-
-@receiver(post_save, sender=Bijlage, dispatch_uid="add_bijlage_to_melding")
-def add_relation_to_melding(sender, instance, created, **kwargs):
-    if kwargs.get("raw"):
-        return
-    sct = ContentType.objects.get_for_model(Signaal)
-    mct = ContentType.objects.get_for_model(Melding)
-    taakgebeurtenis_type = ContentType.objects.get_for_model(Taakgebeurtenis)
-    meldinggebeurtenis_type = ContentType.objects.get_for_model(MeldingGebeurtenis)
-    valid_relation = sender.__name__ in ("Bijlage",)
-    if created and valid_relation and instance.content_type == sct:
-        data = copy.deepcopy(instance.__dict__)
-        data = {
-            k: v
-            for k, v in data.items()
-            if k
-            not in (
-                "_state",
-                "id",
-                "uuid",
-                "aangemaakt_op",
-                "aangepast_op",
-                "content_type_id",
-            )
-        }
-        data.update(
-            {
-                "content_type": mct,
-                "object_id": instance.content_object.melding.id,
-            }
-        )
-        sender.objects.create(**data)
-
-    elif (
-        created
-        and valid_relation
-        and instance.content_type
-        in [mct, taakgebeurtenis_type, meldinggebeurtenis_type]
-    ):
-        task_aanmaken_afbeelding_versies.delay(instance.id)
-
-
-@receiver(status_aangepast, dispatch_uid="melding_status_aangepast")
-def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kwargs):
-    ...
 
 
 @receiver(aangemaakt, dispatch_uid="melding_aangemaakt")
 def aangemaakt_handler(sender, melding, *args, **kwargs):
+    for bijlage in melding.bijlagen.all():
+        task_aanmaken_afbeelding_versies.delay(bijlage.pk)
+
+
+@receiver(status_aangepast, dispatch_uid="melding_status_aangepast")
+def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kwargs):
     ...
 
 

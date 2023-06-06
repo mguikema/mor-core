@@ -1,20 +1,24 @@
-from apps.locatie.models import Adres, Geometrie, Graf, Locatie
+from apps.locatie.models import Adres, Graf, Lichtmast, Locatie
 from django.contrib import admin
 
 
 class GrafAdmin(admin.ModelAdmin):
-    list_display = ("id", "begraafplaats")
+    list_display = ("id", "uuid", "aangemaakt_op", "begraafplaats")
 
 
 class LocatieAdmin(admin.ModelAdmin):
-    list_display = ("id", "begraafplaats", "melding")
+    list_display = ("id", "uuid", "aangemaakt_op", "begraafplaats", "melding")
 
 
-class DefaultAdmin(admin.ModelAdmin):
-    ...
+class AdresAdmin(admin.ModelAdmin):
+    list_display = ("id", "uuid", "aangemaakt_op", "melding", "straatnaam")
+
+
+class LichtmastAdmin(admin.ModelAdmin):
+    list_display = ("id", "uuid", "aangemaakt_op", "melding", "lichtmast_id")
 
 
 admin.site.register(Graf, GrafAdmin)
-admin.site.register(Adres, DefaultAdmin)
+admin.site.register(Adres, AdresAdmin)
+admin.site.register(Lichtmast, LichtmastAdmin)
 admin.site.register(Locatie, LocatieAdmin)
-admin.site.register(Geometrie, DefaultAdmin)
