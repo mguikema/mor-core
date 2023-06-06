@@ -31,7 +31,7 @@ class BijlageAdmin(admin.ModelAdmin):
 
 
 class SignaalAdmin(admin.ModelAdmin):
-    list_display = ("id", "aangemaakt_op", "melding")
+    list_display = ("id", "uuid", "aangemaakt_op", "melding")
 
 
 class MeldingContextAdmin(admin.ModelAdmin):

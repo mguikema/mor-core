@@ -4,12 +4,11 @@ from os.path import exists
 
 import pyheif
 from apps.meldingen.managers import MeldingManager
-from apps.meldingen.querysets import MeldingQuerySet, SignaalQuerySet
+from apps.meldingen.querysets import MeldingQuerySet
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
-from django.contrib.postgres.fields import ArrayField
 from django_extensions.db.fields import AutoSlugField
 from PIL import Image, UnidentifiedImageError
 from sorl.thumbnail import get_thumbnail
@@ -193,22 +192,7 @@ class MeldingContext(BasisModel):
                 self.veld_waardes[k]["choices"] = choices
 
 
-class MeldingBasis(BasisModel):
-    origineel_aangemaakt = models.DateTimeField()
-    onderwerp = models.CharField(max_length=300)
-
-    """
-    TODO: Er is behoefte aan opslag van extra info. De structuur hiervan zou kunnen afhangen van het onderwerp van de melding of de bron(b.v. melder applicatie)
-    Voor nu ongestructureerde json data.
-    """
-
-    bijlagen = GenericRelation(Bijlage)
-
-    class Meta:
-        abstract = True
-
-
-class Signaal(MeldingBasis):
+class Signaal(BasisModel):
     """
     Een signaal een individuele signaal vanuit de buiten ruimte.
     Er kunnen meerdere signalen aan een melding gekoppeld zijn, bijvoorbeeld dubbele signalen.
@@ -218,12 +202,11 @@ class Signaal(MeldingBasis):
     Het verwijzing veld, moet nog nader bepaald worden. Vermoedelijk wordt dit een url
     """
 
-    bron = models.CharField(max_length=200)
-    onderwerpen = ArrayField(base_field=models.CharField(max_length=300), default=list)
+    signaal_url = models.URLField()
+    signaal_data = models.JSONField(default=dict)
     melder = models.OneToOneField(
         to="meldingen.Melder", on_delete=models.SET_NULL, null=True, blank=True
     )
-    ruwe_informatie = models.JSONField(default=dict)
     melding = models.ForeignKey(
         to="meldingen.Melding",
         related_name="signalen_voor_melding",
@@ -231,14 +214,13 @@ class Signaal(MeldingBasis):
         blank=True,
         null=True,
     )
-    objects = SignaalQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Signaal"
         verbose_name_plural = "Signalen"
 
 
-class Melding(MeldingBasis):
+class Melding(BasisModel):
     """
     Een melding is de ontdubbelde versie van signalen
     """
@@ -251,6 +233,7 @@ class Melding(MeldingBasis):
         OPGELOST = "opgelost", "Opgelost"
         NIET_OPGELOST = "niet_opgelost", "Niet opgelost"
 
+    origineel_aangemaakt = models.DateTimeField()
     omschrijving_kort = models.CharField(max_length=500)
     omschrijving = models.CharField(max_length=5000, null=True, blank=True)
     afgesloten_op = models.DateTimeField(null=True, blank=True)
@@ -268,21 +251,27 @@ class Melding(MeldingBasis):
         choices=ResolutieOpties.choices,
         default=ResolutieOpties.NIET_OPGELOST,
     )
+    bijlagen = GenericRelation(Bijlage)
     onderwerpen = models.ManyToManyField(
         to="aliassen.OnderwerpAlias",
         related_name="meldingen_voor_onderwerpen",
         blank=True,
     )
-    melding_context = models.ForeignKey(
-        to="meldingen.MeldingContext",
-        related_name="meldingen_voor_meldingcontext",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-    )
 
     objects = MeldingQuerySet.as_manager()
     acties = MeldingManager()
+
+    @property
+    def get_graven(self):
+        return self.locaties_voor_melding
+
+    @property
+    def get_lichtmasten(self):
+        return self.locaties_voor_melding
+
+    @property
+    def get_adressen(self):
+        return self.locaties_voor_melding
 
     def actieve_taakopdrachten(self):
         return self.taakopdrachten_voor_melding.exclude(status__naam="voltooid")

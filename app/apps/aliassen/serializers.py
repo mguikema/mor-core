@@ -13,7 +13,7 @@ class OnderwerpAliasLinksSerializer(serializers.Serializer):
 
 
 class OnderwerpAliasSerializer(serializers.ModelSerializer):
-    _links = OnderwerpAliasLinksSerializer(source="*")
+    _links = OnderwerpAliasLinksSerializer(source="*", read_only=True)
     naam = serializers.SerializerMethodField()
 
     def get_naam(self, obj):
@@ -23,11 +23,18 @@ class OnderwerpAliasSerializer(serializers.ModelSerializer):
     OnderwerpAlias van een Melding of Signaal
     """
 
+    def create(self, validated_data):
+        onderwerpalias, aangemaakt = OnderwerpAlias.objects.get_or_create(
+            **validated_data
+        )
+        return onderwerpalias
+
     class Meta:
         model = OnderwerpAlias
         fields = (
             "_links",
             "naam",
+            "bron_url",
         )
         read_only_fields = (
             "_links",

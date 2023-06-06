@@ -1,10 +1,13 @@
 from apps.aliassen.serializers import OnderwerpAliasSerializer
 from apps.bijlagen.serializers import BijlageSerializer
+from apps.locatie.models import Adres, Graf, Lichtmast
 from apps.locatie.serializers import (
+    AdresBasisSerializer,
     AdresSerializer,
     GeometrieSerializer,
-    GrafRelatedField,
+    GrafBasisSerializer,
     GrafSerializer,
+    LichtmastBasisSerializer,
     LichtmastSerializer,
     LocatieRelatedField,
 )
@@ -131,20 +134,46 @@ class SignaalLinksSerializer(serializers.Serializer):
 
 
 class SignaalSerializer(WritableNestedModelSerializer):
-    _links = SignaalLinksSerializer(source="*")
-    bijlagen = BijlageSerializer(many=True, required=False)
-    melder = MelderSerializer(required=False)
+    _links = SignaalLinksSerializer(source="*", read_only=True)
+    bijlagen = BijlageSerializer(many=True, required=False, write_only=True)
+    melder = MelderSerializer(required=False, write_only=True)
+    omschrijving_kort = serializers.CharField(max_length=500, write_only=True)
+    omschrijving = serializers.CharField(
+        max_length=5000, allow_blank=True, required=False, write_only=True
+    )
+    meta = serializers.JSONField(default=dict, write_only=True)
+    meta_uitgebreid = serializers.JSONField(default=dict, write_only=True)
+    adressen = AdresBasisSerializer(many=True, required=False, write_only=True)
+    lichtmasten = LichtmastBasisSerializer(many=True, required=False, write_only=True)
+    graven = GrafBasisSerializer(many=True, required=False, write_only=True)
+    origineel_aangemaakt = serializers.DateTimeField(write_only=True)
+    onderwerpen = serializers.ListSerializer(
+        child=serializers.URLField(), write_only=True
+    )
+
+    def create(self, validated_data):
+        signaal = Melding.acties.aanmaken(
+            validated_data, self.get_initial(), self.context.get("request")
+        )
+        return signaal
 
     class Meta:
         model = Signaal
         fields = (
             "_links",
+            "signaal_url",
+            "signaal_data",
             "origineel_aangemaakt",
+            "omschrijving_kort",
+            "omschrijving",
+            "meta",
+            "meta_uitgebreid",
             "onderwerpen",
-            "ruwe_informatie",
             "bijlagen",
-            "bron",
             "melder",
+            "adressen",
+            "lichtmasten",
+            "graven",
         )
 
 
@@ -155,11 +184,51 @@ class MeldingContextSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class MeldingAanmakenSerializer(WritableNestedModelSerializer):
+    graven = GrafSerializer(many=True, required=False)
+    adressen = AdresSerializer(many=True, required=False)
+    lichtmasten = LichtmastSerializer(many=True, required=False)
+    bijlagen = BijlageSerializer(many=True, required=False)
+    onderwerpen = OnderwerpAliasSerializer(many=True, required=False)
+
+    class Meta:
+        model = Melding
+        fields = (
+            "origineel_aangemaakt",
+            "omschrijving_kort",
+            "omschrijving",
+            "meta",
+            "meta_uitgebreid",
+            "onderwerpen",
+            "bijlagen",
+            "graven",
+            "adressen",
+            "lichtmasten",
+        )
+
+    def create(self, validated_data):
+        locaties = (("adressen", Adres), ("lichtmasten", Lichtmast), ("graven", Graf))
+        locaties_data = {
+            loc[0]: validated_data.pop(loc[0], None)
+            for loc in locaties
+            if validated_data.get(loc[0])
+        }
+        melding = super().create(validated_data)
+
+        for location in locaties:
+            model = location[1]
+            for loc in locaties_data.get(location[0], []):
+                model.objects.create(**loc, melding=melding)
+            validated_data.pop(location[0], None)
+
+        return melding
+
+
 class MeldingSerializer(serializers.ModelSerializer):
     _links = MeldingLinksSerializer(source="*")
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
-    status = StatusSerializer()
+    status = StatusSerializer(read_only=True)
     volgende_statussen = serializers.ListField(
         source="status.volgende_statussen",
         child=serializers.CharField(),
@@ -190,6 +259,9 @@ class MeldingSerializer(serializers.ModelSerializer):
             "resolutie",
             "volgende_statussen",
             "aantal_actieve_taken",
+            # "adressen",
+            # "lichtmasten",
+            # "graven",
         )
 
 

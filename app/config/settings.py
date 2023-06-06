@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     "django.contrib.postgres",
     "rest_framework",
     "rest_framework.authtoken",
+    "rest_framework_gis",
     "drf_spectacular",
     "django_filters",
     "corsheaders",
