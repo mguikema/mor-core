@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
 gebeurtenis_toegevoegd = DjangoSignal()
-taakopdracht_aanmaken = DjangoSignal()
+taakopdracht_aangemaakt = DjangoSignal()
+taakopdracht_status_aangepast = DjangoSignal()
 
 
 class MeldingManager(models.Manager):
@@ -136,7 +137,7 @@ class MeldingManager(models.Manager):
             except OperationalError:
                 raise MeldingManager.MeldingInGebruik
 
-            serializer.save(
+            meldinggebeurtenis = serializer.save(
                 melding=melding,
             )
 
@@ -145,6 +146,7 @@ class MeldingManager(models.Manager):
                 lambda: gebeurtenis_toegevoegd.send_robust(
                     sender=self.__class__,
                     melding=locked_melding,
+                    meldinggebeurtenis=meldinggebeurtenis,
                 )
             )
 
@@ -237,7 +239,7 @@ class MeldingManager(models.Manager):
             melding_gebeurtenis.save()
             locked_melding.save()
             transaction.on_commit(
-                lambda: taakopdracht_aanmaken.send_robust(
+                lambda: taakopdracht_aangemaakt.send_robust(
                     sender=self.__class__,
                     taakopdracht=taakopdracht,
                     melding=locked_melding,
@@ -329,10 +331,11 @@ class MeldingManager(models.Manager):
 
             locked_melding.save()
             transaction.on_commit(
-                lambda: taakopdracht_aanmaken.send_robust(
+                lambda: taakopdracht_status_aangepast.send_robust(
                     sender=self.__class__,
-                    taakopdracht=locked_taakopdracht,
                     melding=locked_melding,
+                    taakopdracht=locked_taakopdracht,
+                    taakgebeurtenis=taakgebeurtenis,
                 )
             )
 

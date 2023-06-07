@@ -92,7 +92,7 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
 
 
 class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
-    _links = MeldingGebeurtenisLinksSerializer(source="*")
+    _links = MeldingGebeurtenisLinksSerializer(source="*", read_only=True)
     bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(required=False)
     taakgebeurtenis = TaakgebeurtenisSerializer(required=False)
@@ -225,7 +225,7 @@ class MeldingAanmakenSerializer(WritableNestedModelSerializer):
 
 
 class MeldingSerializer(serializers.ModelSerializer):
-    _links = MeldingLinksSerializer(source="*")
+    _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
     status = StatusSerializer(read_only=True)
@@ -266,7 +266,7 @@ class MeldingSerializer(serializers.ModelSerializer):
 
 
 class MeldingDetailSerializer(MeldingSerializer):
-    _links = MeldingLinksSerializer(source="*")
+    _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     onderwerpen = OnderwerpAliasSerializer(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
