@@ -19,7 +19,7 @@ class TaakapplicatieLinksSerializer(serializers.Serializer):
 
 
 class TaakapplicatieSerializer(serializers.ModelSerializer):
-    _links = TaakapplicatieLinksSerializer(source="*")
+    _links = TaakapplicatieLinksSerializer(source="*", read_only=True)
     onderwerpen = OnderwerpAliasSerializer(many=True)
 
     class Meta:

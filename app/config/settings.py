@@ -203,6 +203,10 @@ REST_FRAMEWORK = dict(
     DEFAULT_PERMISSION_CLASSES=("rest_framework.permissions.IsAuthenticated",),
     DEFAULT_AUTHENTICATION_CLASSES=("apps.auth.authentication.AuthenticationClass",),
 )
+
+handler500 = "rest_framework.exceptions.server_error"
+handler400 = "rest_framework.exceptions.bad_request"
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "MOR CORE",
     "DESCRIPTION": "Voor het organiseren en beheren van Meldingen Openbare Ruimte",
