@@ -145,19 +145,39 @@ class Applicatie(BasisModel):
         null=True,
     )
 
+    @classmethod
+    def vind_applicatie_obv_uri(cls, uri):
+        url_o = urlparse(uri)
+        applicatie = Applicatie.objects.filter(
+            basis_url=f"{url_o.scheme}://{url_o.netloc}"
+        ).first()
+        if not applicatie:
+            raise cls.ApplicatieWerdNietGevondenFout(f"uri: {uri}")
+        return applicatie
+
     def haal_taaktypes(self):
         if self.basis_url:
             taaktypes_response = self.taaktypes_halen()
             if taaktypes_response.status_code != 200:
                 logger.info(
-                    f"taaktypes voor applicatie {self.naam} konden niet worden gahaalt: {taaktypes_response.status_code}"
+                    f"url: {self.basis_url}, taaktypes voor applicatie {self.naam} konden niet worden opgehaald: {taaktypes_response.status_code}"
                 )
-            self.taaktypes = self.taaktypes_halen().json().get("results", [])
+            else:
+                self.taaktypes = taaktypes_response.json().get("results", [])
 
     class ApplicationAuthResponseException(Exception):
         ...
 
     class ApplicatieBasisUrlFout(Exception):
+        ...
+
+    class ApplicatieWerdNietGevondenFout(Exception):
+        ...
+
+    class NotificatieVoorApplicatieFout(Exception):
+        ...
+
+    class TaaktypesOphalenFout(Exception):
         ...
 
     def _get_timeout(self):
@@ -202,3 +222,12 @@ class Applicatie(BasisModel):
 
     def taak_status_aanpassen(self, url, data):
         return self._do_request(url, method="patch", data=data)
+
+    def notificatie_melding_afgesloten(self, signaal_uri):
+        response = self._do_request(f"{signaal_uri}melding-afgesloten/")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Applicatie.NotificatieVoorApplicatieFout(
+                f"url: '{signaal_uri}melding-afgesloten/', status code: {response.status_code}"
+            )

@@ -1,5 +1,4 @@
 import logging
-from urllib.parse import urlparse
 
 from apps.applicaties.models import Applicatie
 from django.contrib.gis.db import models
@@ -12,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
+afgesloten = DjangoSignal()
 gebeurtenis_toegevoegd = DjangoSignal()
 taakopdracht_aangemaakt = DjangoSignal()
 taakopdracht_status_aangepast = DjangoSignal()
@@ -167,10 +167,9 @@ class MeldingManager(models.Manager):
 
             taak_data = {}
             taak_data.update(serializer.validated_data)
-            url_o = urlparse(taak_data.get("taaktype", ""))
-            applicatie = Applicatie.objects.filter(
-                basis_url=f"{url_o.scheme}://{url_o.netloc}"
-            ).first()
+            applicatie = Applicatie.vind_applicatie_obv_uri(
+                taak_data.get("taaktype", "")
+            )
 
             if not applicatie:
                 raise Exception(

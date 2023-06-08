@@ -1,11 +1,16 @@
 from apps.meldingen.managers import (
     aangemaakt,
+    afgesloten,
     gebeurtenis_toegevoegd,
     status_aangepast,
     taakopdracht_aangemaakt,
     taakopdracht_status_aangepast,
 )
-from apps.meldingen.tasks import task_aanmaken_afbeelding_versies
+from apps.meldingen.tasks import (
+    task_aanmaken_afbeelding_versies,
+    task_notificatie_voor_signaal_melding_afgesloten,
+)
+from apps.status.models import Status
 from django.dispatch import receiver
 
 
@@ -17,7 +22,17 @@ def aangemaakt_handler(sender, melding, *args, **kwargs):
 
 @receiver(status_aangepast, dispatch_uid="melding_status_aangepast")
 def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kwargs):
-    ...
+    if melding.afgesloten_op and melding.status.naam == Status.NaamOpties.AFGEHANDELD:
+        afgesloten.send_robust(
+            sender=sender,
+            melding=melding,
+        )
+
+
+@receiver(afgesloten, dispatch_uid="melding_afgesloten")
+def afgesloten_handler(sender, melding, *args, **kwargs):
+    for signaal in melding.signalen_voor_melding.all():
+        task_notificatie_voor_signaal_melding_afgesloten.delay(signaal.pk)
 
 
 @receiver(gebeurtenis_toegevoegd, dispatch_uid="melding_gebeurtenis_toegevoegd")
