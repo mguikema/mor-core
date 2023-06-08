@@ -123,12 +123,21 @@ class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
 
 class SignaalLinksSerializer(serializers.Serializer):
     self = serializers.SerializerMethodField()
+    melding = serializers.SerializerMethodField()
 
     @extend_schema_field(OpenApiTypes.URI)
     def get_self(self, obj):
         return reverse(
             "v1:signaal-detail",
             kwargs={"uuid": obj.uuid},
+            request=self.context.get("request"),
+        )
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_melding(self, obj):
+        return reverse(
+            "v1:melding-detail",
+            kwargs={"uuid": obj.melding.uuid},
             request=self.context.get("request"),
         )
 
@@ -174,7 +183,9 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "adressen",
             "lichtmasten",
             "graven",
+            "melding",
         )
+        read_only_fields = ("melding",)
 
 
 class MeldingContextSerializer(serializers.ModelSerializer):

@@ -3,6 +3,7 @@ import os
 from os.path import exists
 
 import pyheif
+from apps.applicaties.models import Applicatie
 from apps.meldingen.managers import MeldingManager
 from apps.meldingen.querysets import MeldingQuerySet
 from django.conf import settings
@@ -214,6 +215,10 @@ class Signaal(BasisModel):
         blank=True,
         null=True,
     )
+
+    def notificatie_melding_afgesloten(self):
+        applicatie = Applicatie.vind_applicatie_obv_uri(self.signaal_url)
+        applicatie.notificatie_melding_afgesloten(self.signaal_url)
 
     class Meta:
         verbose_name = "Signaal"
