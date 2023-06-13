@@ -2,8 +2,11 @@ import logging
 from urllib.parse import urlparse
 
 import requests
+from cryptography.fernet import Fernet
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
+from django.core.cache import cache
 from requests import Request, Response
 from utils.models import BasisModel
 
@@ -127,6 +130,17 @@ class Applicatie(BasisModel):
         blank=True,
         null=True,
     )
+    applicatie_gebruiker_naam = models.CharField(
+        max_length=150,
+        unique=True,
+        blank=True,
+        null=True,
+    )
+    applicatie_gebruiker_wachtwoord = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+    )
     onderwerpen = models.ManyToManyField(
         to="aliassen.OnderwerpAlias",
         related_name="applicaties_voor_onderwerpen",
@@ -154,6 +168,12 @@ class Applicatie(BasisModel):
         if not applicatie:
             raise cls.ApplicatieWerdNietGevondenFout(f"uri: {uri}")
         return applicatie
+
+    def encrypt_applicatie_gebruiker_wachtwoord(self, wachtwoord_decrypted):
+        f = Fernet(settings.FERNET_KEY)
+        self.applicatie_gebruiker_wachtwoord = f.encrypt(
+            wachtwoord_decrypted.encode()
+        ).decode()
 
     def haal_taaktypes(self):
         if self.basis_url:
@@ -183,9 +203,33 @@ class Applicatie(BasisModel):
     def _get_timeout(self):
         return (5, 10)
 
+    def get_token_cache_key(self):
+        return f"applicatie_{self.uuid}_token"
+
     def _get_token(self):
-        # TODO haal token van applicatie token endpoint
-        return "token"
+        f = Fernet(settings.FERNET_KEY)
+        applicatie_token = cache.get(self.get_token_cache_key())
+        if not applicatie_token:
+            json_data = {
+                "username": self.applicatie_gebruiker_naam,
+                "password": f.decrypt(self.applicatie_gebruiker_wachtwoord).decode(),
+            }
+            try:
+                token_response = requests.post(
+                    f"{self.basis_url}{settings.TOKEN_API_RELATIVE_URL}",
+                    json=json_data,
+                )
+            except Exception:
+                return
+
+            if token_response.status_code == 200:
+                applicatie_token = token_response.json().get("token")
+                cache.set(
+                    self.get_token_cache_key(),
+                    applicatie_token,
+                    settings.MELDINGEN_TOKEN_TIMEOUT,
+                )
+        return applicatie_token
 
     def _get_url(self, url):
         url_o = urlparse(url)
@@ -209,7 +253,12 @@ class Applicatie(BasisModel):
             "json": data,
             "timeout": self._get_timeout(),
         }
-        response: Response = action(**action_params)
+        try:
+            response: Response = action(**action_params)
+        except Exception:
+            if raw_response:
+                return Response()
+            return {}
         if raw_response:
             return response
         return response.json()

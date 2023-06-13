@@ -290,9 +290,7 @@ class MeldingDetailSerializer(MeldingSerializer):
     meldinggebeurtenissen = MeldingGebeurtenisSerializer(
         source="meldinggebeurtenissen_voor_melding", many=True, read_only=True
     )
-    taakopdrachten_voor_melding = TaakopdrachtSerializer(
-        source="actieve_taakopdrachten", many=True, read_only=True
-    )
+    taakopdrachten_voor_melding = TaakopdrachtSerializer(many=True, read_only=True)
 
     class Meta:
         model = Melding

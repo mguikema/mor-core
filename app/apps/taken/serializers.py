@@ -52,6 +52,7 @@ class TaakgebeurtenisSerializer(serializers.ModelSerializer):
             "bijlagen",
             "taakstatus",
             "omschrijving_intern",
+            "taakopdracht",
         )
         read_only_fields = (
             "_links",
@@ -59,6 +60,7 @@ class TaakgebeurtenisSerializer(serializers.ModelSerializer):
             "bijlagen",
             "taakstatus",
             "omschrijving_intern",
+            "taakopdracht",
         )
 
 
@@ -119,6 +121,7 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
         model = Taakopdracht
         fields = (
             "_links",
+            "id",
             "uuid",
             "taaktype",
             "titel",
@@ -130,6 +133,7 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             "_links",
+            "id",
             "uuid",
             "status",
             "melding",

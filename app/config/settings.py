@@ -11,6 +11,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRUE_VALUES = [True, "True", "true", "1"]
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", os.environ.get("DJANGO_SECRET_KEY"))
+FERNET_KEY = os.getenv(
+    "FERNET_KEY", "Fp9p5Ml9hK2BravAUDd4O4pn9_KcBTfFbh-QEuuBN0E="
+).encode()
+
 
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 DEBUG = ENVIRONMENT == "development"
@@ -34,6 +38,8 @@ APPLICATIE_BASIS_URL = os.getenv("APPLICATIE_BASIS_URL")
 ALLOW_UNAUTHORIZED_MEDIA_ACCESS = (
     os.getenv("ALLOW_UNAUTHORIZED_MEDIA_ACCESS", False) in TRUE_VALUES
 )
+TOKEN_API_RELATIVE_URL = os.getenv("TOKEN_API_RELATIVE_URL", "/api-token-auth/")
+MELDINGEN_TOKEN_TIMEOUT = 60 * 5
 
 INSTALLED_APPS = (
     "django_db_schema_renderer",
