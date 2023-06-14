@@ -132,7 +132,6 @@ class Applicatie(BasisModel):
     )
     applicatie_gebruiker_naam = models.CharField(
         max_length=150,
-        unique=True,
         blank=True,
         null=True,
     )
@@ -159,6 +158,21 @@ class Applicatie(BasisModel):
         null=True,
     )
 
+    class ApplicationAuthResponseException(Exception):
+        ...
+
+    class ApplicatieBasisUrlFout(Exception):
+        ...
+
+    class ApplicatieWerdNietGevondenFout(Exception):
+        ...
+
+    class NotificatieVoorApplicatieFout(Exception):
+        ...
+
+    class TaaktypesOphalenFout(Exception):
+        ...
+
     @classmethod
     def vind_applicatie_obv_uri(cls, uri):
         url_o = urlparse(uri)
@@ -184,21 +198,6 @@ class Applicatie(BasisModel):
                 )
             else:
                 self.taaktypes = taaktypes_response.json().get("results", [])
-
-    class ApplicationAuthResponseException(Exception):
-        ...
-
-    class ApplicatieBasisUrlFout(Exception):
-        ...
-
-    class ApplicatieWerdNietGevondenFout(Exception):
-        ...
-
-    class NotificatieVoorApplicatieFout(Exception):
-        ...
-
-    class TaaktypesOphalenFout(Exception):
-        ...
 
     def _get_timeout(self):
         return (5, 10)
@@ -242,7 +241,10 @@ class Applicatie(BasisModel):
         )
 
     def _get_headers(self):
-        headers = {"Authorization": f"Token {self._get_token()}"}
+        token = self._get_token()
+        if not token:
+            return {}
+        headers = {"Authorization": f"Token {token}"}
         return headers
 
     def _do_request(self, url, method="get", data={}, raw_response=True):
