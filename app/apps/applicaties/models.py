@@ -209,7 +209,11 @@ class Applicatie(BasisModel):
     def _get_token(self):
         f = Fernet(settings.FERNET_KEY)
         applicatie_token = cache.get(self.get_token_cache_key())
-        if not applicatie_token:
+        if (
+            not applicatie_token
+            and self.applicatie_gebruiker_naam
+            and self.applicatie_gebruiker_wachtwoord
+        ):
             json_data = {
                 "username": self.applicatie_gebruiker_naam,
                 "password": f.decrypt(self.applicatie_gebruiker_wachtwoord).decode(),
