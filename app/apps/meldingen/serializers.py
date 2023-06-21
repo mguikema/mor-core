@@ -87,6 +87,7 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
             "omschrijving_intern",
             "omschrijving_extern",
             "melding",
+            "gebruiker",
         )
         read_only_fields = ("aangemaakt_op",)
 
@@ -109,6 +110,7 @@ class MeldingGebeurtenisSerializer(WritableNestedModelSerializer):
             "omschrijving_extern",
             "melding",
             "taakgebeurtenis",
+            "gebruiker",
         )
         read_only_fields = (
             "_links",
