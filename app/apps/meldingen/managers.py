@@ -175,6 +175,7 @@ class MeldingManager(models.Manager):
                 raise Exception(
                     f"De applicatie kon niet worden geonden op basis van dit taaktype: {taak_data.get('taaktype', '')}"
                 )
+            gebruiker = serializer.validated_data.pop("gebruiker", None)
             taakopdracht = serializer.save(
                 applicatie=applicatie,
                 melding=melding,
@@ -191,9 +192,11 @@ class MeldingManager(models.Manager):
                 taakopdracht=taakopdracht,
                 taakstatus=taakstatus_instance,
                 omschrijving_intern="Taak aangemaakt",
+                gebruiker=gebruiker,
             )
             taakgebeurtenis_instance.save()
 
+            # verzamel taak aanmaken data voor taakapplicatie
             taakapplicatie_data = serializer.__class__(
                 taakopdracht, context={"request": request}
             ).data
@@ -205,6 +208,7 @@ class MeldingManager(models.Manager):
                 kwargs={"uuid": taakopdracht.uuid},
                 request=request,
             )
+            taakapplicatie_data["gebruiker"] = gebruiker
             taak_aanmaken_response = applicatie.taak_aanmaken(taakapplicatie_data)
 
             if taak_aanmaken_response.status_code == 201:
@@ -222,6 +226,7 @@ class MeldingManager(models.Manager):
                 gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.TAAKOPDRACHT_AANGEMAAKT,
                 taakopdracht=taakopdracht,
                 taakgebeurtenis=taakgebeurtenis_instance,
+                gebruiker=gebruiker,
             )
 
             # zet status van de melding naar in_behandeling als dit niet de huidige status is
@@ -293,6 +298,7 @@ class MeldingManager(models.Manager):
                 ],
                 "resolutie": resolutie,
                 "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
+                "gebruiker": taakgebeurtenis.gebruiker,
             }
             taak_status_aanpassen_response = (
                 locked_taakopdracht.applicatie.taak_status_aanpassen(
@@ -311,6 +317,7 @@ class MeldingManager(models.Manager):
                 gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING,
                 taakopdracht=locked_taakopdracht,
                 taakgebeurtenis=taakgebeurtenis,
+                gebruiker=taakgebeurtenis.gebruiker,
             )
 
             # zet status van de melding naar in_behandeling als dit niet de huidige status is

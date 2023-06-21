@@ -40,6 +40,7 @@ class Status(BasisModel):
             case Status.NaamOpties.IN_BEHANDELING:
                 return [
                     Status.NaamOpties.CONTROLE,
+                    Status.NaamOpties.AFGEHANDELD,
                 ]
             case Status.NaamOpties.OPENSTAAND:
                 return [
