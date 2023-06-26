@@ -40,18 +40,15 @@ class TaakopdrachtViewSet(viewsets.ReadOnlyModelViewSet):
     )
     @action(detail=True, methods=["patch"], url_path="status-aanpassen")
     def status_aanpassen(self, request, uuid):
-        print("TaakopdrachtViewSet: status_aanpassen")
         taakopdracht = self.get_object()
         data = {}
         data.update(request.data)
         data["taakstatus"]["taakopdracht"] = taakopdracht.id
-        print(data)
         serializer = TaakgebeurtenisStatusSerializer(
             data=data,
             context={"request": request},
         )
         if serializer.is_valid():
-            print("VALID")
             Melding.acties.taakopdracht_status_aanpassen(
                 serializer, taakopdracht, request=request
             )
