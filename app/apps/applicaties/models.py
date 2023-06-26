@@ -173,6 +173,9 @@ class Applicatie(BasisModel):
     class TaaktypesOphalenFout(Exception):
         ...
 
+    class AntwoordFout(Exception):
+        ...
+
     @classmethod
     def vind_applicatie_obv_uri(cls, uri):
         url_o = urlparse(uri)
@@ -261,10 +264,8 @@ class Applicatie(BasisModel):
         }
         try:
             response: Response = action(**action_params)
-        except Exception:
-            if raw_response:
-                return Response()
-            return {}
+        except Exception as e:
+            raise Applicatie.AntwoordFout(f"error: {e}")
         if raw_response:
             return response
         return response.json()
@@ -284,10 +285,9 @@ class Applicatie(BasisModel):
             try:
                 return response.json()
             except Exception:
-                logger.error(
+                raise Applicatie.NotificatieVoorApplicatieFout(
                     f"url: '{signaal_uri}melding-afgesloten/', response tekst: {response.text}"
                 )
-        else:
-            logger.error(
-                f"url: '{signaal_uri}melding-afgesloten/', status code: {response.status_code}"
-            )
+        raise Applicatie.NotificatieVoorApplicatieFout(
+            f"url: '{signaal_uri}melding-afgesloten/', status code: {response.status_code}"
+        )
