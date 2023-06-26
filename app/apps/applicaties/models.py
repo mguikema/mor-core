@@ -281,8 +281,13 @@ class Applicatie(BasisModel):
     def notificatie_melding_afgesloten(self, signaal_uri):
         response = self._do_request(f"{signaal_uri}melding-afgesloten/")
         if response.status_code == 200:
-            return response.json()
+            try:
+                return response.json()
+            except Exception:
+                logger.error(
+                    f"url: '{signaal_uri}melding-afgesloten/', response tekst: {response.text}"
+                )
         else:
-            raise Applicatie.NotificatieVoorApplicatieFout(
+            logger.error(
                 f"url: '{signaal_uri}melding-afgesloten/', status code: {response.status_code}"
             )
