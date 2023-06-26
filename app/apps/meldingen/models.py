@@ -41,6 +41,12 @@ class Bijlage(BasisModel):
     mimetype = models.CharField(max_length=30, blank=False, null=False)
     is_afbeelding = models.BooleanField(default=False)
 
+    class BestandPadFout(Exception):
+        ...
+
+    class AfbeeldingVersiesAanmakenFout(Exception):
+        ...
+
     def _is_afbeelding(self):
         try:
             Image.open(self.bestand)
@@ -92,13 +98,12 @@ class Bijlage(BasisModel):
                         quality=80,
                     ).name
                 except Exception as e:
-                    logger.error(
+                    raise Bijlage.AfbeeldingVersiesAanmakenFout(
                         f"aanmaken_afbeelding_versies: get_thumbnail fout: {e}"
                     )
-        logger.info(
+        raise Bijlage.BestandPadFout(
             f"aanmaken_afbeelding_versies: bestand path bestaat niet, bijlage id: {self.pk}"
         )
-        return f"aanmaken_afbeelding_versies: bestand path bestaat niet, bijlage id: {self.pk}"
 
     class Meta:
         verbose_name = "Bijlage"
