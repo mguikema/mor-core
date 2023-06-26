@@ -1,3 +1,4 @@
+import logging
 import mimetypes
 import os
 from os.path import exists
@@ -15,6 +16,8 @@ from PIL import Image, UnidentifiedImageError
 from sorl.thumbnail import get_thumbnail
 from utils.images import get_upload_path
 from utils.models import BasisModel
+
+logger = logging.getLogger(__name__)
 
 
 class Bron(BasisModel):
@@ -60,8 +63,11 @@ class Bijlage(BasisModel):
         return new_file_name
 
     def aanmaken_afbeelding_versies(self):
+        logger.info("aanmaken_afbeelding_versies")
         mt = mimetypes.guess_type(self.bestand.path, strict=True)
+        logger.info(mt)
         if exists(self.bestand.path):
+            logger.info(mt)
             bestand = self.bestand.path
             self.is_afbeelding = self._is_afbeelding()
             if mt:
@@ -69,19 +75,30 @@ class Bijlage(BasisModel):
             if self.mimetype == "image/heic":
                 bestand = self._heic_to_jpeg(self.bestand)
                 self.is_afbeelding = True
+
+            logger.info(f"is afbeelding: {self.is_afbeelding}")
             if self.is_afbeelding:
-                self.afbeelding_verkleind.name = get_thumbnail(
-                    bestand,
-                    settings.THUMBNAIL_KLEIN,
-                    format="JPEG",
-                    quality=99,
-                ).name
-                self.afbeelding.name = get_thumbnail(
-                    bestand,
-                    settings.THUMBNAIL_STANDAARD,
-                    format="JPEG",
-                    quality=80,
-                ).name
+                try:
+                    self.afbeelding_verkleind.name = get_thumbnail(
+                        bestand,
+                        settings.THUMBNAIL_KLEIN,
+                        format="JPEG",
+                        quality=99,
+                    ).name
+                    self.afbeelding.name = get_thumbnail(
+                        bestand,
+                        settings.THUMBNAIL_STANDAARD,
+                        format="JPEG",
+                        quality=80,
+                    ).name
+                except Exception as e:
+                    logger.error(
+                        f"aanmaken_afbeelding_versies: get_thumbnail fout: {e}"
+                    )
+        logger.info(
+            f"aanmaken_afbeelding_versies: bestand path bestaat niet, bijlage id: {self.pk}"
+        )
+        return f"aanmaken_afbeelding_versies: bestand path bestaat niet, bijlage id: {self.pk}"
 
     class Meta:
         verbose_name = "Bijlage"
