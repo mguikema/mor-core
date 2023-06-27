@@ -6,7 +6,10 @@ from apps.meldingen.models import (
     MeldingGebeurtenis,
     Signaal,
 )
-from apps.meldingen.tasks import task_aanmaken_afbeelding_versies
+from apps.meldingen.tasks import (
+    task_aanmaken_afbeelding_versies,
+    task_notificatie_voor_signaal_melding_afgesloten,
+)
 from django.contrib import admin
 
 
@@ -38,6 +41,14 @@ class MeldingContextAdmin(admin.ModelAdmin):
     list_display = ("id", "naam", "slug", "aangepast_op")
 
 
+@admin.action(description="Signalen afsluiten voor melding")
+def action_notificatie_voor_signaal_melding_afgesloten(modeladmin, request, queryset):
+    for melding in queryset.all():
+        if melding.afgesloten_op:
+            for signaal in melding.signalen_voor_melding.all():
+                task_notificatie_voor_signaal_melding_afgesloten.delay(signaal.id)
+
+
 class MeldingAdmin(admin.ModelAdmin):
     list_display = (
         "id",
@@ -47,6 +58,7 @@ class MeldingAdmin(admin.ModelAdmin):
         "aangemaakt_op",
         "afgesloten_op",
     )
+    actions = (action_notificatie_voor_signaal_melding_afgesloten,)
 
     def status_naam(self, obj):
         try:
