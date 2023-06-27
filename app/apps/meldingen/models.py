@@ -101,9 +101,10 @@ class Bijlage(BasisModel):
                     raise Bijlage.AfbeeldingVersiesAanmakenFout(
                         f"aanmaken_afbeelding_versies: get_thumbnail fout: {e}"
                     )
-        raise Bijlage.BestandPadFout(
-            f"aanmaken_afbeelding_versies: bestand path bestaat niet, bijlage id: {self.pk}"
-        )
+        else:
+            raise Bijlage.BestandPadFout(
+                f"aanmaken_afbeelding_versies: bestand path bestaat niet, bijlage id: {self.pk}"
+            )
 
     class Meta:
         verbose_name = "Bijlage"
