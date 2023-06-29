@@ -362,7 +362,7 @@ OIDC_REALM = os.getenv("OIDC_REALM", "mor-acc")
 AUTH_BASE_URL = os.getenv("AUTH_BASE_URL", "https://iam.forzamor.nl")
 OPENID_CONFIG_URI = os.getenv(
     "OPENID_CONFIG_URI",
-    f"{AUTH_BASE_URL}/realms{OIDC_REALM}/.well-known/openid-configuration",
+    f"{AUTH_BASE_URL}/realms/{OIDC_REALM}/.well-known/openid-configuration",
 )
 OPENID_CONFIG = {}
 try:
