@@ -8,7 +8,6 @@ class TaakapplicatieAdmin(admin.ModelAdmin):
         "id",
         "naam",
         "gebruiker",
-        "melding_context",
     )
 
     def save_model(self, request, obj, form, change):

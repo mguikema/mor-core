@@ -1,10 +1,10 @@
-from apps.auth.authentication import AuthenticationClass
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden
+from rest_framework.authentication import TokenAuthentication
 
 
 def serve_protected_media(request):
-    user = AuthenticationClass().authenticate(request)
+    user = TokenAuthentication().authenticate(request)
     if user or settings.ALLOW_UNAUTHORIZED_MEDIA_ACCESS:
         url = request.path.replace("media", "media-protected")
         response = HttpResponse("")

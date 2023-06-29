@@ -72,15 +72,19 @@ INSTALLED_APPS = (
     "django_celery_beat",
     "django_celery_results",
     # Apps
-    "apps.meldingen",
-    "apps.health",
-    "apps.classificatie",
-    "apps.locatie",
-    "apps.status",
+    "apps.authenticatie",
+    "apps.bijlagen",
+    "apps.melders",
+    "apps.notificaties",
     "apps.aliassen",
     "apps.applicaties",
-    "apps.notificaties",
+    "apps.meldingen",
     "apps.taken",
+    "apps.status",
+    "apps.signalen",
+    "apps.locatie",
+    "apps.classificatie",
+    "apps.health",
 )
 
 
@@ -185,6 +189,7 @@ if ENVIRONMENT == "test":
     DJANGO_TEST_PASSWORD = os.getenv("DJANGO_TEST_PASSWORD", "insecure")
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+AUTH_USER_MODEL = "authenticatie.Gebruiker"
 
 SITE_ID = 1
 SITE_NAME = os.getenv("SITE_NAME", "MOR CORE")
@@ -208,7 +213,9 @@ REST_FRAMEWORK = dict(
     ],
     DEFAULT_SCHEMA_CLASS="drf_spectacular.openapi.AutoSchema",
     DEFAULT_PERMISSION_CLASSES=("rest_framework.permissions.IsAuthenticated",),
-    DEFAULT_AUTHENTICATION_CLASSES=("apps.auth.authentication.AuthenticationClass",),
+    DEFAULT_AUTHENTICATION_CLASSES=(
+        "rest_framework.authentication.TokenAuthentication",
+    ),
 )
 
 handler500 = "rest_framework.exceptions.server_error"

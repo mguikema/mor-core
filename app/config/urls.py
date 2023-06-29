@@ -2,11 +2,8 @@ from apps.applicaties.viewsets import TaakapplicatieViewSet
 from apps.bijlagen.viewsets import BijlageViewSet
 from apps.classificatie.viewsets import OnderwerpViewSet
 from apps.meldingen.views import serve_protected_media
-from apps.meldingen.viewsets import (
-    MeldingGebeurtenisViewSet,
-    MeldingViewSet,
-    SignaalViewSet,
-)
+from apps.meldingen.viewsets import MeldinggebeurtenisViewSet, MeldingViewSet
+from apps.signalen.viewsets import SignaalViewSet
 from apps.taken.viewsets import TaakgebeurtenisViewSet, TaakopdrachtViewSet
 from django.conf import settings
 from django.contrib import admin
@@ -24,7 +21,7 @@ router = DefaultRouter()
 router.register(r"signaal", SignaalViewSet, basename="signaal")
 router.register(r"melding", MeldingViewSet, basename="melding")
 router.register(
-    r"meldinggebeurtenis", MeldingGebeurtenisViewSet, basename="meldinggebeurtenis"
+    r"meldinggebeurtenis", MeldinggebeurtenisViewSet, basename="meldinggebeurtenis"
 )
 router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 router.register(r"applicatie", TaakapplicatieViewSet, basename="applicatie")

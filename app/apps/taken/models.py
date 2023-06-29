@@ -1,4 +1,4 @@
-from apps.meldingen.models import Bijlage
+from apps.bijlagen.models import Bijlage
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from utils.models import BasisModel
