@@ -46,6 +46,8 @@ django-celery-results==2.4.0
 redis==4.5.5
 python-magic==0.4.27
 cryptography==41.0.1
+mozilla-django-oidc==3.0.0
+PyJWT<2.4.0
 
 # development
 django-debug-toolbar==4.0.0

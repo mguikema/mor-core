@@ -1,9 +1,13 @@
 import locale
+import logging
 import os
 import sys
 from os.path import join
 
+import requests
 from celery.schedules import crontab
+
+logger = logging.getLogger(__name__)
 
 locale.setlocale(locale.LC_ALL, "nl_NL.UTF-8")
 
@@ -348,3 +352,63 @@ LOGGING = {
         },
     },
 }
+
+OIDC_RP_CLIENT_ID = os.getenv("OIDC_RP_CLIENT_ID", "core-acc")
+OIDC_RP_CLIENT_SECRET = os.getenv("OIDC_RP_CLIENT_SECRET")
+OIDC_VERIFY_SSL = os.getenv("OIDC_VERIFY_SSL", True) in TRUE_VALUES
+OIDC_USE_NONCE = os.getenv("OIDC_USE_NONCE", True) in TRUE_VALUES
+
+OIDC_REALM = os.getenv("OIDC_REALM", "mor-acc")
+AUTH_BASE_URL = os.getenv("AUTH_BASE_URL", "https://iam.forzamor.nl")
+OPENID_CONFIG_URI = os.getenv(
+    "OPENID_CONFIG_URI",
+    f"{AUTH_BASE_URL}/realms{OIDC_REALM}/.well-known/openid-configuration",
+)
+OPENID_CONFIG = {}
+try:
+    OPENID_CONFIG = requests.get(OPENID_CONFIG_URI).json()
+except requests.exceptions.ConnectionError as e:
+    logger.error(f"OPENID_CONFIG FOUT, url: {OPENID_CONFIG_URI}, error: {e}")
+
+OIDC_OP_AUTHORIZATION_ENDPOINT = os.getenv(
+    "OIDC_OP_AUTHORIZATION_ENDPOINT", OPENID_CONFIG.get("authorization_endpoint")
+)
+OIDC_OP_TOKEN_ENDPOINT = os.getenv(
+    "OIDC_OP_TOKEN_ENDPOINT", OPENID_CONFIG.get("token_endpoint")
+)
+OIDC_OP_USER_ENDPOINT = os.getenv(
+    "OIDC_OP_USER_ENDPOINT", OPENID_CONFIG.get("userinfo_endpoint")
+)
+OIDC_OP_JWKS_ENDPOINT = os.getenv(
+    "OIDC_OP_JWKS_ENDPOINT", OPENID_CONFIG.get("jwks_uri")
+)
+CHECK_SESSION_IFRAME = os.getenv(
+    "CHECK_SESSION_IFRAME", OPENID_CONFIG.get("check_session_iframe")
+)
+OIDC_RP_SCOPES = os.getenv(
+    "OIDC_RP_SCOPES",
+    " ".join(OPENID_CONFIG.get("scopes_supported", ["openid", "email", "profile"])),
+)
+OIDC_OP_LOGOUT_ENDPOINT = os.getenv(
+    "OIDC_OP_LOGOUT_ENDPOINT",
+    OPENID_CONFIG.get("end_session_endpoint"),
+)
+
+if OIDC_OP_JWKS_ENDPOINT:
+    OIDC_RP_SIGN_ALGO = "RS256"
+
+AUTHENTICATION_BACKENDS = [
+    "apps.authenticatie.auth.OIDCAuthenticationBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+OIDC_OP_LOGOUT_URL_METHOD = "apps.authenticatie.views.provider_logout"
+ALLOW_LOGOUT_GET_METHOD = True
+OIDC_STORE_ID_TOKEN = True
+OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = int(
+    os.getenv("OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS", "300")
+)
+
+LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL_FAILURE = "/"
+LOGOUT_REDIRECT_URL = "/"
+LOGIN_URL = "/oidc/authenticate/"
