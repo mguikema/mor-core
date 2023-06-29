@@ -7,7 +7,9 @@ import sys
 
 from django.contrib.auth import get_user_model
 from django.core import exceptions
+from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandError
+from django.core.validators import validate_email
 from django.db import DEFAULT_DB_ALIAS
 from django.utils.functional import cached_property
 from django.utils.text import capfirst
@@ -97,10 +99,15 @@ class Command(BaseCommand):
         users = []
         for key, val in os.environ.items():
             if pattern.match(key):
+                email = os.environ.get(key)
+                try:
+                    validate_email(email)
+                except ValidationError:
+                    email = f"{os.environ.get(key)}@forzamor.nl"
                 if self.password_exists_for_username_var(key):
                     users.append(
                         (
-                            os.environ.get(key),
+                            email,
                             self.password_exists_for_username_var(key),
                         )
                     )
@@ -115,7 +122,6 @@ class Command(BaseCommand):
         try:
             # Non-interactive mode.
             # Use password from environment variable, if provided.
-
             for user in users:
                 username = user[0]
                 error_msg = self._validate_username(
