@@ -1,5 +1,5 @@
 import filetype
-from apps.meldingen.models import Bijlage
+from apps.bijlagen.models import Bijlage
 from drf_extra_fields.fields import Base64FileField
 from rest_framework import serializers
 

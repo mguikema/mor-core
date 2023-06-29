@@ -1,3 +1,4 @@
+from apps.bijlagen.tasks import task_aanmaken_afbeelding_versies
 from apps.meldingen.managers import (
     aangemaakt,
     afgesloten,
@@ -6,10 +7,7 @@ from apps.meldingen.managers import (
     taakopdracht_aangemaakt,
     taakopdracht_status_aangepast,
 )
-from apps.meldingen.tasks import (
-    task_aanmaken_afbeelding_versies,
-    task_notificatie_voor_signaal_melding_afgesloten,
-)
+from apps.meldingen.tasks import task_notificatie_voor_signaal_melding_afgesloten
 from apps.status.models import Status
 from django.dispatch import receiver
 

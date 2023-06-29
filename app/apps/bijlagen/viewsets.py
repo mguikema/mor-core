@@ -1,4 +1,4 @@
-from apps.meldingen.models import Bijlage
+from apps.bijlagen.models import Bijlage
 from apps.taken.serializers import BijlageSerializer
 from rest_framework import mixins, viewsets
 

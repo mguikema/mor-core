@@ -24,18 +24,13 @@ class MeldingManager(models.Manager):
     class StatusVeranderingNietToegestaan(Exception):
         pass
 
-    class MeldingContextInGebruik(Exception):
-        pass
-
     class MeldingInGebruik(Exception):
         pass
 
-    class MeldingContextOnderwerpNietGevonden(Exception):
-        pass
-
     def aanmaken(self, signaal_validated_data, signaal_initial_data, db="default"):
-        from apps.meldingen.models import MeldingGebeurtenis, Signaal
+        from apps.meldingen.models import Meldinggebeurtenis
         from apps.meldingen.serializers import MeldingAanmakenSerializer
+        from apps.signalen.models import Signaal
         from apps.status.models import Status
 
         with transaction.atomic():
@@ -67,9 +62,9 @@ class MeldingManager(models.Manager):
             melding.status = status_instance
             melding.save()
 
-            melding_gebeurtenis = MeldingGebeurtenis(
+            melding_gebeurtenis = Meldinggebeurtenis(
                 melding=melding,
-                gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.MELDING_AANGEMAAKT,
+                gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.MELDING_AANGEMAAKT,
                 status=status_instance,
                 omschrijving_intern="Melding aangemaakt",
             )
@@ -151,7 +146,7 @@ class MeldingManager(models.Manager):
             )
 
     def taakopdracht_aanmaken(self, serializer, melding, request, db="default"):
-        from apps.meldingen.models import Melding, MeldingGebeurtenis
+        from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.status.models import Status
         from apps.taken.models import Taakgebeurtenis, Taakstatus
 
@@ -221,9 +216,9 @@ class MeldingManager(models.Manager):
                     f"De taak kon niet worden aangemaakt in de applicatie: {taak_aanmaken_response.status_code}"
                 )
 
-            melding_gebeurtenis = MeldingGebeurtenis(
+            melding_gebeurtenis = Meldinggebeurtenis(
                 melding=locked_melding,
-                gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.TAAKOPDRACHT_AANGEMAAKT,
+                gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_AANGEMAAKT,
                 taakopdracht=taakopdracht,
                 taakgebeurtenis=taakgebeurtenis_instance,
                 gebruiker=gebruiker,
@@ -237,7 +232,7 @@ class MeldingManager(models.Manager):
                 locked_melding.status = status_instance
                 melding_gebeurtenis.status = status_instance
                 melding_gebeurtenis.gebeurtenis_type = (
-                    MeldingGebeurtenis.GebeurtenisType.STATUS_WIJZIGING
+                    Meldinggebeurtenis.GebeurtenisType.STATUS_WIJZIGING
                 )
 
             melding_gebeurtenis.save()
@@ -255,7 +250,7 @@ class MeldingManager(models.Manager):
     def taakopdracht_status_aanpassen(
         self, serializer, taakopdracht, request, db="default"
     ):
-        from apps.meldingen.models import Melding, MeldingGebeurtenis
+        from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.status.models import Status
         from apps.taken.models import Taakopdracht
 
@@ -312,9 +307,9 @@ class MeldingManager(models.Manager):
                     f"De taakstatus kon niet worden aangepast: {locked_taakopdracht.taak_url}status-aanpassen/"
                 )
 
-            melding_gebeurtenis = MeldingGebeurtenis(
+            melding_gebeurtenis = Meldinggebeurtenis(
                 melding=locked_melding,
-                gebeurtenis_type=MeldingGebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING,
+                gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING,
                 taakopdracht=locked_taakopdracht,
                 taakgebeurtenis=taakgebeurtenis,
                 gebruiker=taakgebeurtenis.gebruiker,
@@ -330,7 +325,7 @@ class MeldingManager(models.Manager):
                 locked_melding.status = status_instance
                 melding_gebeurtenis.status = status_instance
                 melding_gebeurtenis.gebeurtenis_type = (
-                    MeldingGebeurtenis.GebeurtenisType.STATUS_WIJZIGING
+                    Meldinggebeurtenis.GebeurtenisType.STATUS_WIJZIGING
                 )
 
             melding_gebeurtenis.save()

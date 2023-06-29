@@ -1,8 +1,9 @@
 import requests_mock
 from apps.aliassen.models import OnderwerpAlias
 from apps.meldingen.managers import MeldingManager
-from apps.meldingen.models import Melding, MeldingContext, MeldingGebeurtenis, Signaal
+from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.meldingen.serializers import MeldingGebeurtenisStatusSerializer
+from apps.signalen.models import Signaal
 from apps.status import workflow
 from apps.status.models import Status
 from django.db import transaction
@@ -16,9 +17,6 @@ class SignaalTest(TestCase):
     def setUp(self, m):
         m.get("http://mock_url", json={}, status_code=200)
         onderwerp_alias = baker.make(OnderwerpAlias, bron_url="http://mock_url")
-        baker.make(
-            MeldingContext, onderwerpen=OnderwerpAlias.objects.all(), slug="slug"
-        )
         self.instance = baker.make(Signaal, onderwerpen=[onderwerp_alias.bron_url])
 
     def test_default_status(self):
@@ -27,7 +25,7 @@ class SignaalTest(TestCase):
         )
 
     def test_melding_gebeurtenis_aangemaakt(self):
-        self.assertEqual(MeldingGebeurtenis.objects.all().count(), 1)
+        self.assertEqual(Meldinggebeurtenis.objects.all().count(), 1)
 
     def test_status_aangemaakt(self):
         self.assertEqual(Status.objects.all().count(), 1)
@@ -47,9 +45,6 @@ class MeldingTransactionTest(TransactionTestCase):
     def setUp(self, m):
         m.get("http://mock_url", json={}, status_code=200)
         baker.make(OnderwerpAlias, bron_url="http://mock_url")
-        baker.make(
-            MeldingContext, onderwerpen=OnderwerpAlias.objects.all(), slug="slug"
-        )
         self.melding_id = Signaal.objects.create(**self.signaal_data).melding.id
         data = {"melding": self.melding_id}
         data.update(self.status_aanpassen_data)

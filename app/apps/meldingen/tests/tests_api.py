@@ -1,6 +1,7 @@
 import requests_mock
 from apps.aliassen.models import OnderwerpAlias
-from apps.meldingen.models import Bijlage, Melding, MeldingContext
+from apps.bijlagen.models import Bijlage
+from apps.meldingen.models import Melding
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status
@@ -51,9 +52,6 @@ class SignaalApiTest(APITestCase):
     def setUp(self, m):
         m.get("http://mock_url", json={}, status_code=200)
         baker.make(OnderwerpAlias, bron_url="http://mock_url")
-        baker.make(
-            MeldingContext, onderwerpen=OnderwerpAlias.objects.all(), slug="slug"
-        )
 
     def test_create_signaal_unauthenticated(self):
         client = get_unauthenticated_client()

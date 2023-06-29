@@ -1,20 +1,10 @@
 from apps.meldingen.filtersets import MeldingFilter, RelatedOrderingFilter
-from apps.meldingen.models import (
-    Bijlage,
-    Melder,
-    Melding,
-    MeldingContext,
-    MeldingGebeurtenis,
-    Signaal,
-)
+from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.meldingen.serializers import (
-    MelderSerializer,
-    MeldingContextSerializer,
     MeldingDetailSerializer,
-    MeldingGebeurtenisSerializer,
+    MeldinggebeurtenisSerializer,
     MeldingGebeurtenisStatusSerializer,
     MeldingSerializer,
-    SignaalSerializer,
 )
 from apps.taken.serializers import TaakopdrachtSerializer
 from django_filters import rest_framework as filters
@@ -25,22 +15,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
-class MeldingGebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class MeldinggebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
 
     lookup_field = "uuid"
-    queryset = MeldingGebeurtenis.objects.all()
+    queryset = Meldinggebeurtenis.objects.all()
 
-    serializer_class = MeldingGebeurtenisSerializer
-
-
-class SignaalViewSet(
-    mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
-):
-    lookup_field = "uuid"
-
-    queryset = Signaal.objects.all()
-
-    serializer_class = SignaalSerializer
+    serializer_class = MeldinggebeurtenisSerializer
 
 
 @extend_schema(
@@ -172,7 +152,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         data = {"melding": melding.id}
         data.update(request.data)
         data["status"]["melding"] = melding.id
-        data["gebeurtenis_type"] = MeldingGebeurtenis.GebeurtenisType.STATUS_WIJZIGING
+        data["gebeurtenis_type"] = Meldinggebeurtenis.GebeurtenisType.STATUS_WIJZIGING
         serializer = MeldingGebeurtenisStatusSerializer(
             data=data,
             context={"request": request},
@@ -191,7 +171,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
 
     @extend_schema(
         description="Gebeurtneis voor een melding toevoegen",
-        request=MeldingGebeurtenisSerializer,
+        request=MeldinggebeurtenisSerializer,
         responses={status.HTTP_200_OK: MeldingDetailSerializer},
         parameters=None,
     )
@@ -199,7 +179,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         detail=True,
         methods=["post"],
         url_path="gebeurtenis-toevoegen",
-        serializer_class=MeldingGebeurtenisSerializer,
+        serializer_class=MeldinggebeurtenisSerializer,
     )
     def gebeurtenis_toevoegen(self, request, uuid):
         serializer = self.serializer_class(

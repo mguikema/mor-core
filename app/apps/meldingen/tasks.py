@@ -17,19 +17,8 @@ class BaseTaskWithRetry(celery.Task):
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def task_aanmaken_afbeelding_versies(self, bijlage_id):
-    from apps.meldingen.models import Bijlage
-
-    bijlage_instance = Bijlage.objects.get(id=bijlage_id)
-    bijlage_instance.aanmaken_afbeelding_versies()
-    bijlage_instance.save()
-
-    return f"Bijlage id: {bijlage_instance.id}"
-
-
-@shared_task(bind=True, base=BaseTaskWithRetry)
 def task_notificatie_voor_signaal_melding_afgesloten(self, signaal_id):
-    from apps.meldingen.models import Signaal
+    from apps.signalen.models import Signaal
 
     signaal_instantie = Signaal.objects.get(pk=signaal_id)
     signaal_instantie.notificatie_melding_afgesloten()
