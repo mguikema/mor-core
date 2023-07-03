@@ -8,3 +8,7 @@
 *__py_cache*
 *.py[cod]
 *.pytest_cache*
+**.bash_history
+media/**/*
+!.gitkeep
+app/*.log
