@@ -358,8 +358,8 @@ OIDC_RP_CLIENT_SECRET = os.getenv("OIDC_RP_CLIENT_SECRET")
 OIDC_VERIFY_SSL = os.getenv("OIDC_VERIFY_SSL", True) in TRUE_VALUES
 OIDC_USE_NONCE = os.getenv("OIDC_USE_NONCE", True) in TRUE_VALUES
 
-OIDC_REALM = os.getenv("OIDC_REALM", "mor-acc")
-AUTH_BASE_URL = os.getenv("AUTH_BASE_URL", "https://iam.forzamor.nl")
+OIDC_REALM = os.getenv("OIDC_REALM")
+AUTH_BASE_URL = os.getenv("AUTH_BASE_URL")
 OPENID_CONFIG_URI = os.getenv(
     "OPENID_CONFIG_URI",
     f"{AUTH_BASE_URL}/realms/{OIDC_REALM}/.well-known/openid-configuration",
