@@ -170,7 +170,7 @@ class Applicatie(BasisModel):
         return self._do_request("/api/v1/taak/", method="post", data=data)
 
     def taaktypes_halen(self):
-        return self._do_request("/api/v1/taaktype/", method="get")
+        return self._do_request("/api/v1/taaktype/?limit=100", method="get")
 
     def taak_status_aanpassen(self, url, data):
         return self._do_request(url, method="patch", data=data)
