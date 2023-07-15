@@ -45,7 +45,7 @@ django-celery-beat==2.2.1
 django-celery-results==2.4.0
 redis==4.5.5
 python-magic==0.4.27
-cryptography==41.0.1
+cryptography==41.0.2
 mozilla-django-oidc==3.0.0
 PyJWT<2.4.0
 
