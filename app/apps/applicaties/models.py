@@ -54,6 +54,9 @@ class Applicatie(BasisModel):
         null=True,
     )
 
+    def __str__(self):
+        return self.naam
+
     class ApplicationAuthResponseException(Exception):
         ...
 
@@ -168,6 +171,9 @@ class Applicatie(BasisModel):
 
     def taak_aanmaken(self, data):
         return self._do_request("/api/v1/taak/", method="post", data=data)
+
+    def taak_verwijderen(self, url):
+        return self._do_request(url, method="delete")
 
     def taaktypes_halen(self):
         return self._do_request("/api/v1/taaktype/?limit=100", method="get")
