@@ -27,6 +27,12 @@ class MeldingManager(models.Manager):
     class MeldingInGebruik(Exception):
         pass
 
+    class TaakopdrachtInGebruik(Exception):
+        pass
+
+    class TaakVerwijderenFout(Exception):
+        pass
+
     def aanmaken(self, signaal_validated_data, signaal_initial_data, db="default"):
         from apps.meldingen.models import Meldinggebeurtenis
         from apps.meldingen.serializers import MeldingAanmakenSerializer
@@ -87,6 +93,7 @@ class MeldingManager(models.Manager):
 
     def status_aanpassen(self, serializer, melding, db="default"):
         from apps.meldingen.models import Melding
+        from apps.taken.models import Taakopdracht
 
         with transaction.atomic():
             try:
@@ -105,7 +112,25 @@ class MeldingManager(models.Manager):
 
             locked_melding.status = melding_gebeurtenis.status
 
+            # TODO: hoe willen we checken dat de melding afgehandeld wordt
             if not locked_melding.status.volgende_statussen():
+                try:
+                    locked_taakopdrachten = (
+                        Taakopdracht.objects.using(db)
+                        .select_for_update(nowait=True)
+                        .filter(melding=locked_melding.pk)
+                    )
+                except OperationalError:
+                    raise MeldingManager.TaakopdrachtInGebruik
+
+                taak_urls = locked_taakopdrachten.values_list("taak_url", flat=True)
+                for taak_url in taak_urls:
+                    taakapplicatie = Applicatie.vind_applicatie_obv_uri(taak_url)
+                    response = taakapplicatie.taak_verwijderen(taak_url)
+                    if response.status_code not in [204, 404]:
+                        raise MeldingManager.TaakVerwijderenFout
+
+                locked_taakopdrachten.delete()
                 locked_melding.afgesloten_op = timezone.now().isoformat()
                 if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
                     locked_melding.resolutie = resolutie
