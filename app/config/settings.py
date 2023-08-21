@@ -249,8 +249,8 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_NAME = "__Secure-sessionid" if not DEBUG else "sessionid"
 CSRF_COOKIE_NAME = "__Secure-csrftoken" if not DEBUG else "csrftoken"
-SESSION_COOKIE_SAMESITE = "Strict" if not DEBUG else "Lax"
-CSRF_COOKIE_SAMESITE = "Strict" if not DEBUG else "Lax"
+SESSION_COOKIE_SAMESITE = "Lax" # Strict does not work well together with OIDC
+CSRF_COOKIE_SAMESITE = "Lax" # Strict does not work well together with OIDC
 
 # Settings for Content-Security-Policy header
 CSP_DEFAULT_SRC = ("'self'",)
@@ -410,5 +410,5 @@ OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = int(
 
 LOGIN_REDIRECT_URL = "/"
 LOGIN_REDIRECT_URL_FAILURE = "/"
-LOGOUT_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = OIDC_OP_LOGOUT_ENDPOINT
 LOGIN_URL = "/oidc/authenticate/"
