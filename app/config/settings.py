@@ -249,8 +249,8 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_NAME = "__Secure-sessionid" if not DEBUG else "sessionid"
 CSRF_COOKIE_NAME = "__Secure-csrftoken" if not DEBUG else "csrftoken"
-SESSION_COOKIE_SAMESITE = "Lax" # Strict does not work well together with OIDC
-CSRF_COOKIE_SAMESITE = "Lax" # Strict does not work well together with OIDC
+SESSION_COOKIE_SAMESITE = "Lax"  # Strict does not work well together with OIDC
+CSRF_COOKIE_SAMESITE = "Lax"  # Strict does not work well together with OIDC
 
 # Settings for Content-Security-Policy header
 CSP_DEFAULT_SRC = ("'self'",)
@@ -308,6 +308,37 @@ TEMPLATES = [
         },
     }
 ]
+
+
+# Cache settings
+REDIS_URL = "redis://redis:6379"
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 5,
+            "SOCKET_TIMEOUT": 5,
+        },
+    }
+}
+
+
+# Sessions are managed by django-session-timeout-joinup
+# Django session settings
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Session settings for django-session-timeout-joinup
+SESSION_EXPIRE_MAXIMUM_SECONDS = int(
+    os.getenv("SESSION_EXPIRE_MAXIMUM_SECONDS", "28800")
+)
+SESSION_EXPIRE_SECONDS = int(os.getenv("SESSION_EXPIRE_SECONDS", "3600"))
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD = int(
+    os.getenv("SESSION_EXPIRE_AFTER_LAST_ACTIVITY_GRACE_PERIOD", "1800")
+)
+
 
 THUMBNAIL_BACKEND = "utils.images.ThumbnailBackend"
 THUMBNAIL_PREFIX = "afbeeldingen"
