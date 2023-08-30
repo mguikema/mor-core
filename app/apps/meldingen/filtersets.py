@@ -94,6 +94,8 @@ class MeldingFilter(BasisFilter):
     actieve_meldingen = filters.BooleanFilter(method="get_actieve_meldingen")
     onderwerp = MultipleValueFilter(field_class=CharField, method="get_onderwerpen")
     status = MultipleValueFilter(field_class=CharField, method="get_statussen")
+    buurt = MultipleValueFilter(field_class=CharField, method="get_buurt")
+    wijk = MultipleValueFilter(field_class=CharField, method="get_wijk")
     begraafplaats = MultipleValueFilter(
         field_class=CharField, method="get_begraafplaatsen"
     )
@@ -147,6 +149,18 @@ class MeldingFilter(BasisFilter):
                 .order_by("-similarity")
             )
             return qs
+        return queryset
+
+    def get_buurt(self, queryset, name, value):
+        if value:
+            return queryset.filter(
+                locaties_voor_melding__buurtnaam__in=value
+            ).distinct()
+        return queryset
+
+    def get_wijk(self, queryset, name, value):
+        if value:
+            return queryset.filter(locaties_voor_melding__wijknaam__in=value).distinct()
         return queryset
 
     def get_begraafplaatsen(self, queryset, name, value):
