@@ -3,13 +3,13 @@ from django_extensions.db.fields import AutoSlugField
 
 
 class OnderwerpBasis(models.Model):
-    naam = models.CharField(max_length=100)
+    name = models.CharField(max_length=100)
     slug = AutoSlugField(
-        populate_from=("naam",), blank=False, overwrite=False, editable=False
+        populate_from=("name",), blank=False, overwrite=False, editable=False
     )
 
     def __str__(self) -> str:
-        return f"{self.pk} - {self.naam}"
+        return f"{self.pk} - {self.name}"
 
     class Meta:
         abstract = True

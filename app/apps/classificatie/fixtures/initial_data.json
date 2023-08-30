@@ -3,7 +3,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 1,
       "fields": {
-        "naam": "Afval",
+        "name": "Afval",
         "slug": "afval"
       }
     },
@@ -11,7 +11,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 12,
       "fields": {
-        "naam": "Afvalcontainer+Prullenbak",
+        "name": "Afvalcontainer+Prullenbak",
         "slug": "afvalcontainerprullenbak"
       }
     },
@@ -19,7 +19,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 32,
       "fields": {
-        "naam": "Bomen, planten, gras",
+        "name": "Bomen, planten, gras",
         "slug": "bomen-planten-gras"
       }
     },
@@ -27,7 +27,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 38,
       "fields": {
-        "naam": "Dieren",
+        "name": "Dieren",
         "slug": "dieren"
       }
     },
@@ -35,7 +35,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 49,
       "fields": {
-        "naam": "Gevaarlijk (straat)afval",
+        "name": "Gevaarlijk (straat)afval",
         "slug": "gevaarlijk-straatafval"
       }
     },
@@ -43,7 +43,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 59,
       "fields": {
-        "naam": "Graffiti",
+        "name": "Graffiti",
         "slug": "graffiti"
       }
     },
@@ -51,7 +51,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 62,
       "fields": {
-        "naam": "Maatregelen COVID -19",
+        "name": "Maatregelen COVID -19",
         "slug": "maatregelen-covid-19"
       }
     },
@@ -59,7 +59,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 64,
       "fields": {
-        "naam": "Meldkamer Stadsbeheer",
+        "name": "Meldkamer Stadsbeheer",
         "slug": "meldkamer-stadsbeheer"
       }
     },
@@ -67,7 +67,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 67,
       "fields": {
-        "naam": "Overige onderwerpen",
+        "name": "Overige onderwerpen",
         "slug": "overige-onderwerpen"
       }
     },
@@ -75,7 +75,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 74,
       "fields": {
-        "naam": "Overlast",
+        "name": "Overlast",
         "slug": "overlast"
       }
     },
@@ -83,7 +83,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 76,
       "fields": {
-        "naam": "Parkeeroverlast",
+        "name": "Parkeeroverlast",
         "slug": "parkeeroverlast"
       }
     },
@@ -91,7 +91,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 81,
       "fields": {
-        "naam": "Singels en sloten",
+        "name": "Singels en sloten",
         "slug": "singels-en-sloten"
       }
     },
@@ -99,7 +99,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 87,
       "fields": {
-        "naam": "Speelplaatsen",
+        "name": "Speelplaatsen",
         "slug": "speelplaatsen"
       }
     },
@@ -107,7 +107,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 89,
       "fields": {
-        "naam": "Straatmeubilair kapot",
+        "name": "Straatmeubilair kapot",
         "slug": "straatmeubilair-kapot"
       }
     },
@@ -115,7 +115,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 96,
       "fields": {
-        "naam": "Straatverlichting",
+        "name": "Straatverlichting",
         "slug": "straatverlichting"
       }
     },
@@ -123,7 +123,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 104,
       "fields": {
-        "naam": "Vuil op straat",
+        "name": "Vuil op straat",
         "slug": "vuil-op-straat"
       }
     },
@@ -131,7 +131,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 117,
       "fields": {
-        "naam": "Wateroverlast / riolering",
+        "name": "Wateroverlast / riolering",
         "slug": "wateroverlast-riolering"
       }
     },
@@ -139,7 +139,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 126,
       "fields": {
-        "naam": "Weg (fiets/voet)pad brug",
+        "name": "Weg (fiets/voet)pad brug",
         "slug": "weg-fietsvoetpad-brug"
       }
     },
@@ -147,7 +147,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 139,
       "fields": {
-        "naam": "(Weg)werkzaamheden",
+        "name": "(Weg)werkzaamheden",
         "slug": "wegwerkzaamheden"
       }
     },
@@ -155,7 +155,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 143,
       "fields": {
-        "naam": "Wildplakken",
+        "name": "Wildplakken",
         "slug": "wildplakken"
       }
     },
@@ -163,7 +163,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 148,
       "fields": {
-        "naam": "Winkelwagens",
+        "name": "Winkelwagens",
         "slug": "winkelwagens"
       }
     },
@@ -171,7 +171,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 150,
       "fields": {
-        "naam": "Wrakken",
+        "name": "Wrakken",
         "slug": "wrakken"
       }
     },
@@ -179,7 +179,7 @@
       "model": "classificatie.onderwerpgroep",
       "pk": 151,
       "fields": {
-        "naam": "Begraven & cremeren",
+        "name": "Begraven & cremeren",
         "slug": "begraven-cremeren"
       }
     },
@@ -187,7 +187,7 @@
       "model": "classificatie.onderwerp",
       "pk": 2,
       "fields": {
-        "naam": "bedrijfsafval",
+        "name": "bedrijfsafval",
         "slug": "bedrijfsafval",
         "onderwerp_groep": 1
       }
@@ -196,7 +196,7 @@
       "model": "classificatie.onderwerp",
       "pk": 3,
       "fields": {
-        "naam": "Grofvuil in plantsoen",
+        "name": "Grofvuil in plantsoen",
         "slug": "grofvuil-in-plantsoen",
         "onderwerp_groep": 1
       }
@@ -205,7 +205,7 @@
       "model": "classificatie.onderwerp",
       "pk": 4,
       "fields": {
-        "naam": "Grofvuil op straat",
+        "name": "Grofvuil op straat",
         "slug": "grofvuil-op-straat",
         "onderwerp_groep": 1
       }
@@ -214,7 +214,7 @@
       "model": "classificatie.onderwerp",
       "pk": 5,
       "fields": {
-        "naam": "grond/zand/grind",
+        "name": "grond/zand/grind",
         "slug": "grondzandgrind",
         "onderwerp_groep": 1
       }
@@ -223,7 +223,7 @@
       "model": "classificatie.onderwerp",
       "pk": 6,
       "fields": {
-        "naam": "huisvuil verkeerd aangeboden",
+        "name": "huisvuil verkeerd aangeboden",
         "slug": "huisvuil-verkeerd-aangeboden",
         "onderwerp_groep": 1
       }
@@ -232,7 +232,7 @@
       "model": "classificatie.onderwerp",
       "pk": 7,
       "fields": {
-        "naam": "huisvuilzakken naast container",
+        "name": "huisvuilzakken naast container",
         "slug": "huisvuilzakken-naast-container",
         "onderwerp_groep": 1
       }
@@ -241,7 +241,7 @@
       "model": "classificatie.onderwerp",
       "pk": 8,
       "fields": {
-        "naam": "huisvuilzakken niet opgehaald",
+        "name": "huisvuilzakken niet opgehaald",
         "slug": "huisvuilzakken-niet-opgehaald",
         "onderwerp_groep": 1
       }
@@ -250,7 +250,7 @@
       "model": "classificatie.onderwerp",
       "pk": 9,
       "fields": {
-        "naam": "Klein Afval",
+        "name": "Klein Afval",
         "slug": "klein-afval",
         "onderwerp_groep": 1
       }
@@ -259,7 +259,7 @@
       "model": "classificatie.onderwerp",
       "pk": 10,
       "fields": {
-        "naam": "koelkast/vriezer",
+        "name": "koelkast/vriezer",
         "slug": "koelkastvriezer",
         "onderwerp_groep": 1
       }
@@ -268,7 +268,7 @@
       "model": "classificatie.onderwerp",
       "pk": 11,
       "fields": {
-        "naam": "sloopafval",
+        "name": "sloopafval",
         "slug": "sloopafval",
         "onderwerp_groep": 1
       }
@@ -277,7 +277,7 @@
       "model": "classificatie.onderwerp",
       "pk": 13,
       "fields": {
-        "naam": "Bouw/puincontainer",
+        "name": "Bouw/puincontainer",
         "slug": "bouwpuincontainer",
         "onderwerp_groep": 12
       }
@@ -286,7 +286,7 @@
       "model": "classificatie.onderwerp",
       "pk": 14,
       "fields": {
-        "naam": "cocon/1100 liter rolcontainer vol",
+        "name": "cocon/1100 liter rolcontainer vol",
         "slug": "cocon1100-liter-rolcontainer-vol",
         "onderwerp_groep": 12
       }
@@ -295,7 +295,7 @@
       "model": "classificatie.onderwerp",
       "pk": 15,
       "fields": {
-        "naam": "Containerruimte markthal",
+        "name": "Containerruimte markthal",
         "slug": "containerruimte-markthal",
         "onderwerp_groep": 12
       }
@@ -304,7 +304,7 @@
       "model": "classificatie.onderwerp",
       "pk": 16,
       "fields": {
-        "naam": "glascontainer kapot",
+        "name": "glascontainer kapot",
         "slug": "glascontainer-kapot",
         "onderwerp_groep": 12
       }
@@ -313,7 +313,7 @@
       "model": "classificatie.onderwerp",
       "pk": 17,
       "fields": {
-        "naam": "glascontainer vol",
+        "name": "glascontainer vol",
         "slug": "glascontainer-vol",
         "onderwerp_groep": 12
       }
@@ -322,7 +322,7 @@
       "model": "classificatie.onderwerp",
       "pk": 18,
       "fields": {
-        "naam": "Huiscontainer kapot",
+        "name": "Huiscontainer kapot",
         "slug": "huiscontainer-kapot",
         "onderwerp_groep": 12
       }
@@ -331,7 +331,7 @@
       "model": "classificatie.onderwerp",
       "pk": 19,
       "fields": {
-        "naam": "Huiscontainer(gfe+t/gft) niet geleegd",
+        "name": "Huiscontainer(gfe+t/gft) niet geleegd",
         "slug": "huiscontainergfetgft-niet-geleegd",
         "onderwerp_groep": 12
       }
@@ -340,7 +340,7 @@
       "model": "classificatie.onderwerp",
       "pk": 20,
       "fields": {
-        "naam": "Huiscontainer(papier) niet geleegd",
+        "name": "Huiscontainer(papier) niet geleegd",
         "slug": "huiscontainerpapier-niet-geleegd",
         "onderwerp_groep": 12
       }
@@ -349,7 +349,7 @@
       "model": "classificatie.onderwerp",
       "pk": 21,
       "fields": {
-        "naam": "Huiscontainer(rest) niet geleegd",
+        "name": "Huiscontainer(rest) niet geleegd",
         "slug": "huiscontainerrest-niet-geleegd",
         "onderwerp_groep": 12
       }
@@ -358,7 +358,7 @@
       "model": "classificatie.onderwerp",
       "pk": 22,
       "fields": {
-        "naam": "papiercontainer kapot",
+        "name": "papiercontainer kapot",
         "slug": "papiercontainer-kapot",
         "onderwerp_groep": 12
       }
@@ -367,7 +367,7 @@
       "model": "classificatie.onderwerp",
       "pk": 23,
       "fields": {
-        "naam": "papiercontainer vol",
+        "name": "papiercontainer vol",
         "slug": "papiercontainer-vol",
         "onderwerp_groep": 12
       }
@@ -376,7 +376,7 @@
       "model": "classificatie.onderwerp",
       "pk": 24,
       "fields": {
-        "naam": "prullenbak kapot",
+        "name": "prullenbak kapot",
         "slug": "prullenbak-kapot",
         "onderwerp_groep": 12
       }
@@ -385,7 +385,7 @@
       "model": "classificatie.onderwerp",
       "pk": 25,
       "fields": {
-        "naam": "prullenbak vol ",
+        "name": "prullenbak vol ",
         "slug": "prullenbak-vol",
         "onderwerp_groep": 12
       }
@@ -394,7 +394,7 @@
       "model": "classificatie.onderwerp",
       "pk": 26,
       "fields": {
-        "naam": "restafvalcontainer kapot",
+        "name": "restafvalcontainer kapot",
         "slug": "restafvalcontainer-kapot",
         "onderwerp_groep": 12
       }
@@ -403,7 +403,7 @@
       "model": "classificatie.onderwerp",
       "pk": 27,
       "fields": {
-        "naam": "restafvalcontainer vol",
+        "name": "restafvalcontainer vol",
         "slug": "restafvalcontainer-vol",
         "onderwerp_groep": 12
       }
@@ -412,7 +412,7 @@
       "model": "classificatie.onderwerp",
       "pk": 28,
       "fields": {
-        "naam": "textielcontainer kapot",
+        "name": "textielcontainer kapot",
         "slug": "textielcontainer-kapot",
         "onderwerp_groep": 12
       }
@@ -421,7 +421,7 @@
       "model": "classificatie.onderwerp",
       "pk": 29,
       "fields": {
-        "naam": "textielcontainer vol",
+        "name": "textielcontainer vol",
         "slug": "textielcontainer-vol",
         "onderwerp_groep": 12
       }
@@ -430,7 +430,7 @@
       "model": "classificatie.onderwerp",
       "pk": 30,
       "fields": {
-        "naam": "Wijkcontainer (gfe) kapot",
+        "name": "Wijkcontainer (gfe) kapot",
         "slug": "wijkcontainer-gfe-kapot",
         "onderwerp_groep": 12
       }
@@ -439,7 +439,7 @@
       "model": "classificatie.onderwerp",
       "pk": 31,
       "fields": {
-        "naam": "Wijkcontainer (gfe) vol",
+        "name": "Wijkcontainer (gfe) vol",
         "slug": "wijkcontainer-gfe-vol",
         "onderwerp_groep": 12
       }
@@ -448,7 +448,7 @@
       "model": "classificatie.onderwerp",
       "pk": 33,
       "fields": {
-        "naam": "bloembakken",
+        "name": "bloembakken",
         "slug": "bloembakken",
         "onderwerp_groep": 32
       }
@@ -457,7 +457,7 @@
       "model": "classificatie.onderwerp",
       "pk": 34,
       "fields": {
-        "naam": "Bomen",
+        "name": "Bomen",
         "slug": "bomen",
         "onderwerp_groep": 32
       }
@@ -466,7 +466,7 @@
       "model": "classificatie.onderwerp",
       "pk": 35,
       "fields": {
-        "naam": "Gras",
+        "name": "Gras",
         "slug": "gras",
         "onderwerp_groep": 32
       }
@@ -475,7 +475,7 @@
       "model": "classificatie.onderwerp",
       "pk": 36,
       "fields": {
-        "naam": "Japanse Duizendknoop",
+        "name": "Japanse Duizendknoop",
         "slug": "japanse-duizendknoop",
         "onderwerp_groep": 32
       }
@@ -484,7 +484,7 @@
       "model": "classificatie.onderwerp",
       "pk": 37,
       "fields": {
-        "naam": "plantsoenen",
+        "name": "plantsoenen",
         "slug": "plantsoenen",
         "onderwerp_groep": 32
       }
@@ -493,7 +493,7 @@
       "model": "classificatie.onderwerp",
       "pk": 39,
       "fields": {
-        "naam": "Dieren overig",
+        "name": "Dieren overig",
         "slug": "dieren-overig",
         "onderwerp_groep": 38
       }
@@ -502,7 +502,7 @@
       "model": "classificatie.onderwerp",
       "pk": 40,
       "fields": {
-        "naam": "Dode duiven",
+        "name": "Dode duiven",
         "slug": "dode-duiven",
         "onderwerp_groep": 38
       }
@@ -511,7 +511,7 @@
       "model": "classificatie.onderwerp",
       "pk": 41,
       "fields": {
-        "naam": "Dode ratten",
+        "name": "Dode ratten",
         "slug": "dode-ratten",
         "onderwerp_groep": 38
       }
@@ -520,7 +520,7 @@
       "model": "classificatie.onderwerp",
       "pk": 42,
       "fields": {
-        "naam": "Dode vogels",
+        "name": "Dode vogels",
         "slug": "dode-vogels",
         "onderwerp_groep": 38
       }
@@ -529,7 +529,7 @@
       "model": "classificatie.onderwerp",
       "pk": 43,
       "fields": {
-        "naam": "dood dier in/aan water (geen rat/duif)",
+        "name": "dood dier in/aan water (geen rat/duif)",
         "slug": "dood-dier-inaan-water-geen-ratduif",
         "onderwerp_groep": 38
       }
@@ -538,7 +538,7 @@
       "model": "classificatie.onderwerp",
       "pk": 44,
       "fields": {
-        "naam": "dood dier op/aan weg (geen rat/duif)",
+        "name": "dood dier op/aan weg (geen rat/duif)",
         "slug": "dood-dier-opaan-weg-geen-ratduif",
         "onderwerp_groep": 38
       }
@@ -547,7 +547,7 @@
       "model": "classificatie.onderwerp",
       "pk": 45,
       "fields": {
-        "naam": "Duivenoverlast",
+        "name": "Duivenoverlast",
         "slug": "duivenoverlast",
         "onderwerp_groep": 38
       }
@@ -556,7 +556,7 @@
       "model": "classificatie.onderwerp",
       "pk": 46,
       "fields": {
-        "naam": "Eikenprocessierups",
+        "name": "Eikenprocessierups",
         "slug": "eikenprocessierups",
         "onderwerp_groep": 38
       }
@@ -565,7 +565,7 @@
       "model": "classificatie.onderwerp",
       "pk": 47,
       "fields": {
-        "naam": "Levende ratten",
+        "name": "Levende ratten",
         "slug": "levende-ratten",
         "onderwerp_groep": 38
       }
@@ -574,7 +574,7 @@
       "model": "classificatie.onderwerp",
       "pk": 48,
       "fields": {
-        "naam": "Overlast wespen, bijen, hommels",
+        "name": "Overlast wespen, bijen, hommels",
         "slug": "overlast-wespen-bijen-hommels",
         "onderwerp_groep": 38
       }
@@ -583,7 +583,7 @@
       "model": "classificatie.onderwerp",
       "pk": 50,
       "fields": {
-        "naam": "accu",
+        "name": "accu",
         "slug": "accu",
         "onderwerp_groep": 49
       }
@@ -592,7 +592,7 @@
       "model": "classificatie.onderwerp",
       "pk": 51,
       "fields": {
-        "naam": "asbest",
+        "name": "asbest",
         "slug": "asbest",
         "onderwerp_groep": 49
       }
@@ -601,7 +601,7 @@
       "model": "classificatie.onderwerp",
       "pk": 52,
       "fields": {
-        "naam": "gastank/brandblusapparatuur",
+        "name": "gastank/brandblusapparatuur",
         "slug": "gastankbrandblusapparatuur",
         "onderwerp_groep": 49
       }
@@ -610,7 +610,7 @@
       "model": "classificatie.onderwerp",
       "pk": 53,
       "fields": {
-        "naam": "injectienaalden/spuiten",
+        "name": "injectienaalden/spuiten",
         "slug": "injectienaaldenspuiten",
         "onderwerp_groep": 49
       }
@@ -619,7 +619,7 @@
       "model": "classificatie.onderwerp",
       "pk": 54,
       "fields": {
-        "naam": "(klein) chemisch afval",
+        "name": "(klein) chemisch afval",
         "slug": "klein-chemisch-afval",
         "onderwerp_groep": 49
       }
@@ -628,7 +628,7 @@
       "model": "classificatie.onderwerp",
       "pk": 55,
       "fields": {
-        "naam": "(olie)lekkage/morsing",
+        "name": "(olie)lekkage/morsing",
         "slug": "olielekkagemorsing",
         "onderwerp_groep": 49
       }
@@ -637,7 +637,7 @@
       "model": "classificatie.onderwerp",
       "pk": 56,
       "fields": {
-        "naam": "(olie)vaten",
+        "name": "(olie)vaten",
         "slug": "olievaten",
         "onderwerp_groep": 49
       }
@@ -646,7 +646,7 @@
       "model": "classificatie.onderwerp",
       "pk": 57,
       "fields": {
-        "naam": "onbekende stoffen",
+        "name": "onbekende stoffen",
         "slug": "onbekende-stoffen",
         "onderwerp_groep": 49
       }
@@ -655,7 +655,7 @@
       "model": "classificatie.onderwerp",
       "pk": 58,
       "fields": {
-        "naam": "uitgebrande voertuigen (herstel wegdek)",
+        "name": "uitgebrande voertuigen (herstel wegdek)",
         "slug": "uitgebrande-voertuigen-herstel-wegdek",
         "onderwerp_groep": 49
       }
@@ -664,7 +664,7 @@
       "model": "classificatie.onderwerp",
       "pk": 60,
       "fields": {
-        "naam": "graffiti-discriminerend",
+        "name": "graffiti-discriminerend",
         "slug": "graffiti-discriminerend",
         "onderwerp_groep": 59
       }
@@ -673,7 +673,7 @@
       "model": "classificatie.onderwerp",
       "pk": 61,
       "fields": {
-        "naam": "graffiti-overig",
+        "name": "graffiti-overig",
         "slug": "graffiti-overig",
         "onderwerp_groep": 59
       }
@@ -682,7 +682,7 @@
       "model": "classificatie.onderwerp",
       "pk": 63,
       "fields": {
-        "naam": "Controle coronatoegangsbewijs ",
+        "name": "Controle coronatoegangsbewijs ",
         "slug": "controle-coronatoegangsbewijs",
         "onderwerp_groep": 62
       }
@@ -691,7 +691,7 @@
       "model": "classificatie.onderwerp",
       "pk": 65,
       "fields": {
-        "naam": "Flying Squads Schone Stad",
+        "name": "Flying Squads Schone Stad",
         "slug": "flying-squads-schone-stad",
         "onderwerp_groep": 64
       }
@@ -700,7 +700,7 @@
       "model": "classificatie.onderwerp",
       "pk": 66,
       "fields": {
-        "naam": "Flying Squads T&H",
+        "name": "Flying Squads T&H",
         "slug": "flying-squads-th",
         "onderwerp_groep": 64
       }
@@ -709,7 +709,7 @@
       "model": "classificatie.onderwerp",
       "pk": 68,
       "fields": {
-        "naam": "Marktvoorzieningen",
+        "name": "Marktvoorzieningen",
         "slug": "marktvoorzieningen",
         "onderwerp_groep": 67
       }
@@ -718,7 +718,7 @@
       "model": "classificatie.onderwerp",
       "pk": 69,
       "fields": {
-        "naam": "Melding op begraafplaats",
+        "name": "Melding op begraafplaats",
         "slug": "melding-op-begraafplaats",
         "onderwerp_groep": 67
       }
@@ -727,7 +727,7 @@
       "model": "classificatie.onderwerp",
       "pk": 70,
       "fields": {
-        "naam": "Openbare werken algemeen",
+        "name": "Openbare werken algemeen",
         "slug": "openbare-werken-algemeen",
         "onderwerp_groep": 67
       }
@@ -736,7 +736,7 @@
       "model": "classificatie.onderwerp",
       "pk": 71,
       "fields": {
-        "naam": "Schone Stad algemeen",
+        "name": "Schone Stad algemeen",
         "slug": "schone-stad-algemeen",
         "onderwerp_groep": 67
       }
@@ -745,7 +745,7 @@
       "model": "classificatie.onderwerp",
       "pk": 72,
       "fields": {
-        "naam": "Stadsontwikkeling Algemeen",
+        "name": "Stadsontwikkeling Algemeen",
         "slug": "stadsontwikkeling-algemeen",
         "onderwerp_groep": 67
       }
@@ -754,7 +754,7 @@
       "model": "classificatie.onderwerp",
       "pk": 73,
       "fields": {
-        "naam": "Toezicht & Handhaving algemeen",
+        "name": "Toezicht & Handhaving algemeen",
         "slug": "toezicht-handhaving-algemeen",
         "onderwerp_groep": 67
       }
@@ -763,7 +763,7 @@
       "model": "classificatie.onderwerp",
       "pk": 75,
       "fields": {
-        "naam": "Overlast markten",
+        "name": "Overlast markten",
         "slug": "overlast-markten",
         "onderwerp_groep": 74
       }
@@ -772,7 +772,7 @@
       "model": "classificatie.onderwerp",
       "pk": 77,
       "fields": {
-        "naam": "Aanhangers/caravans",
+        "name": "Aanhangers/caravans",
         "slug": "aanhangerscaravans",
         "onderwerp_groep": 76
       }
@@ -781,7 +781,7 @@
       "model": "classificatie.onderwerp",
       "pk": 78,
       "fields": {
-        "naam": "Hinderlijk geparkeerde (brom-)fiets",
+        "name": "Hinderlijk geparkeerde (brom-)fiets",
         "slug": "hinderlijk-geparkeerde-brom-fiets",
         "onderwerp_groep": 76
       }
@@ -790,7 +790,7 @@
       "model": "classificatie.onderwerp",
       "pk": 79,
       "fields": {
-        "naam": "Parkeeroverlast",
+        "name": "Parkeeroverlast",
         "slug": "parkeeroverlast",
         "onderwerp_groep": 76
       }
@@ -799,7 +799,7 @@
       "model": "classificatie.onderwerp",
       "pk": 80,
       "fields": {
-        "naam": "Te lang geparkeerde (brom-)fiets",
+        "name": "Te lang geparkeerde (brom-)fiets",
         "slug": "te-lang-geparkeerde-brom-fiets",
         "onderwerp_groep": 76
       }
@@ -808,7 +808,7 @@
       "model": "classificatie.onderwerp",
       "pk": 82,
       "fields": {
-        "naam": "beschoeiingen",
+        "name": "beschoeiingen",
         "slug": "beschoeiingen",
         "onderwerp_groep": 81
       }
@@ -817,7 +817,7 @@
       "model": "classificatie.onderwerp",
       "pk": 83,
       "fields": {
-        "naam": "drijfvuil in singel",
+        "name": "drijfvuil in singel",
         "slug": "drijfvuil-in-singel",
         "onderwerp_groep": 81
       }
@@ -826,7 +826,7 @@
       "model": "classificatie.onderwerp",
       "pk": 84,
       "fields": {
-        "naam": "Fonteinen",
+        "name": "Fonteinen",
         "slug": "fonteinen",
         "onderwerp_groep": 81
       }
@@ -835,7 +835,7 @@
       "model": "classificatie.onderwerp",
       "pk": 85,
       "fields": {
-        "naam": "singel ",
+        "name": "singel ",
         "slug": "singel",
         "onderwerp_groep": 81
       }
@@ -844,7 +844,7 @@
       "model": "classificatie.onderwerp",
       "pk": 86,
       "fields": {
-        "naam": "zinkvuil/vloeistoffen in singel",
+        "name": "zinkvuil/vloeistoffen in singel",
         "slug": "zinkvuilvloeistoffen-in-singel",
         "onderwerp_groep": 81
       }
@@ -853,7 +853,7 @@
       "model": "classificatie.onderwerp",
       "pk": 88,
       "fields": {
-        "naam": "speelplaats",
+        "name": "speelplaats",
         "slug": "speelplaats",
         "onderwerp_groep": 87
       }
@@ -862,7 +862,7 @@
       "model": "classificatie.onderwerp",
       "pk": 90,
       "fields": {
-        "naam": "bewegwijzering",
+        "name": "bewegwijzering",
         "slug": "bewegwijzering",
         "onderwerp_groep": 89
       }
@@ -871,7 +871,7 @@
       "model": "classificatie.onderwerp",
       "pk": 91,
       "fields": {
-        "naam": "klok / uurwerk ",
+        "name": "klok / uurwerk ",
         "slug": "klok-uurwerk",
         "onderwerp_groep": 89
       }
@@ -880,7 +880,7 @@
       "model": "classificatie.onderwerp",
       "pk": 92,
       "fields": {
-        "naam": "openbaar oplaadpunt elektrische auto",
+        "name": "openbaar oplaadpunt elektrische auto",
         "slug": "openbaar-oplaadpunt-elektrische-auto",
         "onderwerp_groep": 89
       }
@@ -889,7 +889,7 @@
       "model": "classificatie.onderwerp",
       "pk": 93,
       "fields": {
-        "naam": "straatmeubilair algemeen",
+        "name": "straatmeubilair algemeen",
         "slug": "straatmeubilair-algemeen",
         "onderwerp_groep": 89
       }
@@ -898,8 +898,8 @@
       "model": "classificatie.onderwerp",
       "pk": 94,
       "fields": {
-        "naam": "straatnaambord/verkeersbord",
-        "slug": "straatnaambordverkeersbord",
+        "name": "straatnamebord/verkeersbord",
+        "slug": "straatnamebordverkeersbord",
         "onderwerp_groep": 89
       }
     },
@@ -907,7 +907,7 @@
       "model": "classificatie.onderwerp",
       "pk": 95,
       "fields": {
-        "naam": "Watertappunt",
+        "name": "Watertappunt",
         "slug": "watertappunt",
         "onderwerp_groep": 89
       }
@@ -916,7 +916,7 @@
       "model": "classificatie.onderwerp",
       "pk": 97,
       "fields": {
-        "naam": "beschadigde lichtmast",
+        "name": "beschadigde lichtmast",
         "slug": "beschadigde-lichtmast",
         "onderwerp_groep": 96
       }
@@ -925,7 +925,7 @@
       "model": "classificatie.onderwerp",
       "pk": 98,
       "fields": {
-        "naam": "brandt geen verlichting in gehele straat",
+        "name": "brandt geen verlichting in gehele straat",
         "slug": "brandt-geen-verlichting-in-gehele-straat",
         "onderwerp_groep": 96
       }
@@ -934,7 +934,7 @@
       "model": "classificatie.onderwerp",
       "pk": 99,
       "fields": {
-        "naam": "lamp(en) uit",
+        "name": "lamp(en) uit",
         "slug": "lampen-uit",
         "onderwerp_groep": 96
       }
@@ -943,7 +943,7 @@
       "model": "classificatie.onderwerp",
       "pk": 100,
       "fields": {
-        "naam": "lichtmastluikje staat open / bedrading zichtbaar",
+        "name": "lichtmastluikje staat open / bedrading zichtbaar",
         "slug": "lichtmastluikje-staat-open-bedrading-zichtbaar",
         "onderwerp_groep": 96
       }
@@ -952,7 +952,7 @@
       "model": "classificatie.onderwerp",
       "pk": 101,
       "fields": {
-        "naam": "scheefstaande lichtmast",
+        "name": "scheefstaande lichtmast",
         "slug": "scheefstaande-lichtmast",
         "onderwerp_groep": 96
       }
@@ -961,7 +961,7 @@
       "model": "classificatie.onderwerp",
       "pk": 102,
       "fields": {
-        "naam": "verlichting brandt ook overdag                ",
+        "name": "verlichting brandt ook overdag                ",
         "slug": "verlichting-brandt-ook-overdag",
         "onderwerp_groep": 96
       }
@@ -970,7 +970,7 @@
       "model": "classificatie.onderwerp",
       "pk": 103,
       "fields": {
-        "naam": "verlichting overig: (geef omschrijving)",
+        "name": "verlichting overig: (geef omschrijving)",
         "slug": "verlichting-overig-geef-omschrijving",
         "onderwerp_groep": 96
       }
@@ -979,7 +979,7 @@
       "model": "classificatie.onderwerp",
       "pk": 105,
       "fields": {
-        "naam": "Andere uitwerpselen",
+        "name": "Andere uitwerpselen",
         "slug": "andere-uitwerpselen",
         "onderwerp_groep": 104
       }
@@ -988,7 +988,7 @@
       "model": "classificatie.onderwerp",
       "pk": 106,
       "fields": {
-        "naam": "Ganzen- of eendenpoep",
+        "name": "Ganzen- of eendenpoep",
         "slug": "ganzen-of-eendenpoep",
         "onderwerp_groep": 104
       }
@@ -997,7 +997,7 @@
       "model": "classificatie.onderwerp",
       "pk": 107,
       "fields": {
-        "naam": "glas op straat",
+        "name": "glas op straat",
         "slug": "glas-op-straat",
         "onderwerp_groep": 104
       }
@@ -1006,7 +1006,7 @@
       "model": "classificatie.onderwerp",
       "pk": 108,
       "fields": {
-        "naam": "Hondenpoep op straat",
+        "name": "Hondenpoep op straat",
         "slug": "hondenpoep-op-straat",
         "onderwerp_groep": 104
       }
@@ -1015,7 +1015,7 @@
       "model": "classificatie.onderwerp",
       "pk": 109,
       "fields": {
-        "naam": "honden-uitlaatzone",
+        "name": "honden-uitlaatzone",
         "slug": "honden-uitlaatzone",
         "onderwerp_groep": 104
       }
@@ -1024,7 +1024,7 @@
       "model": "classificatie.onderwerp",
       "pk": 110,
       "fields": {
-        "naam": "Kerstboom op straat",
+        "name": "Kerstboom op straat",
         "slug": "kerstboom-op-straat",
         "onderwerp_groep": 104
       }
@@ -1033,7 +1033,7 @@
       "model": "classificatie.onderwerp",
       "pk": 111,
       "fields": {
-        "naam": "Onkruid in groen",
+        "name": "Onkruid in groen",
         "slug": "onkruid-in-groen",
         "onderwerp_groep": 104
       }
@@ -1042,7 +1042,7 @@
       "model": "classificatie.onderwerp",
       "pk": 112,
       "fields": {
-        "naam": "Onkruid op verharding",
+        "name": "Onkruid op verharding",
         "slug": "onkruid-op-verharding",
         "onderwerp_groep": 104
       }
@@ -1051,7 +1051,7 @@
       "model": "classificatie.onderwerp",
       "pk": 113,
       "fields": {
-        "naam": "Overlast blad of bloesem",
+        "name": "Overlast blad of bloesem",
         "slug": "overlast-blad-of-bloesem",
         "onderwerp_groep": 104
       }
@@ -1060,7 +1060,7 @@
       "model": "classificatie.onderwerp",
       "pk": 114,
       "fields": {
-        "naam": "zwerfvuil in het water",
+        "name": "zwerfvuil in het water",
         "slug": "zwerfvuil-in-het-water",
         "onderwerp_groep": 104
       }
@@ -1069,7 +1069,7 @@
       "model": "classificatie.onderwerp",
       "pk": 115,
       "fields": {
-        "naam": "zwerfvuil in plantsoen",
+        "name": "zwerfvuil in plantsoen",
         "slug": "zwerfvuil-in-plantsoen",
         "onderwerp_groep": 104
       }
@@ -1078,7 +1078,7 @@
       "model": "classificatie.onderwerp",
       "pk": 116,
       "fields": {
-        "naam": "zwerfvuil op straat",
+        "name": "zwerfvuil op straat",
         "slug": "zwerfvuil-op-straat",
         "onderwerp_groep": 104
       }
@@ -1087,7 +1087,7 @@
       "model": "classificatie.onderwerp",
       "pk": 118,
       "fields": {
-        "naam": "hoofdriool",
+        "name": "hoofdriool",
         "slug": "hoofdriool",
         "onderwerp_groep": 117
       }
@@ -1096,7 +1096,7 @@
       "model": "classificatie.onderwerp",
       "pk": 119,
       "fields": {
-        "naam": "Rioolaansluiting (verstopping)",
+        "name": "Rioolaansluiting (verstopping)",
         "slug": "rioolaansluiting-verstopping",
         "onderwerp_groep": 117
       }
@@ -1105,7 +1105,7 @@
       "model": "classificatie.onderwerp",
       "pk": 120,
       "fields": {
-        "naam": "slechte/geen afwatering",
+        "name": "slechte/geen afwatering",
         "slug": "slechtegeen-afwatering",
         "onderwerp_groep": 117
       }
@@ -1114,7 +1114,7 @@
       "model": "classificatie.onderwerp",
       "pk": 121,
       "fields": {
-        "naam": "stankoverlast",
+        "name": "stankoverlast",
         "slug": "stankoverlast",
         "onderwerp_groep": 117
       }
@@ -1123,7 +1123,7 @@
       "model": "classificatie.onderwerp",
       "pk": 122,
       "fields": {
-        "naam": "storing gemaal",
+        "name": "storing gemaal",
         "slug": "storing-gemaal",
         "onderwerp_groep": 117
       }
@@ -1132,7 +1132,7 @@
       "model": "classificatie.onderwerp",
       "pk": 123,
       "fields": {
-        "naam": "straatkolk (verstopt)",
+        "name": "straatkolk (verstopt)",
         "slug": "straatkolk-verstopt",
         "onderwerp_groep": 117
       }
@@ -1141,7 +1141,7 @@
       "model": "classificatie.onderwerp",
       "pk": 124,
       "fields": {
-        "naam": "Water in de kruipruimte, de kelder of in de tuin",
+        "name": "Water in de kruipruimte, de kelder of in de tuin",
         "slug": "water-in-de-kruipruimte-de-kelder-of-in-de-tuin",
         "onderwerp_groep": 117
       }
@@ -1150,7 +1150,7 @@
       "model": "classificatie.onderwerp",
       "pk": 125,
       "fields": {
-        "naam": "Water- of rioolpersleiding",
+        "name": "Water- of rioolpersleiding",
         "slug": "water-of-rioolpersleiding",
         "onderwerp_groep": 117
       }
@@ -1159,7 +1159,7 @@
       "model": "classificatie.onderwerp",
       "pk": 127,
       "fields": {
-        "naam": "boomwortels",
+        "name": "boomwortels",
         "slug": "boomwortels",
         "onderwerp_groep": 126
       }
@@ -1168,7 +1168,7 @@
       "model": "classificatie.onderwerp",
       "pk": 128,
       "fields": {
-        "naam": "brug",
+        "name": "brug",
         "slug": "brug",
         "onderwerp_groep": 126
       }
@@ -1177,7 +1177,7 @@
       "model": "classificatie.onderwerp",
       "pk": 129,
       "fields": {
-        "naam": "fietspad",
+        "name": "fietspad",
         "slug": "fietspad",
         "onderwerp_groep": 126
       }
@@ -1186,7 +1186,7 @@
       "model": "classificatie.onderwerp",
       "pk": 130,
       "fields": {
-        "naam": "gebiedsgericht",
+        "name": "gebiedsgericht",
         "slug": "gebiedsgericht",
         "onderwerp_groep": 126
       }
@@ -1195,7 +1195,7 @@
       "model": "classificatie.onderwerp",
       "pk": 131,
       "fields": {
-        "naam": "gladheid (sneeuw-ijzel-vorst)",
+        "name": "gladheid (sneeuw-ijzel-vorst)",
         "slug": "gladheid-sneeuw-ijzel-vorst",
         "onderwerp_groep": 126
       }
@@ -1204,7 +1204,7 @@
       "model": "classificatie.onderwerp",
       "pk": 132,
       "fields": {
-        "naam": "invalide-oprit",
+        "name": "invalide-oprit",
         "slug": "invalide-oprit",
         "onderwerp_groep": 126
       }
@@ -1213,7 +1213,7 @@
       "model": "classificatie.onderwerp",
       "pk": 133,
       "fields": {
-        "naam": "rijweg",
+        "name": "rijweg",
         "slug": "rijweg",
         "onderwerp_groep": 126
       }
@@ -1222,7 +1222,7 @@
       "model": "classificatie.onderwerp",
       "pk": 134,
       "fields": {
-        "naam": "roltrap/rolband",
+        "name": "roltrap/rolband",
         "slug": "roltraprolband",
         "onderwerp_groep": 126
       }
@@ -1231,7 +1231,7 @@
       "model": "classificatie.onderwerp",
       "pk": 135,
       "fields": {
-        "naam": "sluis",
+        "name": "sluis",
         "slug": "sluis",
         "onderwerp_groep": 126
       }
@@ -1240,7 +1240,7 @@
       "model": "classificatie.onderwerp",
       "pk": 136,
       "fields": {
-        "naam": "tunnels/viaducten",
+        "name": "tunnels/viaducten",
         "slug": "tunnelsviaducten",
         "onderwerp_groep": 126
       }
@@ -1249,7 +1249,7 @@
       "model": "classificatie.onderwerp",
       "pk": 137,
       "fields": {
-        "naam": "verkeersdrempel",
+        "name": "verkeersdrempel",
         "slug": "verkeersdrempel",
         "onderwerp_groep": 126
       }
@@ -1258,7 +1258,7 @@
       "model": "classificatie.onderwerp",
       "pk": 138,
       "fields": {
-        "naam": "voetpad",
+        "name": "voetpad",
         "slug": "voetpad",
         "onderwerp_groep": 126
       }
@@ -1267,7 +1267,7 @@
       "model": "classificatie.onderwerp",
       "pk": 140,
       "fields": {
-        "naam": "bouwplaatsen - algemeen",
+        "name": "bouwplaatsen - algemeen",
         "slug": "bouwplaatsen-algemeen",
         "onderwerp_groep": 139
       }
@@ -1276,7 +1276,7 @@
       "model": "classificatie.onderwerp",
       "pk": 141,
       "fields": {
-        "naam": "ingraving - huisaansluiting",
+        "name": "ingraving - huisaansluiting",
         "slug": "ingraving-huisaansluiting",
         "onderwerp_groep": 139
       }
@@ -1285,7 +1285,7 @@
       "model": "classificatie.onderwerp",
       "pk": 142,
       "fields": {
-        "naam": "tijdelijke verkeerssituatie",
+        "name": "tijdelijke verkeerssituatie",
         "slug": "tijdelijke-verkeerssituatie",
         "onderwerp_groep": 139
       }
@@ -1294,7 +1294,7 @@
       "model": "classificatie.onderwerp",
       "pk": 144,
       "fields": {
-        "naam": "Posters",
+        "name": "Posters",
         "slug": "posters",
         "onderwerp_groep": 143
       }
@@ -1303,7 +1303,7 @@
       "model": "classificatie.onderwerp",
       "pk": 145,
       "fields": {
-        "naam": "Reclamebord",
+        "name": "Reclamebord",
         "slug": "reclamebord",
         "onderwerp_groep": 143
       }
@@ -1312,7 +1312,7 @@
       "model": "classificatie.onderwerp",
       "pk": 146,
       "fields": {
-        "naam": "sandwichborden",
+        "name": "sandwichborden",
         "slug": "sandwichborden",
         "onderwerp_groep": 143
       }
@@ -1321,7 +1321,7 @@
       "model": "classificatie.onderwerp",
       "pk": 147,
       "fields": {
-        "naam": "Stickers",
+        "name": "Stickers",
         "slug": "stickers",
         "onderwerp_groep": 143
       }
@@ -1330,7 +1330,7 @@
       "model": "classificatie.onderwerp",
       "pk": 149,
       "fields": {
-        "naam": "winkelwagens",
+        "name": "winkelwagens",
         "slug": "winkelwagens",
         "onderwerp_groep": 148
       }
@@ -1339,7 +1339,7 @@
       "model": "classificatie.onderwerp",
       "pk": 151,
       "fields": {
-        "naam": "(Brom-)fietswrak",
+        "name": "(Brom-)fietswrak",
         "slug": "brom-fietswrak",
         "onderwerp_groep": 150
       }
@@ -1348,7 +1348,7 @@
       "model": "classificatie.onderwerp",
       "pk": 152,
       "fields": {
-        "naam": "wrak - auto",
+        "name": "wrak - auto",
         "slug": "wrak-auto",
         "onderwerp_groep": 150
       }
@@ -1357,7 +1357,7 @@
       "model": "classificatie.onderwerp",
       "pk": 153,
       "fields": {
-        "naam": "Overig",
+        "name": "Overig",
         "slug": "overig",
         "onderwerp_groep": 151
       }
@@ -1366,7 +1366,7 @@
       "model": "classificatie.onderwerp",
       "pk": 154,
       "fields": {
-        "naam": "Zerk reinigen",
+        "name": "Zerk reinigen",
         "slug": "zerk-reinigen",
         "onderwerp_groep": 151
       }
@@ -1375,7 +1375,7 @@
       "model": "classificatie.onderwerp",
       "pk": 155,
       "fields": {
-        "naam": "Muizen",
+        "name": "Muizen",
         "slug": "muizen",
         "onderwerp_groep": 151
       }
@@ -1384,7 +1384,7 @@
       "model": "classificatie.onderwerp",
       "pk": 156,
       "fields": {
-        "naam": "Konijnen",
+        "name": "Konijnen",
         "slug": "konijnen",
         "onderwerp_groep": 151
       }
@@ -1393,7 +1393,7 @@
       "model": "classificatie.onderwerp",
       "pk": 157,
       "fields": {
-        "naam": "Wespennest",
+        "name": "Wespennest",
         "slug": "wespennest",
         "onderwerp_groep": 151
       }
@@ -1402,7 +1402,7 @@
       "model": "classificatie.onderwerp",
       "pk": 158,
       "fields": {
-        "naam": "Gaten",
+        "name": "Gaten",
         "slug": "gaten",
         "onderwerp_groep": 151
       }
@@ -1411,7 +1411,7 @@
       "model": "classificatie.onderwerp",
       "pk": 159,
       "fields": {
-        "naam": "Verdwenen materiaal",
+        "name": "Verdwenen materiaal",
         "slug": "verdwenen-materiaal",
         "onderwerp_groep": 151
       }
@@ -1420,7 +1420,7 @@
       "model": "classificatie.onderwerp",
       "pk": 160,
       "fields": {
-        "naam": "Schoonmaken",
+        "name": "Schoonmaken",
         "slug": "schoonmaken",
         "onderwerp_groep": 151
       }
@@ -1429,7 +1429,7 @@
       "model": "classificatie.onderwerp",
       "pk": 161,
       "fields": {
-        "naam": "Beplanting",
+        "name": "Beplanting",
         "slug": "beplanting",
         "onderwerp_groep": 151
       }
@@ -1438,7 +1438,7 @@
       "model": "classificatie.onderwerp",
       "pk": 162,
       "fields": {
-        "naam": "Snoeien",
+        "name": "Snoeien",
         "slug": "snoeien",
         "onderwerp_groep": 151
       }
@@ -1447,7 +1447,7 @@
       "model": "classificatie.onderwerp",
       "pk": 163,
       "fields": {
-        "naam": "Verzakking algemeen",
+        "name": "Verzakking algemeen",
         "slug": "verzakking-algemeen",
         "onderwerp_groep": 151
       }
@@ -1456,7 +1456,7 @@
       "model": "classificatie.onderwerp",
       "pk": 164,
       "fields": {
-        "naam": "Verzakking eigen graf",
+        "name": "Verzakking eigen graf",
         "slug": "verzakking-eigen-graf",
         "onderwerp_groep": 151
       }
@@ -1465,7 +1465,7 @@
       "model": "classificatie.onderwerp",
       "pk": 165,
       "fields": {
-        "naam": "Wateroverlast",
+        "name": "Wateroverlast",
         "slug": "wateroverlast",
         "onderwerp_groep": 151
       }

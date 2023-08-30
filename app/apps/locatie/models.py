@@ -56,6 +56,8 @@ class Locatie(BasisModel):
     huisletter = models.CharField(max_length=1, null=True, blank=True)
     toevoeging = models.CharField(max_length=4, null=True, blank=True)
     postcode = models.CharField(max_length=7, null=True, blank=True)
+    buurtnaam = models.CharField(max_length=255, null=True, blank=True)
+    wijknaam = models.CharField(max_length=255, null=True, blank=True)
     lichtmast_id = models.CharField(max_length=255, null=True, blank=True)
     plaatsnaam = models.CharField(max_length=255, null=True, blank=True)
     begraafplaats = models.CharField(max_length=50, null=True, blank=True)
