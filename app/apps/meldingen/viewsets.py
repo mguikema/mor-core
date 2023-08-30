@@ -1,4 +1,8 @@
-from apps.meldingen.filtersets import MeldingFilter, RelatedOrderingFilter
+from apps.meldingen.filtersets import (
+    DjangoFilterBackend,
+    MeldingFilter,
+    RelatedOrderingFilter,
+)
 from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.meldingen.serializers import (
     MeldingDetailSerializer,
@@ -7,7 +11,6 @@ from apps.meldingen.serializers import (
     MeldingSerializer,
 )
 from apps.taken.serializers import TaakopdrachtSerializer
-from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
@@ -111,12 +114,18 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "onderwerpen",
         )
         .all()
+        .exclude(locaties_voor_melding__grafnummer__in=["njgh", "njhg"])
     )
+    default_queryset = None
 
     serializer_class = MeldingSerializer
     serializer_detail_class = MeldingDetailSerializer
     filter_backends = (
-        filters.DjangoFilterBackend,
+        DjangoFilterBackend,
+        RelatedOrderingFilter,
+    )
+    default_filter_backends = (
+        DjangoFilterBackend,
         RelatedOrderingFilter,
     )
     ordering_fields = "__all_related__"
@@ -142,6 +151,23 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         ),
         ("onderwerp", "onderwerpen", "onderwerpen__response_json__name"),
     )
+
+    def filter_queryset(self, queryset):
+        """
+        Given a queryset, filter it with whichever filter backend is in use.
+
+        You are unlikely to want to override this method, although you may need
+        to call it either from a list view, or from a custom `get_object`
+        method if you want to apply the configured filtering backend to the
+        default queryset.
+        """
+        # for backend in list(self.filter_backends):
+        #     queryset = backend().filter_queryset(self.request, queryset, self)
+        # self.default_queryset = queryset
+
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -233,7 +259,6 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
                 taakopdracht, context={"request": request}
             )
             return Response(serializer.data)
-        print(serializer.errors)
 
         return Response(
             data=serializer.errors,
