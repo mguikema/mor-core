@@ -14,7 +14,7 @@ class OnderwerpSerializer(serializers.ModelSerializer):
     class Meta:
         model = Onderwerp
         fields = (
-            "naam",
+            "name",
             "id",
             "slug",
             "absolute_uri",

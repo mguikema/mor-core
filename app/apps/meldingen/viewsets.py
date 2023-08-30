@@ -132,7 +132,15 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "status",
             "status__naam",
         ),
-        ("onderwerp", "onderwerpen", "onderwerpen__response_json__naam"),
+        (
+            "buurt",
+            "locaties_voor_melding__buurtnaam",
+        ),
+        (
+            "wijk",
+            "locaties_voor_melding__wijknaam",
+        ),
+        ("onderwerp", "onderwerpen", "onderwerpen__response_json__name"),
     )
 
     def get_serializer_class(self):

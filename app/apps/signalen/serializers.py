@@ -63,6 +63,7 @@ class SignaalSerializer(WritableNestedModelSerializer):
         model = Signaal
         fields = (
             "_links",
+            "uuid",
             "signaal_url",
             "signaal_data",
             "origineel_aangemaakt",

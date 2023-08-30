@@ -17,7 +17,9 @@ class OnderwerpAliasSerializer(serializers.ModelSerializer):
     naam = serializers.SerializerMethodField()
 
     def get_naam(self, obj):
-        return obj.response_json.get("naam", obj.bron_url)
+        return obj.response_json.get(
+            "naam", obj.response_json.get("name", obj.bron_url)
+        )
 
     """
     OnderwerpAlias van een Melding of Signaal

@@ -7,7 +7,7 @@ services:
       - ./nginx/nginx-default.development.conf:/etc/nginx/conf.d/default.conf
       - ./media:/media
     depends_on:
-      app:
+      core_app:
         condition: service_started
     ports:
       - 8002:8002
@@ -15,8 +15,8 @@ services:
       - mor_bridge_network
     env_file:
       - .env.local
-  app:
-    container_name: core.app
+  core_app:
+    # container_name: core.app
     build: ./app
     extra_hosts:
       - "mor-core.forzamor.local:172.17.0.1"
@@ -56,10 +56,8 @@ services:
     ports:
       - "6379"
 
-  app_celery_worker:
+  core_celery_worker:
     build: ./app
-    container_name: app_celery_worker
-    hostname: app_celery_worker
     command: "celery -A config worker -l info"
     depends_on:
       database:
@@ -73,12 +71,10 @@ services:
     networks:
       - mor_network
       - mor_bridge_network
-    restart: on-failure
+    # restart: on-failure
 
-  app_celery_beat:
+  core_app_celery_beat:
     build: ./app
-    container_name: app_celery_beat
-    hostname: app_celery_worker
     command: "celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
     depends_on:
       database:
@@ -92,7 +88,7 @@ services:
     networks:
       - mor_network
       - mor_bridge_network
-    restart: on-failure
+    # restart: on-failure
 
 volumes:
   postgres-data:

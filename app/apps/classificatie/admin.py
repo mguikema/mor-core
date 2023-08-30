@@ -5,12 +5,12 @@ from django.contrib import admin
 class OnderwerpGroepAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "naam",
+        "name",
     )
 
 
 class OnderwerpAdmin(admin.ModelAdmin):
-    list_display = ("id", "naam", "onderwerp_groep")
+    list_display = ("id", "name", "onderwerp_groep")
 
 
 admin.site.register(Onderwerp, OnderwerpAdmin)
