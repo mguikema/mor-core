@@ -12,14 +12,14 @@ class CustomCollector(object):
         )
         meldingen = (
             Melding.objects.order_by("onderwerpen")
-            .values("onderwerpen__response_json__naam", "status__naam")
+            .values("onderwerpen__response_json__name", "status__naam")
             .annotate(count=Count("onderwerpen"))
             .exclude(count=0)
         )
         for m in meldingen:
             c.add_metric(
                 [
-                    m.get("onderwerpen__response_json__naam"),
+                    m.get("onderwerpen__response_json__name"),
                     m.get("status__naam"),
                 ],
                 m.get("count"),
