@@ -43,7 +43,9 @@ class LimitOffsetPagination(DRFLimitOffsetPagination):
         self.filter_options = {}
         if view and hasattr(view, "filter_options_fields"):
             self.filter_options = self._get_filter_options(
-                filtered_queryset, view.get_queryset(), view.filter_options_fields
+                filtered_queryset,
+                view.get_prefiltered_queryset(),
+                view.filter_options_fields,
             )
         return super().paginate_queryset(filtered_queryset, request, view)
 

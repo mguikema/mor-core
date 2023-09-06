@@ -1,4 +1,5 @@
 import operator
+from collections import OrderedDict
 from functools import reduce
 from typing import List, Tuple
 
@@ -13,6 +14,30 @@ from django_filters import rest_framework as filters
 from rest_framework import filters as rest_filters
 from rest_framework.filters import SearchFilter
 from rest_framework.settings import api_settings
+
+
+class DjangoPreFilterBackend(filters.DjangoFilterBackend):
+    def get_filterset_class(self, view, queryset=None):
+        """
+        Return the `FilterSet` class used to filter the queryset.
+        """
+        filterset_class = getattr(view, "pre_filterset_class", None)
+
+        if filterset_class:
+            filterset_model = filterset_class._meta.model
+
+            # FilterSets do not need to specify a Meta class
+            if filterset_model and queryset is not None:
+                assert issubclass(
+                    queryset.model, filterset_model
+                ), "FilterSet model %s does not match queryset model %s" % (
+                    filterset_model,
+                    queryset.model,
+                )
+
+            return filterset_class
+
+        return None
 
 
 class MultipleValueField(MultipleChoiceField):
@@ -35,7 +60,18 @@ class MultipleValueFilter(filters.Filter):
         super().__init__(*args, field_class=field_class, **kwargs)
 
 
-class BasisFilter(filters.FilterSet):
+class PreFilterFilterSet(filters.FilterSet):
+    pre_filter = False
+
+    @classmethod
+    def get_filters(cls):
+        filters = super().get_filters()
+        if cls.pre_filter:
+            filters = OrderedDict([(f"pre_{k}", v) for k, v in filters.items()])
+        return filters
+
+
+class BasisFilter(PreFilterFilterSet):
     aangemaakt_op_gte = filters.DateTimeFilter(
         field_name="aangemaakt_op", lookup_expr="gte"
     )
@@ -188,6 +224,19 @@ class MeldingFilter(BasisFilter):
 
     def get_actieve_meldingen(self, queryset, name, value):
         return queryset.filter(afgesloten_op__isnull=value)
+
+    class Meta:
+        model = Melding
+        fields = [
+            "aangemaakt_op",
+            "aangepast_op",
+            "origineel_aangemaakt",
+            "afgesloten_op",
+        ]
+
+
+class MeldingPreFilter(MeldingFilter):
+    pre_filter = True
 
     class Meta:
         model = Melding
