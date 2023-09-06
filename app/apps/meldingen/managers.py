@@ -208,10 +208,11 @@ class MeldingManager(models.Manager):
             taakopdracht.status = taakstatus_instance
             taakopdracht.save()
 
+            bericht = serializer.validated_data.get("bericht") if serializer.validated_data.get("bericht") else "Taak aangemaakt"
             taakgebeurtenis_instance = Taakgebeurtenis(
                 taakopdracht=taakopdracht,
                 taakstatus=taakstatus_instance,
-                omschrijving_intern="Taak aangemaakt",
+                omschrijving_intern=bericht,
                 gebruiker=gebruiker,
             )
             taakgebeurtenis_instance.save()
