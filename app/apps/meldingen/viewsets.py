@@ -1,6 +1,7 @@
 from apps.meldingen.filtersets import (
-    DjangoFilterBackend,
+    DjangoPreFilterBackend,
     MeldingFilter,
+    MeldingPreFilter,
     RelatedOrderingFilter,
 )
 from apps.meldingen.models import Melding, Meldinggebeurtenis
@@ -11,6 +12,8 @@ from apps.meldingen.serializers import (
     MeldingSerializer,
 )
 from apps.taken.serializers import TaakopdrachtSerializer
+from django.db.models.query import QuerySet
+from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
@@ -114,22 +117,19 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "onderwerpen",
         )
         .all()
-        .exclude(locaties_voor_melding__grafnummer__in=["njgh", "njhg"])
     )
-    default_queryset = None
+    prefiltered_queryset = None
 
     serializer_class = MeldingSerializer
     serializer_detail_class = MeldingDetailSerializer
+    pre_filter_backends = (DjangoPreFilterBackend,)
     filter_backends = (
-        DjangoFilterBackend,
-        RelatedOrderingFilter,
-    )
-    default_filter_backends = (
-        DjangoFilterBackend,
+        filters.DjangoFilterBackend,
         RelatedOrderingFilter,
     )
     ordering_fields = "__all_related__"
     filterset_class = MeldingFilter
+    pre_filterset_class = MeldingPreFilter
 
     filter_options_fields = (
         (
@@ -152,22 +152,23 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         ("onderwerp", "onderwerpen", "onderwerpen__response_json__name"),
     )
 
-    def filter_queryset(self, queryset):
-        """
-        Given a queryset, filter it with whichever filter backend is in use.
+    def get_prefiltered_queryset(self):
+        assert self.prefiltered_queryset is not None, (
+            "'%s' should either include a `queryset` attribute, "
+            "or override the `get_queryset()` method." % self.__class__.__name__
+        )
 
-        You are unlikely to want to override this method, although you may need
-        to call it either from a list view, or from a custom `get_object`
-        method if you want to apply the configured filtering backend to the
-        default queryset.
-        """
-        # for backend in list(self.filter_backends):
-        #     queryset = backend().filter_queryset(self.request, queryset, self)
-        # self.default_queryset = queryset
-
-        for backend in list(self.filter_backends):
-            queryset = backend().filter_queryset(self.request, queryset, self)
+        queryset = self.prefiltered_queryset
+        if isinstance(queryset, QuerySet):
+            # Ensure queryset is re-evaluated on each request.
+            queryset = queryset.all()
         return queryset
+
+    def filter_queryset(self, queryset):
+        for backend in list(self.pre_filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+        self.prefiltered_queryset = queryset
+        return super().filter_queryset(queryset)
 
     def get_serializer_class(self):
         if self.action == "retrieve":

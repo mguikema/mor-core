@@ -1,4 +1,5 @@
 import operator
+from collections import OrderedDict
 from functools import reduce
 from typing import List, Tuple
 
@@ -10,28 +11,33 @@ from django.db.models.functions import Greatest
 from django.forms.fields import CharField, MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
 from django_filters import rest_framework as filters
-from django_filters import utils
 from rest_framework import filters as rest_filters
 from rest_framework.filters import SearchFilter
 from rest_framework.settings import api_settings
 
 
-class DjangoFilterBackend(filters.DjangoFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        filterset = self.get_filterset(request, queryset, view)
-        # print(filterset.__class__)
-        # print(filterset.Meta)
-        print(filterset.Meta().default_prefix)
-        # print(dir(filterset.Meta()))
-        # print(filterset.__class__._meta)
-        # print(dir(filterset.__class__._meta))
-        # print(filterset.__class__._meta.default_prefix)
-        if filterset is None:
-            return queryset
+class DjangoPreFilterBackend(filters.DjangoFilterBackend):
+    def get_filterset_class(self, view, queryset=None):
+        """
+        Return the `FilterSet` class used to filter the queryset.
+        """
+        filterset_class = getattr(view, "pre_filterset_class", None)
 
-        if not filterset.is_valid() and self.raise_exception:
-            raise utils.translate_validation(filterset.errors)
-        return filterset.qs
+        if filterset_class:
+            filterset_model = filterset_class._meta.model
+
+            # FilterSets do not need to specify a Meta class
+            if filterset_model and queryset is not None:
+                assert issubclass(
+                    queryset.model, filterset_model
+                ), "FilterSet model %s does not match queryset model %s" % (
+                    filterset_model,
+                    queryset.model,
+                )
+
+            return filterset_class
+
+        return None
 
 
 class MultipleValueField(MultipleChoiceField):
@@ -54,7 +60,18 @@ class MultipleValueFilter(filters.Filter):
         super().__init__(*args, field_class=field_class, **kwargs)
 
 
-class BasisFilter(filters.FilterSet):
+class PreFilterFilterSet(filters.FilterSet):
+    pre_filter = False
+
+    @classmethod
+    def get_filters(cls):
+        filters = super().get_filters()
+        if cls.pre_filter:
+            filters = OrderedDict([(f"pre_{k}", v) for k, v in filters.items()])
+        return filters
+
+
+class BasisFilter(PreFilterFilterSet):
     aangemaakt_op_gte = filters.DateTimeFilter(
         field_name="aangemaakt_op", lookup_expr="gte"
     )
@@ -208,134 +225,18 @@ class MeldingFilter(BasisFilter):
     def get_actieve_meldingen(self, queryset, name, value):
         return queryset.filter(afgesloten_op__isnull=value)
 
-    @classmethod
-    def get_filter_name(cls, field_name, lookup_expr):
-        from django.db.models.constants import LOOKUP_SEP
-        from django_filters.conf import settings
-
-        """
-        Combine a field name and lookup expression into a usable filter name.
-        Exact lookups are the implicit default, so "exact" is stripped from the
-        end of the filter name.
-        """
-        filter_name = LOOKUP_SEP.join([field_name, lookup_expr])
-
-        # This also works with transformed exact lookups, such as 'date__exact'
-        _default_expr = LOOKUP_SEP + settings.DEFAULT_LOOKUP_EXPR
-        if filter_name.endswith(_default_expr):
-            filter_name = filter_name[: -len(_default_expr)]
-
-        return filter_name
-        return f"default_{filter_name}"
-
-    @classmethod
-    def get_filters(cls):
-        from collections import OrderedDict
-
-        from django_filters.utils import get_model_field
-
-        """
-        Get all filters for the filterset. This is the combination of declared and
-        generated filters.
-        """
-
-        # No model specified - skip filter generation
-        if not cls._meta.model:
-            return cls.declared_filters.copy()
-
-        # Determine the filters that should be included on the filterset.
-        filters = OrderedDict()
-        fields = cls.get_fields()
-        undefined = []
-
-        for field_name, lookups in fields.items():
-            field = get_model_field(cls._meta.model, field_name)
-
-            # warn if the field doesn't exist.
-            if field is None:
-                undefined.append(field_name)
-
-            for lookup_expr in lookups:
-                filter_name = cls.get_filter_name(field_name, lookup_expr)
-
-                # If the filter is explicitly declared on the class, skip generation
-                if filter_name in cls.declared_filters:
-                    filters[filter_name] = cls.declared_filters[filter_name]
-                    continue
-
-                if field is not None:
-                    filters[filter_name] = cls.filter_for_field(
-                        field, field_name, lookup_expr
-                    )
-
-        # Allow Meta.fields to contain declared filters *only* when a list/tuple
-        if isinstance(cls._meta.fields, (list, tuple)):
-            undefined = [f for f in undefined if f not in cls.declared_filters]
-
-        if undefined:
-            raise TypeError(
-                "'Meta.fields' must not contain non-model field names: %s"
-                % ", ".join(undefined)
-            )
-
-        # Add in declared filters. This is necessary since we don't enforce adding
-        # declared filters to the 'Meta.fields' option
-        filters.update(cls.declared_filters)
-        filters = {f"default_{k}": v for k, v in filters.items()}
-        print(filters)
-        return filters
-
-    @classmethod
-    def get_declared_filters(cls, bases, attrs):
-        from collections import OrderedDict
-
-        from django_filters.filters import (
-            BaseInFilter,
-            BaseRangeFilter,
-            BooleanFilter,
-            CharFilter,
-            ChoiceFilter,
-            DateFilter,
-            DateTimeFilter,
-            DurationFilter,
-            Filter,
-            ModelChoiceFilter,
-            ModelMultipleChoiceFilter,
-            NumberFilter,
-            TimeFilter,
-            UUIDFilter,
-        )
-
-        filters = [
-            (filter_name, attrs.pop(filter_name))
-            for filter_name, obj in list(attrs.items())
-            if isinstance(obj, Filter)
+    class Meta:
+        model = Melding
+        fields = [
+            "aangemaakt_op",
+            "aangepast_op",
+            "origineel_aangemaakt",
+            "afgesloten_op",
         ]
 
-        # Default the `filter.field_name` to the attribute name on the filterset
-        for filter_name, f in filters:
-            if getattr(f, "field_name", None) is None:
-                f.field_name = filter_name
 
-        filters.sort(key=lambda x: x[1].creation_counter)
-
-        # Ensures a base class field doesn't override cls attrs, and maintains
-        # field precedence when inheriting multiple parents. e.g. if there is a
-        # class C(A, B), and A and B both define 'field', use 'field' from A.
-        known = set(attrs)
-
-        def visit(name):
-            known.add(name)
-            return name
-
-        base_filters = [
-            (visit(name), f)
-            for base in bases
-            if hasattr(base, "declared_filters")
-            for name, f in base.declared_filters.items()
-            if name not in known
-        ]
-        return OrderedDict(base_filters + filters)
+class MeldingPreFilter(MeldingFilter):
+    pre_filter = True
 
     class Meta:
         model = Melding
@@ -345,7 +246,6 @@ class MeldingFilter(BasisFilter):
             "origineel_aangemaakt",
             "afgesloten_op",
         ]
-        default_prefix = "default_"
 
 
 class RelatedOrderingFilter(rest_filters.OrderingFilter):
