@@ -1,6 +1,6 @@
 from apps.meldingen.models import Melding
 from django.db.models import Count
-from prometheus_client.core import REGISTRY, CounterMetricFamily
+from prometheus_client.core import CounterMetricFamily
 
 
 class CustomCollector(object):
@@ -25,6 +25,3 @@ class CustomCollector(object):
                 m.get("count"),
             )
         yield c
-
-
-REGISTRY.register(CustomCollector())
