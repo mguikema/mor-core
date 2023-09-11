@@ -1,7 +1,7 @@
 from apps.applicaties.viewsets import TaakapplicatieViewSet
 from apps.bijlagen.viewsets import BijlageViewSet
 from apps.classificatie.viewsets import OnderwerpViewSet
-from apps.meldingen.views import serve_protected_media
+from apps.meldingen.views import prometheus_django_metrics, serve_protected_media
 from apps.meldingen.viewsets import MeldinggebeurtenisViewSet, MeldingViewSet
 from apps.signalen.viewsets import SignaalViewSet
 from apps.taken.viewsets import TaakgebeurtenisViewSet, TaakopdrachtViewSet
@@ -68,7 +68,7 @@ urlpatterns = [
         name="redoc",
     ),
     re_path(r"^media", serve_protected_media, name="protected_media"),
-    path("", include("django_prometheus.urls")),
+    path("metrics", prometheus_django_metrics, name="prometheus_django_metrics"),
 ]
 
 if settings.DEBUG:
