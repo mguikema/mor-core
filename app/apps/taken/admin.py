@@ -10,6 +10,7 @@ class TaakgebeurtenisAdmin(admin.ModelAdmin):
         "aangemaakt_op",
         "aangepast_op",
         "taakopdracht",
+        "gebruiker",
     )
 
 
@@ -21,6 +22,8 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "aangemaakt_op",
         "aangepast_op",
         "melding",
+        "status",
+        "resolutie",
     )
 
 

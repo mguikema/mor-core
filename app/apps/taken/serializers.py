@@ -131,6 +131,7 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
             "bericht",
             "additionele_informatie",
             "status",
+            "resolutie",
             "melding",
             "taakgebeurtenissen_voor_taakopdracht",
             "gebruiker",
@@ -140,6 +141,7 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
             "id",
             "uuid",
             "status",
+            "resolutie",
             "melding",
             "taakgebeurtenissen_voor_taakopdracht",
         )
