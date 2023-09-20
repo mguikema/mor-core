@@ -43,7 +43,9 @@ class LimitOffsetPagination(DRFLimitOffsetPagination):
         self.filter_options = {}
         if view and hasattr(view, "filter_options_fields"):
             self.filter_options = self._get_filter_options(
-                filtered_queryset, view.get_queryset(), view.filter_options_fields
+                filtered_queryset,
+                view.get_prefiltered_queryset(),
+                view.filter_options_fields,
             )
         return super().paginate_queryset(filtered_queryset, request, view)
 
@@ -74,13 +76,15 @@ class LimitOffsetPagination(DRFLimitOffsetPagination):
             value_lookup_str = f[2] if len(f) > 2 else key
             f_dict = {
                 ll[0]: (value_lookup(ll[1], ll[0], f), 0)
-                for ll in qs.values_list(key, value_lookup_str).distinct(key)
+                for ll in qs.order_by(key)
+                .values_list(key, value_lookup_str)
+                .distinct(key)
             }
             ff_dict = {
                 fl[0]: (value_lookup(fl[1], fl[0], f), fl[2])
-                for fl in f_qs.values_list(key, value_lookup_str).annotate(
-                    count=Count(key)
-                )
+                for fl in f_qs.order_by(key)
+                .values_list(key, value_lookup_str)
+                .annotate(count=Count(key))
             }
             f_dict.update(ff_dict)
             f_dict = {k: v for k, v in f_dict.items() if k}

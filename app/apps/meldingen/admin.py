@@ -31,7 +31,7 @@ class MeldingAdmin(admin.ModelAdmin):
     def onderwerp_naam(self, obj):
         try:
             return ", ".join(
-                list(obj.onderwerpen.values_list("response_json__naam", flat=True))
+                list(obj.onderwerpen.values_list("response_json__name", flat=True))
             )
         except Exception:
             return "- leeg -"

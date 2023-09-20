@@ -1,4 +1,9 @@
-from apps.meldingen.filtersets import MeldingFilter, RelatedOrderingFilter
+from apps.meldingen.filtersets import (
+    DjangoPreFilterBackend,
+    MeldingFilter,
+    MeldingPreFilter,
+    RelatedOrderingFilter,
+)
 from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.meldingen.serializers import (
     MeldingDetailSerializer,
@@ -7,6 +12,7 @@ from apps.meldingen.serializers import (
     MeldingSerializer,
 )
 from apps.taken.serializers import TaakopdrachtSerializer
+from django.db.models.query import QuerySet
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -112,15 +118,18 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
         .all()
     )
+    prefiltered_queryset = None
 
     serializer_class = MeldingSerializer
     serializer_detail_class = MeldingDetailSerializer
+    pre_filter_backends = (DjangoPreFilterBackend,)
     filter_backends = (
         filters.DjangoFilterBackend,
         RelatedOrderingFilter,
     )
     ordering_fields = "__all_related__"
     filterset_class = MeldingFilter
+    pre_filterset_class = MeldingPreFilter
 
     filter_options_fields = (
         (
@@ -132,8 +141,34 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "status",
             "status__naam",
         ),
-        ("onderwerp", "onderwerpen", "onderwerpen__response_json__naam"),
+        (
+            "buurt",
+            "locaties_voor_melding__buurtnaam",
+        ),
+        (
+            "wijk",
+            "locaties_voor_melding__wijknaam",
+        ),
+        ("onderwerp", "onderwerpen", "onderwerpen__response_json__name"),
     )
+
+    def get_prefiltered_queryset(self):
+        assert self.prefiltered_queryset is not None, (
+            "'%s' should either include a `queryset` attribute, "
+            "or override the `get_queryset()` method." % self.__class__.__name__
+        )
+
+        queryset = self.prefiltered_queryset
+        if isinstance(queryset, QuerySet):
+            # Ensure queryset is re-evaluated on each request.
+            queryset = queryset.all()
+        return queryset
+
+    def filter_queryset(self, queryset):
+        for backend in list(self.pre_filter_backends):
+            queryset = backend().filter_queryset(self.request, queryset, self)
+        self.prefiltered_queryset = queryset
+        return super().filter_queryset(queryset)
 
     def get_serializer_class(self):
         if self.action == "retrieve":
@@ -225,7 +260,6 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
                 taakopdracht, context={"request": request}
             )
             return Response(serializer.data)
-        print(serializer.errors)
 
         return Response(
             data=serializer.errors,

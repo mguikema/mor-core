@@ -30,6 +30,6 @@ class OnderwerpAlias(BasisModel):
 
     def __str__(self) -> str:
         try:
-            return self.response_json.get("naam", self.bron_url)
+            return self.response_json.get("name", self.bron_url)
         except Exception:
             return self.bron_url
