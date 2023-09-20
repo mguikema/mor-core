@@ -33,6 +33,9 @@ class MeldingManager(models.Manager):
     class TaakVerwijderenFout(Exception):
         pass
 
+    class TaakStatusAanpassenFout(Exception):
+        pass
+
     def aanmaken(self, signaal_validated_data, signaal_initial_data, db="default"):
         from apps.meldingen.models import Meldinggebeurtenis
         from apps.meldingen.serializers import MeldingAanmakenSerializer
@@ -93,7 +96,7 @@ class MeldingManager(models.Manager):
 
     def status_aanpassen(self, serializer, melding, db="default"):
         from apps.meldingen.models import Melding
-        from apps.taken.models import Taakopdracht
+        from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
 
         with transaction.atomic():
             try:
@@ -118,7 +121,10 @@ class MeldingManager(models.Manager):
                     locked_taakopdrachten = (
                         Taakopdracht.objects.using(db)
                         .select_for_update(nowait=True)
-                        .filter(melding=locked_melding.pk)
+                        .filter(
+                            melding=locked_melding.pk,
+                            resolutie__isnull=True,
+                        )
                     )
                 except OperationalError:
                     raise MeldingManager.TaakopdrachtInGebruik
@@ -126,15 +132,42 @@ class MeldingManager(models.Manager):
                 taak_urls = locked_taakopdrachten.values_list("taak_url", flat=True)
                 for taak_url in taak_urls:
                     taakapplicatie = Applicatie.vind_applicatie_obv_uri(taak_url)
-                    response = taakapplicatie.taak_verwijderen(taak_url)
-                    if response.status_code not in [204, 404]:
-                        raise MeldingManager.TaakVerwijderenFout
+                    taak_status_aanpassen_data = {
+                        "taakstatus": {"naam": "voltooid"},
+                        "resolutie": "geannuleerd",
+                        "bijlagen": [],
+                        "gebruiker": melding_gebeurtenis.gebruiker,
+                    }
+                    response = taakapplicatie.taak_status_aanpassen(
+                        f"{taak_url}status-aanpassen/",
+                        data=taak_status_aanpassen_data,
+                    )
+                    if response.status_code not in [200, 404]:
+                        raise MeldingManager.TaakStatusAanpassenFout
+                taakgebeurtenissen = []
+                for to in locked_taakopdrachten:
+                    taakstatus = Taakstatus.objects.create(
+                        naam="voltooid", taakopdracht=to
+                    )
+                    to.status = taakstatus
+                    to.resolutie = "geannuleerd"
+                    taakgebeurtenissen.append(
+                        Taakgebeurtenis(
+                            taakopdracht=to,
+                            taakstatus=taakstatus,
+                            gebruiker=melding_gebeurtenis.gebruiker,
+                        )
+                    )
+                Taakopdracht.objects.bulk_update(
+                    locked_taakopdrachten, ["status", "resolutie"]
+                )
+                Taakgebeurtenis.objects.bulk_create(taakgebeurtenissen)
 
-                locked_taakopdrachten.delete()
                 locked_melding.afgesloten_op = timezone.now().isoformat()
                 if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
                     locked_melding.resolutie = resolutie
             locked_melding.save()
+
             transaction.on_commit(
                 lambda: status_aangepast.send_robust(
                     sender=self.__class__,
@@ -193,7 +226,7 @@ class MeldingManager(models.Manager):
 
             if not applicatie:
                 raise Exception(
-                    f"De applicatie kon niet worden geonden op basis van dit taaktype: {taak_data.get('taaktype', '')}"
+                    f"De applicatie kon niet worden gevonden op basis van dit taaktype: {taak_data.get('taaktype', '')}"
                 )
             gebruiker = serializer.validated_data.pop("gebruiker", None)
             taakopdracht = serializer.save(
@@ -208,7 +241,11 @@ class MeldingManager(models.Manager):
             taakopdracht.status = taakstatus_instance
             taakopdracht.save()
 
-            bericht = serializer.validated_data.get("bericht") if serializer.validated_data.get("bericht") else "Taak aangemaakt"
+            bericht = (
+                serializer.validated_data.get("bericht")
+                if serializer.validated_data.get("bericht")
+                else "Taak aangemaakt"
+            )
             taakgebeurtenis_instance = Taakgebeurtenis(
                 taakopdracht=taakopdracht,
                 taakstatus=taakstatus_instance,
