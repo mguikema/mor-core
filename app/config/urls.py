@@ -34,7 +34,6 @@ router.register(r"bijlage", BijlageViewSet, basename="bijlage")
 urlpatterns = [
     path("api/v1/", include((router.urls, "app"), namespace="v1")),
     path("api-token-auth/", views.obtain_auth_token),
-    path("oidc/", include("mozilla_django_oidc.urls")),
     path("admin/", admin.site.urls),
     path("health/", include("health_check.urls")),
     path("db-schema/", include((schema_urls, "db-schema"))),
@@ -57,6 +56,7 @@ urlpatterns = [
 
 if settings.OIDC_ENABLED:
     urlpatterns += [
+        path("oidc/", include("mozilla_django_oidc.urls")),
         path(
             "admin/login/",
             RedirectView.as_view(
