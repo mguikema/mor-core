@@ -17,8 +17,6 @@ services:
       - .env.local
   core_app:
     build: ./app
-    extra_hosts:
-      - "mor-core.forzamor.local:172.17.0.1"
     env_file:
       - .env.local
     volumes:
