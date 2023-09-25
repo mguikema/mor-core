@@ -3,12 +3,12 @@ import mimetypes
 import os
 from os.path import exists
 
-import pyheif
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from PIL import Image, UnidentifiedImageError
+from pillow_heif import register_heif_opener
 from sorl.thumbnail import get_thumbnail
 from utils.images import get_upload_path
 from utils.models import BasisModel
@@ -47,17 +47,17 @@ class Bijlage(BasisModel):
         return True
 
     def _heic_to_jpeg(self, file_field):
-        heif_file = pyheif.read(file_field.path)
-        image = Image.frombytes(
-            heif_file.mode,
-            heif_file.size,
-            heif_file.data,
-            "raw",
-            heif_file.mode,
-            heif_file.stride,
-        )
-        new_file_name = f"{file_field.name}.jpg"
-        image.save(os.path.join(settings.MEDIA_ROOT, new_file_name), "JPEG")
+        register_heif_opener()
+
+        with Image.open(file_field.path) as image:
+            if image.mode != "RGB":
+                image = image.convert("RGB")
+
+            # Remove .heic extension and add .jpg
+            new_file_name = f"{os.path.splitext(file_field.name)[0]}.jpg"
+
+            image.save(os.path.join(settings.MEDIA_ROOT, new_file_name), "JPEG")
+
         return new_file_name
 
     def aanmaken_afbeelding_versies(self):
