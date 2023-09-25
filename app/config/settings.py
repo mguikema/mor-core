@@ -401,7 +401,9 @@ try:
 except Exception as e:
     logger.error(f"OPENID_CONFIG FOUT, url: {OPENID_CONFIG_URI}, error: {e}")
 
+OIDC_ENABLED = False
 if OPENID_CONFIG and OIDC_RP_CLIENT_ID:
+    OIDC_ENABLED = True
     OIDC_VERIFY_SSL = os.getenv("OIDC_VERIFY_SSL", True) in TRUE_VALUES
     OIDC_USE_NONCE = os.getenv("OIDC_USE_NONCE", True) in TRUE_VALUES
 
