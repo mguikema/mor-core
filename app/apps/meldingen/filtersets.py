@@ -1,6 +1,4 @@
-import operator
 from collections import OrderedDict
-from functools import reduce
 from typing import List, Tuple
 
 from apps.meldingen.models import Melding
@@ -154,11 +152,6 @@ class MeldingFilter(BasisFilter):
         method="get_begraafplaats_grafnummer"
     )
 
-    # b&c
-    meta__categorie = MultipleValueFilter(
-        field_class=CharField, method="get_categories"
-    )
-
     def get_begraafplaats_grafnummer(self, queryset, name, value):
         if value:
             valid_lookup_expr = ["gt", "gte", "lt", "lte"]
@@ -208,18 +201,12 @@ class MeldingFilter(BasisFilter):
 
     def get_statussen(self, queryset, name, value):
         if value:
-            return queryset.filter(status__naam__in=value)
+            return queryset.filter(status__naam__in=value).distinct()
         return queryset
 
     def get_onderwerpen(self, queryset, name, value):
         if value:
-            return queryset.filter(onderwerpen__in=value)
-        return queryset
-
-    def get_categories(self, queryset, name, value):
-        if value:
-            categories = (Q(meta__categorie__icontains=str(cat)) for cat in value)
-            return queryset.filter(reduce(operator.or_, categories))
+            return queryset.filter(onderwerpen__in=value).distinct()
         return queryset
 
     def get_actieve_meldingen(self, queryset, name, value):
