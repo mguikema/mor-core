@@ -12,6 +12,7 @@ from apps.locatie.serializers import (
     LocatieRelatedField,
 )
 from apps.meldingen.models import Melding, Meldinggebeurtenis
+from apps.signalen.serializers import SignaalSerializer
 from apps.status.serializers import StatusSerializer
 from apps.taken.serializers import TaakgebeurtenisSerializer, TaakopdrachtSerializer
 from drf_spectacular.types import OpenApiTypes
@@ -200,6 +201,7 @@ class MeldingDetailSerializer(MeldingSerializer):
         source="meldinggebeurtenissen_voor_melding", many=True, read_only=True
     )
     taakopdrachten_voor_melding = TaakopdrachtSerializer(many=True, read_only=True)
+    signalen_voor_melding = SignaalSerializer(many=True, read_only=True)
 
     class Meta:
         model = Melding
@@ -223,4 +225,5 @@ class MeldingDetailSerializer(MeldingSerializer):
             "volgende_statussen",
             "meldinggebeurtenissen",
             "taakopdrachten_voor_melding",
+            "signalen_voor_melding",
         )
