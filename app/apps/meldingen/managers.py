@@ -1,6 +1,7 @@
 import logging
 
 from apps.applicaties.models import Applicatie
+from apps.melders.models import Melder
 from django.contrib.gis.db import models
 from django.db import OperationalError, transaction
 from django.dispatch import Signal as DjangoSignal
@@ -83,6 +84,7 @@ class MeldingManager(models.Manager):
                 signaal_url=signaal_initial_data.get("signaal_url"),
                 signaal_data=signaal_initial_data,
                 melding=melding,
+                melder=Melder.objects.create(**signaal_validated_data.get("melder")),
             )
 
             transaction.on_commit(
