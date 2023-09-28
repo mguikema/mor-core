@@ -17,7 +17,9 @@ class MeldingAdmin(admin.ModelAdmin):
         "uuid",
         "status_naam",
         "onderwerp_naam",
+        "origineel_aangemaakt",
         "aangemaakt_op",
+        "aangepast_op",
         "afgesloten_op",
     )
     actions = (action_notificatie_voor_signaal_melding_afgesloten,)

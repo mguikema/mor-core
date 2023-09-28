@@ -156,10 +156,17 @@ class MeldingSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     aantal_actieve_taken = serializers.SerializerMethodField()
+    meldingsnummer_lijst = serializers.SerializerMethodField()
 
     @extend_schema_field(OpenApiTypes.INT)
     def get_aantal_actieve_taken(self, obj):
         return obj.actieve_taakopdrachten().count()
+
+    def get_meldingsnummer_lijst(self, obj):
+        return [
+            signaal.signaal_data.get("meta", {}).get("meldingsnummerField")
+            for signaal in obj.signalen_voor_melding.all()
+        ]
 
     class Meta:
         model = Melding
@@ -180,9 +187,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "resolutie",
             "volgende_statussen",
             "aantal_actieve_taken",
-            # "adressen",
-            # "lichtmasten",
-            # "graven",
+            "meldingsnummer_lijst",
         )
 
 
