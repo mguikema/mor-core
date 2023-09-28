@@ -207,6 +207,13 @@ class MeldingDetailSerializer(MeldingSerializer):
     )
     taakopdrachten_voor_melding = TaakopdrachtSerializer(many=True, read_only=True)
     signalen_voor_melding = SignaalSerializer(many=True, read_only=True)
+    meldingsnummer_lijst = serializers.SerializerMethodField()
+
+    def get_meldingsnummer_lijst(self, obj):
+        return [
+            signaal.signaal_data.get("meta", {}).get("meldingsnummerField")
+            for signaal in obj.signalen_voor_melding.all()
+        ]
 
     class Meta:
         model = Melding
@@ -231,4 +238,5 @@ class MeldingDetailSerializer(MeldingSerializer):
             "meldinggebeurtenissen",
             "taakopdrachten_voor_melding",
             "signalen_voor_melding",
+            "meldingsnummer_lijst",
         )
