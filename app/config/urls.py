@@ -1,7 +1,11 @@
 from apps.applicaties.viewsets import TaakapplicatieViewSet
 from apps.bijlagen.viewsets import BijlageViewSet
 from apps.classificatie.viewsets import OnderwerpViewSet
-from apps.meldingen.views import prometheus_django_metrics, serve_protected_media
+from apps.meldingen.views import (
+    login_required_view,
+    prometheus_django_metrics,
+    serve_protected_media,
+)
 from apps.meldingen.viewsets import MeldinggebeurtenisViewSet, MeldingViewSet
 from apps.signalen.viewsets import SignaalViewSet
 from apps.taken.viewsets import TaakgebeurtenisViewSet, TaakopdrachtViewSet
@@ -35,6 +39,7 @@ urlpatterns = [
     path("api/v1/", include((router.urls, "app"), namespace="v1")),
     path("api-token-auth/", views.obtain_auth_token),
     path("admin/", admin.site.urls),
+    path("login/", login_required_view, name="login_required"),
     path("health/", include("health_check.urls")),
     path("db-schema/", include((schema_urls, "db-schema"))),
     path("plate/", include("django_spaghetti.urls")),
