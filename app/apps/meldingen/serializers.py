@@ -157,6 +157,7 @@ class MeldingSerializer(serializers.ModelSerializer):
     )
     aantal_actieve_taken = serializers.SerializerMethodField()
     meldingsnummer_lijst = serializers.SerializerMethodField()
+    laatste_meldinggebeurtenis = serializers.SerializerMethodField()
 
     @extend_schema_field(OpenApiTypes.INT)
     def get_aantal_actieve_taken(self, obj):
@@ -167,6 +168,14 @@ class MeldingSerializer(serializers.ModelSerializer):
             signaal.signaal_data.get("meta", {}).get("meldingsnummerField")
             for signaal in obj.signalen_voor_melding.all()
         ]
+
+    def get_laatste_meldinggebeurtenis(self, obj):
+        meldinggebeurtenis = (
+            obj.meldinggebeurtenissen_voor_melding.all()
+            .order_by("-aangemaakt_op")
+            .first()
+        )
+        return MeldinggebeurtenisSerializer(meldinggebeurtenis).data
 
     class Meta:
         model = Melding
@@ -188,6 +197,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "volgende_statussen",
             "aantal_actieve_taken",
             "meldingsnummer_lijst",
+            "laatste_meldinggebeurtenis",
         )
 
 
@@ -208,12 +218,21 @@ class MeldingDetailSerializer(MeldingSerializer):
     taakopdrachten_voor_melding = TaakopdrachtSerializer(many=True, read_only=True)
     signalen_voor_melding = SignaalSerializer(many=True, read_only=True)
     meldingsnummer_lijst = serializers.SerializerMethodField()
+    laatste_meldinggebeurtenis = serializers.SerializerMethodField()
 
     def get_meldingsnummer_lijst(self, obj):
         return [
             signaal.signaal_data.get("meta", {}).get("meldingsnummerField")
             for signaal in obj.signalen_voor_melding.all()
         ]
+
+    def get_laatste_meldinggebeurtenis(self, obj):
+        meldinggebeurtenis = (
+            obj.meldinggebeurtenissen_voor_melding.all()
+            .order_by("-aangemaakt_op")
+            .first()
+        )
+        return MeldinggebeurtenisSerializer(meldinggebeurtenis).data
 
     class Meta:
         model = Melding
@@ -239,4 +258,5 @@ class MeldingDetailSerializer(MeldingSerializer):
             "taakopdrachten_voor_melding",
             "signalen_voor_melding",
             "meldingsnummer_lijst",
+            "laatste_meldinggebeurtenis",
         )
