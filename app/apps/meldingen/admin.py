@@ -39,9 +39,15 @@ class MeldingAdmin(admin.ModelAdmin):
             return "- leeg -"
 
 
-class DefaultAdmin(admin.ModelAdmin):
-    pass
+class MeldinggebeurtenisAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "uuid",
+        "aangemaakt_op",
+        "melding",
+        "omschrijving_extern",
+    )
 
 
-admin.site.register(Meldinggebeurtenis, DefaultAdmin)
+admin.site.register(Meldinggebeurtenis, MeldinggebeurtenisAdmin)
 admin.site.register(Melding, MeldingAdmin)
