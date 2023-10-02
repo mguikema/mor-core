@@ -296,6 +296,9 @@ class MeldingManager(models.Manager):
                 status_instance.save()
                 locked_melding.status = status_instance
                 melding_gebeurtenis.status = status_instance
+                melding_gebeurtenis.omschrijving_extern = (
+                    "De melding is in behandeling."
+                )
                 melding_gebeurtenis.gebeurtenis_type = (
                     Meldinggebeurtenis.GebeurtenisType.STATUS_WIJZIGING
                 )
