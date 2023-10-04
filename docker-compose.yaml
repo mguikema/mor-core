@@ -16,12 +16,7 @@ services:
     env_file:
       - .env.local
   core_app:
-    # container_name: core.app
     build: ./app
-    extra_hosts:
-      - "mor-core.forzamor.local:172.17.0.1"
-    ports:
-      - "8000"
     env_file:
       - .env.local
     volumes:
@@ -41,7 +36,7 @@ services:
     image: postgis/postgis:11-3.3
     shm_size: '1024m'
     ports:
-      - "6002:5432"
+      - "7998:5432"
     env_file:
       - .env.local
     volumes:

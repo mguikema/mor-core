@@ -17,7 +17,9 @@ class MeldingAdmin(admin.ModelAdmin):
         "uuid",
         "status_naam",
         "onderwerp_naam",
+        "origineel_aangemaakt",
         "aangemaakt_op",
+        "aangepast_op",
         "afgesloten_op",
     )
     actions = (action_notificatie_voor_signaal_melding_afgesloten,)
@@ -37,9 +39,15 @@ class MeldingAdmin(admin.ModelAdmin):
             return "- leeg -"
 
 
-class DefaultAdmin(admin.ModelAdmin):
-    pass
+class MeldinggebeurtenisAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "uuid",
+        "aangemaakt_op",
+        "melding",
+        "omschrijving_extern",
+    )
 
 
-admin.site.register(Meldinggebeurtenis, DefaultAdmin)
+admin.site.register(Meldinggebeurtenis, MeldinggebeurtenisAdmin)
 admin.site.register(Melding, MeldingAdmin)

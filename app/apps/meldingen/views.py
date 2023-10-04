@@ -1,8 +1,14 @@
 import prometheus_client
 from apps.meldingen.metrics_collectors import CustomCollector
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from rest_framework.authentication import TokenAuthentication
+
+
+@login_required
+def login_required_view(request):
+    return HttpResponseRedirect(redirect_to="/admin/")
 
 
 def serve_protected_media(request):

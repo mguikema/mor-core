@@ -1,7 +1,11 @@
 from apps.applicaties.viewsets import TaakapplicatieViewSet
 from apps.bijlagen.viewsets import BijlageViewSet
 from apps.classificatie.viewsets import OnderwerpViewSet
-from apps.meldingen.views import prometheus_django_metrics, serve_protected_media
+from apps.meldingen.views import (
+    login_required_view,
+    prometheus_django_metrics,
+    serve_protected_media,
+)
 from apps.meldingen.viewsets import MeldinggebeurtenisViewSet, MeldingViewSet
 from apps.signalen.viewsets import SignaalViewSet
 from apps.taken.viewsets import TaakgebeurtenisViewSet, TaakopdrachtViewSet
@@ -34,24 +38,8 @@ router.register(r"bijlage", BijlageViewSet, basename="bijlage")
 urlpatterns = [
     path("api/v1/", include((router.urls, "app"), namespace="v1")),
     path("api-token-auth/", views.obtain_auth_token),
-    path(
-        "admin/login/",
-        RedirectView.as_view(
-            url="/oidc/authenticate/?next=/admin/",
-            permanent=False,
-        ),
-        name="admin_login",
-    ),
-    path(
-        "admin/logout/",
-        RedirectView.as_view(
-            url="/oidc/logout/?next=/admin/",
-            permanent=False,
-        ),
-        name="admin_logout",
-    ),
-    path("oidc/", include("mozilla_django_oidc.urls")),
     path("admin/", admin.site.urls),
+    path("login/", login_required_view, name="login_required"),
     path("health/", include("health_check.urls")),
     path("db-schema/", include((schema_urls, "db-schema"))),
     path("plate/", include("django_spaghetti.urls")),
@@ -70,6 +58,27 @@ urlpatterns = [
     re_path(r"^media", serve_protected_media, name="protected_media"),
     path("metrics", prometheus_django_metrics, name="prometheus_django_metrics"),
 ]
+
+if settings.OIDC_ENABLED:
+    urlpatterns += [
+        path("oidc/", include("mozilla_django_oidc.urls")),
+        path(
+            "admin/login/",
+            RedirectView.as_view(
+                url="/oidc/authenticate/?next=/admin/",
+                permanent=False,
+            ),
+            name="admin_login",
+        ),
+        path(
+            "admin/logout/",
+            RedirectView.as_view(
+                url="/oidc/logout/?next=/admin/",
+                permanent=False,
+            ),
+            name="admin_logout",
+        ),
+    ]
 
 if settings.DEBUG:
     # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

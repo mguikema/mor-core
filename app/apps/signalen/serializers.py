@@ -38,7 +38,7 @@ class SignaalLinksSerializer(serializers.Serializer):
 class SignaalSerializer(WritableNestedModelSerializer):
     _links = SignaalLinksSerializer(source="*", read_only=True)
     bijlagen = BijlageSerializer(many=True, required=False, write_only=True)
-    melder = MelderSerializer(required=False, write_only=True)
+    melder = MelderSerializer(required=False, write_only=False)
     omschrijving_kort = serializers.CharField(max_length=500, write_only=True)
     omschrijving = serializers.CharField(
         max_length=5000, allow_blank=True, required=False, write_only=True
