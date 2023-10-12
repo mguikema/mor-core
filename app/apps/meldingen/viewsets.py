@@ -149,7 +149,11 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "wijk",
             "locaties_voor_melding__wijknaam",
         ),
-        ("onderwerp", "onderwerpen", "onderwerpen__response_json__name"),
+        (
+            "onderwerp",
+            "onderwerpen",
+            "onderwerpen__bron_url",
+        ),
     )
 
     def get_prefiltered_queryset(self):

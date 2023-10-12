@@ -158,6 +158,11 @@ class MeldingSerializer(serializers.ModelSerializer):
     aantal_actieve_taken = serializers.SerializerMethodField()
     meldingsnummer_lijst = serializers.SerializerMethodField()
     laatste_meldinggebeurtenis = serializers.SerializerMethodField()
+    onderwerpen = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_onderwerpen(self, obj):
+        return obj.onderwerpen.values_list("bron_url", flat=True)
 
     @extend_schema_field(OpenApiTypes.INT)
     def get_aantal_actieve_taken(self, obj):
@@ -217,22 +222,6 @@ class MeldingDetailSerializer(MeldingSerializer):
     )
     taakopdrachten_voor_melding = TaakopdrachtSerializer(many=True, read_only=True)
     signalen_voor_melding = SignaalSerializer(many=True, read_only=True)
-    meldingsnummer_lijst = serializers.SerializerMethodField()
-    laatste_meldinggebeurtenis = serializers.SerializerMethodField()
-
-    def get_meldingsnummer_lijst(self, obj):
-        return [
-            signaal.signaal_data.get("meta", {}).get("meldingsnummerField")
-            for signaal in obj.signalen_voor_melding.all()
-        ]
-
-    def get_laatste_meldinggebeurtenis(self, obj):
-        meldinggebeurtenis = (
-            obj.meldinggebeurtenissen_voor_melding.all()
-            .order_by("-aangemaakt_op")
-            .first()
-        )
-        return MeldinggebeurtenisSerializer(meldinggebeurtenis).data
 
     class Meta:
         model = Melding
