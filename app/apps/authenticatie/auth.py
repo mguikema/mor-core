@@ -40,6 +40,8 @@ class OIDCAuthenticationBackend(auth.OIDCAuthenticationBackend):
         # user_response.raise_for_status()
 
         # Make sure always an email claim is available, if not set fallback to upn or username
-        payload.update({"email": payload.get("email", payload.get("upn", payload.get("username")))})
+        payload.update(
+            {"email": payload.get("email", payload.get("upn", payload.get("username")))}
+        )
 
         return payload
