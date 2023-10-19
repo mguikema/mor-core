@@ -209,7 +209,6 @@ class MeldingSerializer(serializers.ModelSerializer):
 class MeldingDetailSerializer(MeldingSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
-    onderwerpen = OnderwerpAliasSerializer(many=True, read_only=True)
     bijlagen = BijlageRelatedField(many=True, read_only=True)
     status = StatusSerializer()
     volgende_statussen = serializers.ListField(
