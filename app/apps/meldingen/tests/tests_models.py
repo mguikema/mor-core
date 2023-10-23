@@ -13,6 +13,7 @@ from django.test import TransactionTestCase
 
 
 class MeldingTransactionTest(TransactionTestCase):
+    databases = {"default", "alternate"}
     DB1 = "default"
     DB2 = "alternate"
 
