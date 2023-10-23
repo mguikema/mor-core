@@ -18,43 +18,43 @@ WORKDIR /app
 COPY requirements.txt /requirements.txt
 
 RUN apt-get update \
- && apt-get dist-upgrade -y \
- && apt-get autoremove -y \
- && apt-get install --no-install-recommends -y \
-        build-essential \
-        python-dev \
-        unzip \
-        curl \
-        wget \
-        dnsutils \
-        vim-tiny \
-        net-tools \
-        netcat \
-        libgeos-c1v5 \
-        gdal-bin \
-        postgresql-client \
-        libgdal28 \
-        libspatialite7 \
-        libfreexl1 \
-        libgeotiff-dev \
-        libwebp6 \
-        proj-bin \
-        mime-support \
-        gettext \
-        libwebpmux3 \
-        libwebpdemux2 \
-        libxml2 \
-        libfreetype6 \
-        libtiff5 \
-        libgdk-pixbuf2.0-0 \
-        libmagic1 \
-        libcairo2 \
-        libpango1.0-0 \
-        gcc \
-        graphviz \
-        graphviz-dev \
-        git \
-        locales \
+    && apt-get dist-upgrade -y \
+    && apt-get autoremove -y \
+    && apt-get install --no-install-recommends -y \
+    build-essential \
+    python-dev \
+    unzip \
+    curl \
+    wget \
+    dnsutils \
+    vim-tiny \
+    net-tools \
+    netcat \
+    libgeos-c1v5 \
+    gdal-bin \
+    postgresql-client \
+    libgdal28 \
+    libspatialite7 \
+    libfreexl1 \
+    libgeotiff-dev \
+    libwebp6 \
+    proj-bin \
+    mime-support \
+    gettext \
+    libwebpmux3 \
+    libwebpdemux2 \
+    libxml2 \
+    libfreetype6 \
+    libtiff5 \
+    libgdk-pixbuf2.0-0 \
+    libmagic1 \
+    libcairo2 \
+    libpango1.0-0 \
+    gcc \
+    graphviz \
+    graphviz-dev \
+    git \
+    locales \
     && rm -rf /var/lib/apt/lists/* /var/cache/debconf/*-old \
     && pip install --upgrade pip \
     && pip install --no-cache-dir -r /requirements.txt \
@@ -70,15 +70,19 @@ ENV LANG=nl_NL.UTF-8 \
 
 COPY . /app/
 
-RUN mkdir -p /media && mkdir -p /static && chown $APP_USER:$APP_USER /media && chown $APP_USER:$APP_USER /static && chmod 744 /media && chmod 744 /static
+RUN mkdir -p /media \
+    && mkdir -p /static \
+    && chown $APP_USER:$APP_USER /media \
+    && chown $APP_USER:$APP_USER /static \
+    && chmod 744 /media \
+    && chmod 744 /static
 
-RUN mkdir -p /srv/web/var/cache && chown $APP_USER:$APP_USER /srv/web/var/cache && chmod -R ugo+rwx /srv/web/var/cache
-
-RUN chmod +x /app/deploy/docker-entrypoint.sh && chown $APP_USER:$APP_USER /app/deploy/docker-entrypoint.sh \
-    && chmod +x /app/deploy/tests.sh && chown $APP_USER:$APP_USER /app/deploy/tests.sh \
-    && chmod +x /app/deploy/wait-for.sh && chown $APP_USER:$APP_USER /app/deploy/wait-for.sh
-
-RUN chown -R $APP_USER:$APP_USER $APP_HOME
+RUN mkdir -p /srv/web/var/cache \
+    && chown $APP_USER:$APP_USER /srv/web/var/cache \
+    && chmod -R ugo+rwx /srv/web/var/cache \
+    && chown -R $APP_USER:$APP_USER $APP_HOME \
+    && chmod -R +x /app/deploy
 
 USER $APP_USER
+
 CMD ["bash", "/app/deploy/docker-entrypoint.sh"]
