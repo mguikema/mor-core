@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: django-lint
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Build Docker test image
         run: docker-compose -f docker-compose.test.yaml build
 

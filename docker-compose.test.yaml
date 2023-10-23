@@ -3,7 +3,7 @@ services:
   app:
     build: ./app
     ports:
-      - 8080:8000
+      - 8003:8000
       - 5678:5678
     env_file:
       - .env.test
@@ -29,8 +29,6 @@ services:
       retries: 5
     networks:
       - mor_network
-    stdin_open: true
-    tty: true
 
 networks:
   mor_network:
