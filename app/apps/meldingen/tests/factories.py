@@ -49,7 +49,7 @@ class MeldinggebeurtenisFactory(factory.django.DjangoModelFactory):
 
     gebeurtenis_type = Meldinggebeurtenis.GebeurtenisType.STATUS_WIJZIGING
     omschrijving_intern = factory.Faker("text", max_nb_chars=5000)
-    omschrijving_extern = factory.Faker("text", max_nb_chars=5000)
+    omschrijving_extern = factory.Faker("text", max_nb_chars=2000)
     gebruiker = factory.Faker("name")
     melding = factory.SubFactory(MeldingFactory)
     status = factory.SubFactory(StatusFactory)

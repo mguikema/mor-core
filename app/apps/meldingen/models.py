@@ -40,7 +40,7 @@ class Meldinggebeurtenis(BasisModel):
         null=True,
     )
     omschrijving_intern = models.CharField(max_length=5000, null=True, blank=True)
-    omschrijving_extern = models.CharField(max_length=5000, null=True, blank=True)
+    omschrijving_extern = models.CharField(max_length=2000, null=True, blank=True)
     gebruiker = models.CharField(max_length=200, null=True, blank=True)
     melding = models.ForeignKey(
         to="meldingen.Melding",
