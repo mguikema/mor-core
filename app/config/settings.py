@@ -166,7 +166,7 @@ DATABASES.update(
     {
         "alternate": DEFAULT_DATABASE,
     }
-    if ENVIRONMENT == "test"
+    if ENVIRONMENT in ["test", "development"]
     else {}
 )
 
@@ -185,7 +185,7 @@ CELERYBEAT_SCHEDULE = {
     },
 }
 
-if ENVIRONMENT == "test":
+if ENVIRONMENT in ["test", "development"]:
     DJANGO_TEST_USERNAME = os.getenv("DJANGO_TEST_USERNAME", "test")
     DJANGO_TEST_EMAIL = os.getenv("DJANGO_TEST_EMAIL", "test@test.com")
     DJANGO_TEST_PASSWORD = os.getenv("DJANGO_TEST_PASSWORD", "insecure")

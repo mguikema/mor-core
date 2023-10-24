@@ -2,16 +2,11 @@ version: "3.5"
 services:
   app:
     build: ./app
-    # hostname: core
-    # image: core
     ports:
-      - 8080:8000
+      - 8003:8000
       - 5678:5678
     env_file:
       - .env.test
-    # volumes:
-    #   - ./core:/app
-    #   - ./media:/media
     depends_on:
       database:
         condition: service_healthy
@@ -21,7 +16,6 @@ services:
       - mor_network
     stdin_open: true
     tty: true
-    # command: ["bash", "/app/deploy/docker-entrypoint.development.sh"]
 
   database:
     image: postgis/postgis:11-3.3
