@@ -13,6 +13,12 @@ from utils.models import BasisModel
 logger = logging.getLogger(__name__)
 
 
+def encrypt_gebruiker_wachtwoord(wachtwoord_decrypted):
+    f = Fernet(settings.FERNET_KEY)
+    wachtwoord_encrypted = f.encrypt(wachtwoord_decrypted.encode()).decode()
+    return wachtwoord_encrypted
+
+
 class Applicatie(BasisModel):
     """
     Representeerd externe applicaite die de afhandling van de melden op zich nemen.
@@ -86,10 +92,9 @@ class Applicatie(BasisModel):
         return applicatie
 
     def encrypt_applicatie_gebruiker_wachtwoord(self, wachtwoord_decrypted):
-        f = Fernet(settings.FERNET_KEY)
-        self.applicatie_gebruiker_wachtwoord = f.encrypt(
-            wachtwoord_decrypted.encode()
-        ).decode()
+        self.applicatie_gebruiker_wachtwoord = encrypt_gebruiker_wachtwoord(
+            wachtwoord_decrypted
+        )
 
     def haal_taaktypes(self):
         if self.basis_url:

@@ -99,7 +99,12 @@ Pre-commit currently runs black, flake8, autoflake, isort and some pre-commit ho
 ### Linking other applications to MOR-CORE
 
 To link the other applications to MOR-CORE you need to create the users for those applications and the application-links in MOR-CORE.
-Some parts of this are already automated.
+Applications should be created automatically with the "create_applicaties" command. You can also run this command using:
+```
+make create_applicaties
+```
+
+#### Manual steps
  - Go to the Django Admin in MOR-CORE
  - Users - Add new users for the applications, for example: fixer_username@forzamor.nl for fixer, the password is the default we use.
  - Applicaties -  Create a new application with the following data (fixer in this example):
