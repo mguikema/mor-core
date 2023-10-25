@@ -109,8 +109,14 @@ class Command(BaseCommand):
                         "label": "Betreft het verzoek een specifiek graf?",
                         "choices": {"0": "Nee", "1": "Ja"},
                     },
-                    "naam_overledene": {"label": "Naam overledene", "choices": None},
-                    "telefoon_melder": {"label": "Telefoonnummer", "choices": None},
+                    "naam_overledene": {
+                        "label": "Naam overledene",
+                        "choices": None,
+                    },
+                    "telefoon_melder": {
+                        "label": "Telefoonnummer",
+                        "choices": None,
+                    },
                     "terugkoppeling_gewenst": {
                         "label": "Is terugkoppeling gewenst?",
                         "choices": {"0": "Nee", "11": "Ja"},
