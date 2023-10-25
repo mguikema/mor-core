@@ -21,6 +21,11 @@ class TaakapplicatieLinksSerializer(serializers.Serializer):
 class TaakapplicatieSerializer(serializers.ModelSerializer):
     _links = TaakapplicatieLinksSerializer(source="*", read_only=True)
     onderwerpen = OnderwerpAliasSerializer(many=True)
+    taaktypes = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.ANY)
+    def get_taaktypes(self, obj):
+        return obj.taaktypes_halen()
 
     class Meta:
         model = Applicatie
