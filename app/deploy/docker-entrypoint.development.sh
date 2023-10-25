@@ -30,6 +30,10 @@ fi
 echo Create users
 python manage.py createusers --noinput || true
 
+# Create applicaties for app to app communication
+echo Create applicaties
+python manage.py create_applicaties
+
 # Log a message indicating the script has completed
 echo "Docker development entrypoint script has completed."
 
