@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("classificatie", "0002_auto_20230825_0957"),
     ]

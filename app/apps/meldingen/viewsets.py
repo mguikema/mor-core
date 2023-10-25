@@ -22,7 +22,6 @@ from rest_framework.response import Response
 
 
 class MeldinggebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-
     lookup_field = "uuid"
     queryset = Meldinggebeurtenis.objects.all()
 
