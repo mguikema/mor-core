@@ -1,6 +1,7 @@
 # MOR Core
 
 Voor het organiseren en beheren van Meldingen Openbare Ruimte
+
 ## Tech Stack
 
 [Django](https://www.djangoproject.com/start/), [Turbo JS](https://turbo.hotwired.dev/), [SCSS](https://sass-lang.com/)
@@ -94,3 +95,27 @@ To manually run the pre-commit formatting run
     make format
 ```
 Pre-commit currently runs black, flake8, autoflake, isort and some pre-commit hooks. Also runs prettier for the frontend.
+
+### Linking other applications to MOR-CORE
+
+To link the other applications to MOR-CORE you need to create the users for those applications and the application-links in MOR-CORE.
+Applications should be created automatically with the "create_applicaties" command. You can also run this command using:
+```
+make create_applicaties
+```
+
+#### Manual steps
+ - Go to the Django Admin in MOR-CORE
+ - Users - Add new users for the applications, for example: fixer_username@forzamor.nl for fixer, the password is the default we use.
+ - Applicaties -  Create a new application with the following data (fixer in this example):
+   * name: FixeR
+   * basis url: http://fixer.mor.local:8004
+   * gebruiker: fixer_username@forzamor.nl
+   * applicatie gebruiker naam: core_username@forzamor.nl
+   * applicatie gebruiker wachtwoord: default password
+
+In the corresponsing application you need to create a user for MOR-CORE
+So in this example go to the FixeR Django Admin
+ - Users - Add a new user with email: core_username@forzamor.nl , password: default password
+
+After adding these 3 things you should be able to "click save and continue editing" on the MOR-CORE application-link and see the "Connectie met de applicatie is gelukt" message.

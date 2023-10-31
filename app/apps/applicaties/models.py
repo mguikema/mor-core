@@ -1,5 +1,5 @@
 import logging
-from urllib.parse import urlparse
+from urllib.parse import urlencode, urlparse
 
 import requests
 from cryptography.fernet import Fernet
@@ -11,6 +11,12 @@ from requests import Request, Response
 from utils.models import BasisModel
 
 logger = logging.getLogger(__name__)
+
+
+def encrypt_gebruiker_wachtwoord(wachtwoord_decrypted):
+    f = Fernet(settings.FERNET_KEY)
+    wachtwoord_encrypted = f.encrypt(wachtwoord_decrypted.encode()).decode()
+    return wachtwoord_encrypted
 
 
 class Applicatie(BasisModel):
@@ -86,20 +92,9 @@ class Applicatie(BasisModel):
         return applicatie
 
     def encrypt_applicatie_gebruiker_wachtwoord(self, wachtwoord_decrypted):
-        f = Fernet(settings.FERNET_KEY)
-        self.applicatie_gebruiker_wachtwoord = f.encrypt(
-            wachtwoord_decrypted.encode()
-        ).decode()
-
-    def haal_taaktypes(self):
-        if self.basis_url:
-            taaktypes_response = self.taaktypes_halen()
-            if taaktypes_response.status_code != 200:
-                logger.info(
-                    f"url: {self.basis_url}, taaktypes voor applicatie {self.naam} konden niet worden opgehaald: {taaktypes_response.status_code}"
-                )
-            else:
-                self.taaktypes = taaktypes_response.json().get("results", [])
+        self.applicatie_gebruiker_wachtwoord = encrypt_gebruiker_wachtwoord(
+            wachtwoord_decrypted
+        )
 
     def _get_timeout(self):
         return (5, 10)
@@ -153,18 +148,33 @@ class Applicatie(BasisModel):
         headers = {"Authorization": f"Token {token}"}
         return headers
 
-    def _do_request(self, url, method="get", data={}, raw_response=True):
+    def _do_request(
+        self, url, method="get", data={}, params={}, raw_response=True, cache_timeout=0
+    ):
         action: Request = getattr(requests, method)
+        url = self._get_url(url)
         action_params: dict = {
-            "url": self._get_url(url),
+            "url": url,
             "headers": self._get_headers(),
             "json": data,
+            "params": params,
             "timeout": self._get_timeout(),
         }
-        try:
-            response: Response = action(**action_params)
-        except Exception as e:
-            raise Applicatie.AntwoordFout(f"error: {e}")
+        if cache_timeout and method == "get":
+            cache_key = f"{url}?{urlencode(params)}"
+            response = cache.get(cache_key)
+            if not response:
+                try:
+                    response: Response = action(**action_params)
+                except Exception as e:
+                    raise Applicatie.AntwoordFout(f"error: {e}")
+                if int(response.status_code) == 200:
+                    cache.set(cache_key, response, cache_timeout)
+        else:
+            try:
+                response: Response = action(**action_params)
+            except Exception as e:
+                raise Applicatie.AntwoordFout(f"error: {e}")
         if raw_response:
             return response
         return response.json()
@@ -176,7 +186,29 @@ class Applicatie(BasisModel):
         return self._do_request(url, method="delete")
 
     def taaktypes_halen(self):
-        return self._do_request("/api/v1/taaktype/?limit=100", method="get")
+        if self.basis_url:
+            taaktypes_response = self._do_request(
+                "/api/v1/taaktype/",
+                params={"limit": 100},
+                method="get",
+                cache_timeout=60,
+            )
+            if taaktypes_response.status_code == 404:
+                logger.error(
+                    f"url: {self.basis_url}, taaktypes voor applicatie '{self.naam}' konden niet worden opgehaald: status_code={taaktypes_response.status_code}"
+                )
+                return []
+            if taaktypes_response.status_code != 200:
+                logger.error(
+                    f"url: {self.basis_url}, taaktypes voor applicatie '{self.naam}' konden niet worden opgehaald: status_code={taaktypes_response.status_code}, text={taaktypes_response.text}"
+                )
+                return []
+            return taaktypes_response.json().get("results", [])
+        else:
+            logger.info(
+                f"taaktypes voor applicatie '{self.naam}' konden niet worden opgehaald: basis_url ontbreekt"
+            )
+        return []
 
     def taak_status_aanpassen(self, url, data):
         return self._do_request(url, method="patch", data=data)

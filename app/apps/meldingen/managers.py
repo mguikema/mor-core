@@ -44,7 +44,6 @@ class MeldingManager(models.Manager):
         from apps.status.models import Status
 
         with transaction.atomic():
-
             gevalideerde_onderwerpen = []
             for onderwerp in signaal_validated_data.get("onderwerpen", []):
                 gevalideerde_onderwerpen.append(

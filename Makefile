@@ -40,6 +40,18 @@ create_superuser: ## create superuser for public tenant
 	@echo Create superuser. You will be prompted for email and password
 	$(EXEC_IN_WEB_CMD) createsuperuser
 
+createusers: ## create user for mor-core
+	@echo Create user for more-core
+	$(EXEC_IN_WEB_CMD) createusers
+
+create_applicaties: ## Create applicaties for more-core
+	@echo Creating applicaties
+	$(EXEC_IN_WEB_CMD) create_applicaties
+
+create_meldingen: ## Create meldingen for more-core
+	@echo Creating meldingen for mor-core
+	$(EXEC_IN_WEB_CMD) create_meldingen
+
 check_clean_db: ## clear docker vols
 	@echo -n "This will clear local docker volumes before running tests. Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 

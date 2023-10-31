@@ -31,6 +31,7 @@ services:
       - mor_network
       - mor_bridge_network
     command: ["bash", "/app/deploy/docker-entrypoint.development.sh"]
+    restart: always
 
   database:
     image: postgis/postgis:11-3.3
