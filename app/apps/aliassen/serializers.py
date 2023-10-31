@@ -12,6 +12,19 @@ class OnderwerpAliasLinksSerializer(serializers.Serializer):
         return obj.bron_url
 
 
+class OnderwerpAliasListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OnderwerpAlias
+        fields = (
+            "pk",
+            "bron_url",
+        )
+        read_only_fields = (
+            "pk",
+            "bron_url",
+        )
+
+
 class OnderwerpAliasSerializer(serializers.ModelSerializer):
     _links = OnderwerpAliasLinksSerializer(source="*", read_only=True)
     naam = serializers.SerializerMethodField()
