@@ -14,8 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 def encrypt_gebruiker_wachtwoord(wachtwoord_decrypted):
+    logger.info("Get fernet key from settings")
     f = Fernet(settings.FERNET_KEY)
-    wachtwoord_encrypted = f.encrypt(wachtwoord_decrypted.encode()).decode()
+    logger.info("Try to encrypt")
+    try:
+        wachtwoord_encrypted = f.encrypt(wachtwoord_decrypted.encode()).decode()
+    except Exception as e:
+        logger.error(f"Encryption with fernet key error: {e}")
     return wachtwoord_encrypted
 
 
