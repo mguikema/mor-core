@@ -14,8 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 def encrypt_gebruiker_wachtwoord(wachtwoord_decrypted):
+    logger.info("Get fernet key from settings")
     f = Fernet(settings.FERNET_KEY)
-    wachtwoord_encrypted = f.encrypt(wachtwoord_decrypted.encode()).decode()
+    logger.info("Try to encrypt")
+    try:
+        wachtwoord_encrypted = f.encrypt(wachtwoord_decrypted.encode()).decode()
+    except Exception as e:
+        logger.error(f"Encryption with fernet key error: {e}")
     return wachtwoord_encrypted
 
 
@@ -119,8 +124,8 @@ class Applicatie(BasisModel):
                     f"{self.basis_url}{settings.TOKEN_API_RELATIVE_URL}",
                     json=json_data,
                 )
-            except Exception:
-                return
+            except Exception as e:
+                logger.error(f"Token request mislukt: e: {e}")
 
             if token_response.status_code == 200:
                 applicatie_token = token_response.json().get("token")
@@ -129,6 +134,11 @@ class Applicatie(BasisModel):
                     applicatie_token,
                     settings.MELDINGEN_TOKEN_TIMEOUT,
                 )
+            else:
+                logger.error(
+                    f"Token request mislukt: status code: {token_response.status_code}, text: {token_response.text}"
+                )
+
         return applicatie_token
 
     def _get_url(self, url):
