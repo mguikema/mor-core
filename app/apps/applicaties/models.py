@@ -129,6 +129,11 @@ class Applicatie(BasisModel):
                     applicatie_token,
                     settings.MELDINGEN_TOKEN_TIMEOUT,
                 )
+            else:
+                logger.error(
+                    f"Token request mislukt: status code: {token_response.status_code}, text: {token_response.text}"
+                )
+
         return applicatie_token
 
     def _get_url(self, url):
