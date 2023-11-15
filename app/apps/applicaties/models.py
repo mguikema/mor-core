@@ -119,8 +119,8 @@ class Applicatie(BasisModel):
                     f"{self.basis_url}{settings.TOKEN_API_RELATIVE_URL}",
                     json=json_data,
                 )
-            except Exception:
-                return
+            except Exception as e:
+                logger.error(f"Token request mislukt: e: {e}")
 
             if token_response.status_code == 200:
                 applicatie_token = token_response.json().get("token")
