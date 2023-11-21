@@ -9,6 +9,7 @@ class Status(BasisModel):
         IN_BEHANDELING = "in_behandeling", "In behandeling"
         CONTROLE = "controle", "Controle"
         AFGEHANDELD = "afgehandeld", "Afgehandeld"
+        GEANNULEERD = "geannuleerd", "Geannuleerd"
 
     naam = models.CharField(
         max_length=50,
@@ -41,16 +42,19 @@ class Status(BasisModel):
                 return [
                     Status.NaamOpties.CONTROLE,
                     Status.NaamOpties.AFGEHANDELD,
+                    Status.NaamOpties.GEANNULEERD,
                 ]
             case Status.NaamOpties.OPENSTAAND:
                 return [
                     Status.NaamOpties.IN_BEHANDELING,
                     Status.NaamOpties.AFGEHANDELD,
+                    Status.NaamOpties.GEANNULEERD,
                 ]
             case Status.NaamOpties.CONTROLE:
                 return [
                     Status.NaamOpties.IN_BEHANDELING,
                     Status.NaamOpties.AFGEHANDELD,
+                    Status.NaamOpties.GEANNULEERD,
                 ]
             case _:
                 return []

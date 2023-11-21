@@ -124,6 +124,7 @@ class MeldingFilter(BasisFilter):
     )
 
     omschrijving = filters.CharFilter(method="get_omschrijving")
+    q = filters.CharFilter(method="get_q")
 
     actieve_meldingen = filters.BooleanFilter(method="get_actieve_meldingen")
     onderwerp = MultipleValueFilter(field_class=CharField, method="get_onderwerpen")
@@ -178,6 +179,14 @@ class MeldingFilter(BasisFilter):
                 .order_by("-similarity")
             )
             return qs
+        return queryset
+
+    def get_q(self, queryset, name, value):
+        if value:
+            return queryset.filter(
+                Q(meta__meldingsnummerField__iregex=value)
+                | Q(meta__morId__iregex=value)
+            ).distinct()
         return queryset
 
     def get_buurt(self, queryset, name, value):
