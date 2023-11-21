@@ -9,6 +9,7 @@ class OIDCAuthenticationBackend(auth.OIDCAuthenticationBackend):
         # copy name from the claims, if not set fallback to email as first name and empty last name
         user.first_name = claims.get("given_name", claims.get("email"))
         user.last_name = claims.get("family_name", "")
+
         user.save()
 
         return user
