@@ -20,6 +20,7 @@ FERNET_KEY = os.getenv(
 ).encode()
 
 
+GIT_SHA = os.getenv("GIT_SHA")
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 DEBUG = ENVIRONMENT == "development"
 
