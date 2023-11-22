@@ -58,6 +58,9 @@ RUN groupadd -r $APP_USER \
     && rm -rf /var/lib/apt/lists/* /var/cache/debconf/*-old \
     && update-ca-certificates
 
+ARG GIT_SHA
+ENV GIT_SHA=$GIT_SHA
+
 WORKDIR /app
 
 COPY . /app/
