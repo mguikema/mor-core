@@ -83,7 +83,7 @@ jobs:
           tags: ${{ steps.meta_app.outputs.tags }}
           labels: ${{ steps.meta_app.outputs.labels }}
           build-args: |
-            - GIT_SHA=${{ github.GITHUB_SHA }}
+            - GIT_SHA=${{ GITHUB_SHA }}
 
       - name: Build and push nginx Docker image
         uses: docker/build-push-action@v3

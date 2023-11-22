@@ -47,6 +47,8 @@ TOKEN_API_RELATIVE_URL = os.getenv("TOKEN_API_RELATIVE_URL", "/api-token-auth/")
 MELDINGEN_TOKEN_TIMEOUT = 60 * 5
 
 INSTALLED_APPS = (
+    # templates override
+    "apps.health",
     "django_db_schema_renderer",
     "django.contrib.contenttypes",
     "django.contrib.staticfiles",
@@ -89,7 +91,6 @@ INSTALLED_APPS = (
     "apps.signalen",
     "apps.locatie",
     "apps.classificatie",
-    "apps.health",
 )
 
 
@@ -303,6 +304,7 @@ TEMPLATES = [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.static",
                 "django.template.context_processors.request",
+                "config.context_processors.general_settings",
             ],
         },
     }
