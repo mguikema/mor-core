@@ -1,5 +1,7 @@
 from apps.locatie.models import Adres, Graf, Lichtmast, Locatie
 from django.contrib import admin
+from django.contrib.gis.db import models
+from django.forms.widgets import Textarea
 
 
 class GrafAdmin(admin.ModelAdmin):
@@ -8,6 +10,11 @@ class GrafAdmin(admin.ModelAdmin):
 
 class LocatieAdmin(admin.ModelAdmin):
     list_display = ("id", "uuid", "aangemaakt_op", "begraafplaats", "melding")
+
+    # TODO: Remove later!!!
+    formfield_overrides = {
+        models.GeometryField: {"widget": Textarea(attrs={"rows": 2})}
+    }
 
 
 class AdresAdmin(admin.ModelAdmin):

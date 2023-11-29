@@ -4,6 +4,7 @@ from apps.applicaties.models import Applicatie
 from apps.melders.models import Melder
 from django.contrib.gis.db import models
 from django.db import OperationalError, transaction
+from django.db.models import Max
 from django.dispatch import Signal as DjangoSignal
 from django.utils import timezone
 from rest_framework.reverse import reverse
@@ -191,9 +192,17 @@ class MeldingManager(models.Manager):
             except OperationalError:
                 raise MeldingManager.MeldingInGebruik
 
-            meldinggebeurtenis = serializer.save(
-                melding=melding,
-            )
+            if locatie := serializer.validated_data["locatie"]:
+                locatie["melding"] = melding
+                max_gewicht = melding.locaties_voor_melding.aggregate(Max("gewicht"))[
+                    "gewicht__max"
+                ]
+                gewicht = (
+                    round(max_gewicht + 0.1, 2) if max_gewicht is not None else 0.2
+                )
+                locatie["gewicht"] = gewicht
+
+            meldinggebeurtenis = serializer.save(melding=melding, locatie=locatie)
 
             locked_melding.save()
             transaction.on_commit(
