@@ -208,6 +208,21 @@ class MeldingSerializer(serializers.ModelSerializer):
             "laatste_meldinggebeurtenis",
         )
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Sorteer locaties_voor_melding op 'gewicht' veld
+        locaties_sorted = sorted(
+            representation["locaties_voor_melding"],
+            key=lambda locatie: locatie.get("gewicht", 0),
+            reverse=True,
+        )
+
+        # Vervang originele locaties_voor_melding met de gesorteerde lijst
+        representation["locaties_voor_melding"] = locaties_sorted
+
+        return representation
+
 
 class MeldingDetailSerializer(MeldingSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
