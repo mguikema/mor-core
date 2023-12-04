@@ -24,6 +24,7 @@ class Taakgebeurtenis(BasisModel):
         related_name="taakgebeurtenissen_voor_taakopdracht",
         on_delete=models.CASCADE,
     )
+    additionele_informatie = models.JSONField(default=dict)
 
     class Meta:
         ordering = ("-aangemaakt_op",)
@@ -34,7 +35,8 @@ class Taakgebeurtenis(BasisModel):
 class Taakstatus(BasisModel):
     class NaamOpties(models.TextChoices):
         NIEUW = "nieuw", "Nieuw"
-        BEZIG = "bezig", "Bezig"
+        TOEGEWEZEN = "toegewezen", "Toegewezen"
+        OPENSTAAND = "openstaand", "Openstaand"
         VOLTOOID = "voltooid", "Voltooid"
 
     naam = models.CharField(
@@ -62,11 +64,17 @@ class Taakstatus(BasisModel):
         match self.naam:
             case Taakstatus.NaamOpties.NIEUW:
                 return [
-                    Taakstatus.NaamOpties.BEZIG,
+                    Taakstatus.NaamOpties.TOEGEWEZEN,
                     Taakstatus.NaamOpties.VOLTOOID,
                 ]
-            case Taakstatus.NaamOpties.BEZIG:
+            case Taakstatus.NaamOpties.TOEGEWEZEN:
                 return [
+                    Taakstatus.NaamOpties.OPENSTAAND,
+                    Taakstatus.NaamOpties.VOLTOOID,
+                ]
+            case Taakstatus.NaamOpties.OPENSTAAND:
+                return [
+                    Taakstatus.NaamOpties.TOEGEWEZEN,
                     Taakstatus.NaamOpties.VOLTOOID,
                 ]
             case _:

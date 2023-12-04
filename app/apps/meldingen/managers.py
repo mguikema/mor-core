@@ -328,7 +328,7 @@ class MeldingManager(models.Manager):
     ):
         from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.status.models import Status
-        from apps.taken.models import Taakopdracht
+        from apps.taken.models import Taakopdracht, Taakstatus
 
         with transaction.atomic():
             try:
@@ -346,11 +346,17 @@ class MeldingManager(models.Manager):
                 raise MeldingManager.MeldingInGebruik
 
             resolutie = serializer.validated_data.pop("resolutie", None)
+            uitvoerder = serializer.validated_data.pop("uitvoerder", None)
             taakgebeurtenis = serializer.save(
                 taakopdracht=locked_taakopdracht,
+                additionele_informatie={"uitvoerder": uitvoerder},
             )
 
             locked_taakopdracht.status = taakgebeurtenis.taakstatus
+            if taakgebeurtenis.taakstatus.naam == Taakstatus.NaamOpties.TOEGEWEZEN:
+                locked_taakopdracht.additionele_informatie = {"uitvoerder": uitvoerder}
+            elif taakgebeurtenis.taakstatus.naam == Taakstatus.NaamOpties.OPENSTAAND:
+                locked_taakopdracht.additionele_informatie["uitvoerder"] = None
 
             if not locked_taakopdracht.status.volgende_statussen():
                 locked_taakopdracht.afgesloten_op = timezone.now().isoformat()
@@ -370,6 +376,7 @@ class MeldingManager(models.Manager):
                 "resolutie": resolutie,
                 "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
                 "gebruiker": taakgebeurtenis.gebruiker,
+                "uitvoerder": uitvoerder,
             }
             taak_status_aanpassen_response = (
                 locked_taakopdracht.applicatie.taak_status_aanpassen(
