@@ -24,6 +24,7 @@ class Meldinggebeurtenis(BasisModel):
             "taakopdracht_status_wijziging",
             "Taakopdracht status wijziging",
         )
+        LOCATIE_AANGEMAAKT = "locatie_aangemaakt", "Locatie aangemaakt"
 
     gebeurtenis_type = models.CharField(
         max_length=40,
@@ -60,6 +61,13 @@ class Meldinggebeurtenis(BasisModel):
         on_delete=models.CASCADE,
         blank=True,
         null=True,
+    )
+    locatie = models.ForeignKey(
+        to="locatie.Locatie",
+        related_name="meldinggebeurtenissen_voor_locatie",
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
     )
 
     class Meta:
