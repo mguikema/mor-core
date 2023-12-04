@@ -54,6 +54,7 @@ class TaakgebeurtenisSerializer(serializers.ModelSerializer):
             "omschrijving_intern",
             "taakopdracht",
             "gebruiker",
+            "additionele_informatie",
         )
         read_only_fields = (
             "_links",
@@ -62,6 +63,7 @@ class TaakgebeurtenisSerializer(serializers.ModelSerializer):
             "taakstatus",
             "omschrijving_intern",
             "taakopdracht",
+            "additionele_informatie",
         )
 
 
@@ -69,6 +71,7 @@ class TaakgebeurtenisStatusSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     taakstatus = TaakstatusSerializer(required=True)
     resolutie = serializers.CharField(required=False, allow_null=True)
+    uitvoerder = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = Taakgebeurtenis
@@ -78,6 +81,7 @@ class TaakgebeurtenisStatusSerializer(WritableNestedModelSerializer):
             "resolutie",
             "omschrijving_intern",
             "gebruiker",
+            "uitvoerder",
         )
 
 
