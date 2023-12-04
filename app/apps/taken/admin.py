@@ -15,13 +15,16 @@ class TaakgebeurtenisAdmin(admin.ModelAdmin):
 
 
 class TaakopdrachtAdmin(admin.ModelAdmin):
+    list_editable = ("taaktype", "taak_url")
     list_display = (
         "id",
-        "uuid",
+        "taaktype",
+        "taak_url",
+        # "uuid",
         "titel",
-        "aangemaakt_op",
-        "aangepast_op",
-        "melding",
+        # "aangemaakt_op",
+        # "aangepast_op",
+        # "melding",
         "status",
         "resolutie",
     )
