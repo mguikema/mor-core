@@ -4,7 +4,7 @@ from typing import List, Tuple
 from apps.meldingen.models import Melding
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Max, Q
 from django.db.models.functions import Greatest
 from django.forms.fields import CharField, MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
@@ -304,6 +304,16 @@ class RelatedOrderingFilter(rest_filters.OrderingFilter):
 
     # filter_querset() has to be overridden from the BaseFilterBackend class.
     def filter_queryset(self, request, queryset, view):
+        ordering = self.get_ordering(request, queryset, view)
+        if ordering:
+            queryset = queryset.annotate(
+                max_gewicht=Max("locaties_voor_melding__gewicht")
+            ).filter(
+                Q(locaties_voor_melding__gewicht=F("max_gewicht"))
+                | Q(locaties_voor_melding__isnull=True)
+            )
+            queryset = queryset.order_by(*ordering)
+            queryset = queryset.distinct()
         return queryset
 
 
