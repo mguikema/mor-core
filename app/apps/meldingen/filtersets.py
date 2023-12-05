@@ -4,7 +4,7 @@ from typing import List, Tuple
 from apps.meldingen.models import Melding
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
-from django.db.models import Q
+from django.db.models import F, Max, Q
 from django.db.models.functions import Greatest
 from django.forms.fields import CharField, MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
@@ -288,18 +288,33 @@ class RelatedOrderingFilter(rest_filters.OrderingFilter):
         self, queryset: models.QuerySet, view, context: dict = None
     ) -> List[tuple]:
         valid_fields = getattr(view, "ordering_fields", self.ordering_fields)
-        if not valid_fields == "__all_related__":
+        if valid_fields != "__all_related__":
             if not context:
                 context = {}
             valid_fields = super().get_valid_fields(queryset, view, context)
         else:
             valid_fields = [
                 *self._retrieve_all_related_fields(
-                    queryset.model._meta.get_fields(), queryset.model
+                    queryset.model._meta.get_fields(),
+                    queryset.model,
                 ),
                 *[(key, key.title().split("__")) for key in queryset.query.annotations],
             ]
         return valid_fields
+
+    # filter_querset() has to be overridden from the BaseFilterBackend class.
+    def filter_queryset(self, request, queryset, view):
+        ordering = self.get_ordering(request, queryset, view)
+        if ordering:
+            queryset = queryset.annotate(
+                max_gewicht=Max("locaties_voor_melding__gewicht")
+            ).filter(
+                Q(locaties_voor_melding__gewicht=F("max_gewicht"))
+                | Q(locaties_voor_melding__isnull=True)
+            )
+            queryset = queryset.order_by(*ordering)
+            queryset = queryset.distinct()
+        return queryset
 
 
 class TrigramSimilaritySearchFilter(SearchFilter):
