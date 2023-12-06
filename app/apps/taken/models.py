@@ -96,6 +96,7 @@ class Taakopdracht(BasisModel):
         OPGELOST = "opgelost", "Opgelost"
         NIET_OPGELOST = "niet_opgelost", "Niet opgelost"
         GEANNULEERD = "geannuleerd", "Geannuleerd"
+        NIET_GEVONDEN = "niet_gevonden", "Niets aangetroffen"
 
     afgesloten_op = models.DateTimeField(null=True, blank=True)
     melding = models.ForeignKey(
