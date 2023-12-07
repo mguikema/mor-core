@@ -63,10 +63,25 @@ class Locatie(BasisModel):
     begraafplaats = models.CharField(max_length=50, null=True, blank=True)
     grafnummer = models.CharField(max_length=10, null=True, blank=True)
     vak = models.CharField(max_length=10, null=True, blank=True)
+    gebruiker = models.ForeignKey(
+        to="authenticatie.Gebruiker",
+        related_name="locatie_voor_gebruiker",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+    gewicht = models.FloatField(default=0.2)
 
     def save(self, *args, **kwargs):
         self.locatie_type = self.__class__.__name__.lower()
         super().save(*args, **kwargs)
+
+    def bereken_gewicht(self):
+        return self.gewicht
+
+    @property
+    def custom_gewicht_property(self):
+        return self.bereken_gewicht()
 
 
 class Adres(Locatie):

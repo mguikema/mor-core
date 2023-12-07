@@ -1,3 +1,5 @@
+import logging
+
 from apps.meldingen.filtersets import (
     DjangoPreFilterBackend,
     MeldingFilter,
@@ -13,12 +15,15 @@ from apps.meldingen.serializers import (
 )
 from apps.taken.serializers import TaakopdrachtSerializer
 from django.db.models.query import QuerySet
+from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+logger = logging.getLogger(__name__)
 
 
 class MeldinggebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -208,7 +213,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
     @extend_schema(
-        description="Gebeurtneis voor een melding toevoegen",
+        description="Gebeurtenis voor een melding toevoegen",
         request=MeldinggebeurtenisSerializer,
         responses={status.HTTP_200_OK: MeldingDetailSerializer},
         parameters=None,
@@ -268,3 +273,46 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             data=serializer.errors,
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+    @extend_schema(
+        description="Locatie aanmaken voor een melding",
+        request=MeldinggebeurtenisSerializer,
+        responses={status.HTTP_200_OK: MeldingDetailSerializer},
+        parameters=None,
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="locatie-aanmaken",
+        serializer_class=MeldinggebeurtenisSerializer,
+    )
+    def locatie_aanmaken(self, request, uuid):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={"request": request},
+        )
+        try:
+            serializer.is_valid(raise_exception=True)
+            Melding.acties.gebeurtenis_toevoegen(serializer, self.get_object())
+
+            serializer_data = MeldingDetailSerializer(
+                self.get_object(), context={"request": request}
+            ).data
+
+            # Use JsonResponse for both success and error cases
+            return Response(serializer_data, status=status.HTTP_200_OK)
+
+        except serializers.ValidationError as e:
+            logger.error(e)
+            # Return a JsonResponse with the error details
+            return JsonResponse(
+                {"error": "Invalid data", "errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            logger.error(e)
+            # Return a JsonResponse with the specific error message
+            return JsonResponse(
+                {"error": f"An error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

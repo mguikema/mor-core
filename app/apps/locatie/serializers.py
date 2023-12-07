@@ -74,6 +74,8 @@ class AdresSerializer(AdresBasisSerializer, serializers.ModelSerializer):
             "buurtnaam",
             "wijknaam",
             "geometrie",
+            "gebruiker",
+            "gewicht",
         )
 
 

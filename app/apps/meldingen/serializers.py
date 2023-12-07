@@ -2,12 +2,8 @@ from apps.aliassen.serializers import OnderwerpAliasSerializer
 from apps.bijlagen.serializers import BijlageSerializer
 from apps.locatie.models import Adres, Graf, Lichtmast
 from apps.locatie.serializers import (
-    AdresBasisSerializer,
     AdresSerializer,
-    GeometrieSerializer,
-    GrafBasisSerializer,
     GrafSerializer,
-    LichtmastBasisSerializer,
     LichtmastSerializer,
     LocatieRelatedField,
 )
@@ -79,6 +75,7 @@ class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(required=False)
     taakgebeurtenis = TaakgebeurtenisSerializer(required=False)
+    locatie = AdresSerializer(required=False)
 
     class Meta:
         model = Meldinggebeurtenis
@@ -93,6 +90,7 @@ class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
             "melding",
             "taakgebeurtenis",
             "gebruiker",
+            "locatie",
         )
         read_only_fields = (
             "_links",
@@ -101,8 +99,13 @@ class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
             "status",
             "melding",
             "taakgebeurtenis",
+            "locatie",
         )
         validators = []
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        return data
 
 
 class MeldingAanmakenSerializer(WritableNestedModelSerializer):
@@ -204,6 +207,21 @@ class MeldingSerializer(serializers.ModelSerializer):
             "meldingsnummer_lijst",
             "laatste_meldinggebeurtenis",
         )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        # Sorteer locaties_voor_melding op 'gewicht' veld
+        locaties_sorted = sorted(
+            representation["locaties_voor_melding"],
+            key=lambda locatie: locatie.get("gewicht", 0),
+            reverse=True,
+        )
+
+        # Vervang originele locaties_voor_melding met de gesorteerde lijst
+        representation["locaties_voor_melding"] = locaties_sorted
+
+        return representation
 
 
 class MeldingDetailSerializer(MeldingSerializer):
