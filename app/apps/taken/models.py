@@ -1,6 +1,7 @@
 from apps.bijlagen.models import Bijlage
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
+from rest_framework.exceptions import APIException
 from utils.models import BasisModel
 
 
@@ -80,8 +81,22 @@ class Taakstatus(BasisModel):
             case _:
                 return []
 
-    class TaakStatusVeranderingNietToegestaan(Exception):
+    def clean(self):
+        huidige_status = (
+            self.taakopdracht.status.naam if self.taakopdracht.status else ""
+        )
+        nieuwe_status = self.naam
+        if huidige_status == nieuwe_status:
+            raise Taakstatus.TaakStatusVeranderingNietToegestaan(
+                "De nieuwe taakstatus mag niet hezelfde zijn als de huidige"
+            )
+
+    class TaakStatusVeranderingNietToegestaan(APIException):
         pass
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
 
 class Taakopdracht(BasisModel):
