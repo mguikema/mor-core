@@ -2,6 +2,7 @@ from apps.bijlagen.models import Bijlage
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from rest_framework.exceptions import APIException
+from utils.fields import DictJSONField
 from utils.models import BasisModel
 
 
@@ -25,7 +26,7 @@ class Taakgebeurtenis(BasisModel):
         related_name="taakgebeurtenissen_voor_taakopdracht",
         on_delete=models.CASCADE,
     )
-    additionele_informatie = models.JSONField(default=dict)
+    additionele_informatie = DictJSONField(default=dict)
 
     class Meta:
         ordering = ("-aangemaakt_op",)
@@ -148,7 +149,7 @@ class Taakopdracht(BasisModel):
         blank=True,
         null=True,
     )
-    additionele_informatie = models.JSONField(default=dict)
+    additionele_informatie = DictJSONField(default=dict)
 
     taak_url = models.CharField(
         max_length=200,
@@ -156,7 +157,36 @@ class Taakopdracht(BasisModel):
         null=True,
     )
 
+    class AanmakenNietToegestaan(APIException):
+        ...
+
     class Meta:
         ordering = ("-aangemaakt_op",)
         verbose_name = "Taakopdracht"
         verbose_name_plural = "Taakopdrachten"
+
+    def clean(self):
+        status_namen = [
+            status_naam[0]
+            for status_naam in Taakstatus.NaamOpties.choices
+            if Taakstatus.NaamOpties.VOLTOOID != status_naam[0]
+        ]
+        openstaande_taken = self.melding.taakopdrachten_voor_melding.filter(
+            status__naam__in=status_namen
+        )
+        gebruikte_taaktypes = list(
+            {
+                taaktype
+                for taaktype in openstaande_taken.values_list("taaktype", flat=True)
+                .order_by("taaktype")
+                .distinct()
+            }
+        )
+        if self.taaktype in gebruikte_taaktypes and self.pk is None:
+            raise Taakopdracht.AanmakenNietToegestaan(
+                "Er is al een taakopdracht met dit taaktype"
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
