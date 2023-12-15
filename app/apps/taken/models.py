@@ -166,26 +166,27 @@ class Taakopdracht(BasisModel):
         verbose_name_plural = "Taakopdrachten"
 
     def clean(self):
-        status_namen = [
-            status_naam[0]
-            for status_naam in Taakstatus.NaamOpties.choices
-            if Taakstatus.NaamOpties.VOLTOOID != status_naam[0]
-        ]
-        openstaande_taken = self.melding.taakopdrachten_voor_melding.filter(
-            status__naam__in=status_namen
-        )
-        gebruikte_taaktypes = list(
-            {
-                taaktype
-                for taaktype in openstaande_taken.values_list("taaktype", flat=True)
-                .order_by("taaktype")
-                .distinct()
-            }
-        )
-        if self.taaktype in gebruikte_taaktypes and self.pk is None:
-            raise Taakopdracht.AanmakenNietToegestaan(
-                "Er is al een taakopdracht met dit taaktype"
+        if self.pk is None:
+            status_namen = [
+                status_naam[0]
+                for status_naam in Taakstatus.NaamOpties.choices
+                if Taakstatus.NaamOpties.VOLTOOID != status_naam[0]
+            ]
+            openstaande_taken = self.melding.taakopdrachten_voor_melding.filter(
+                status__naam__in=status_namen
             )
+            gebruikte_taaktypes = list(
+                {
+                    taaktype
+                    for taaktype in openstaande_taken.values_list("taaktype", flat=True)
+                    .order_by("taaktype")
+                    .distinct()
+                }
+            )
+            if self.taaktype in gebruikte_taaktypes:
+                raise Taakopdracht.AanmakenNietToegestaan(
+                    "Er is al een taakopdracht met dit taaktype voor deze melding"
+                )
 
     def save(self, *args, **kwargs):
         self.full_clean()
