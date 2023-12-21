@@ -146,12 +146,12 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "status__naam",
         ),
         (
-            "buurt",
-            "locaties_voor_melding__buurtnaam",
-        ),
-        (
             "wijk",
             "locaties_voor_melding__wijknaam",
+        ),
+        (
+            "buurt",
+            "locaties_voor_melding__buurtnaam",
         ),
         (
             "onderwerp",

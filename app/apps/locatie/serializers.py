@@ -11,8 +11,8 @@ class AdresBasisSerializer(serializers.Serializer):
     huisletter = serializers.CharField(max_length=1, required=False, allow_blank=True)
     toevoeging = serializers.CharField(max_length=4, required=False, allow_blank=True)
     postcode = serializers.CharField(max_length=7, required=False, allow_blank=True)
-    buurtnaam = serializers.CharField(max_length=255, required=False, allow_blank=True)
     wijknaam = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    buurtnaam = serializers.CharField(max_length=255, required=False, allow_blank=True)
     geometrie = GeometryField(required=False)
 
 
@@ -71,8 +71,8 @@ class AdresSerializer(AdresBasisSerializer, serializers.ModelSerializer):
             "huisletter",
             "toevoeging",
             "postcode",
-            "buurtnaam",
             "wijknaam",
+            "buurtnaam",
             "geometrie",
             "gebruiker",
             "gewicht",
