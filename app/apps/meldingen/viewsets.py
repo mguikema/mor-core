@@ -146,12 +146,12 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "status__naam",
         ),
         (
-            "buurt",
-            "locaties_voor_melding__buurtnaam",
-        ),
-        (
             "wijk",
             "locaties_voor_melding__wijknaam",
+        ),
+        (
+            "buurt",
+            "locaties_voor_melding__buurtnaam",
         ),
         (
             "onderwerp",
@@ -310,9 +310,9 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            logger.error(e)
             # Return a JsonResponse with the specific error message
+            logger.error(e)
             return JsonResponse(
-                {"error": f"An error occurred: {str(e)}"},
+                {"error": "An internal server error occurred!"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )

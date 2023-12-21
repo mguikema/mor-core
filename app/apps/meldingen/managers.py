@@ -192,7 +192,7 @@ class MeldingManager(models.Manager):
             except OperationalError:
                 raise MeldingManager.MeldingInGebruik
 
-            if locatie := serializer.validated_data["locatie"]:
+            if locatie := serializer.validated_data.get("locatie"):
                 locatie["melding"] = melding
                 max_gewicht = melding.locaties_voor_melding.aggregate(Max("gewicht"))[
                     "gewicht__max"
