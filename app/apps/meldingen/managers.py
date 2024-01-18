@@ -38,6 +38,12 @@ class MeldingManager(models.Manager):
     class TaakStatusAanpassenFout(Exception):
         pass
 
+    class MeldingAfgeslotenFout(Exception):
+        pass
+
+    class TaakopdrachtAfgeslotenFout(Exception):
+        pass
+
     def aanmaken(self, signaal_validated_data, signaal_initial_data, db="default"):
         from apps.meldingen.models import Meldinggebeurtenis
         from apps.meldingen.serializers import MeldingAanmakenSerializer
@@ -99,6 +105,11 @@ class MeldingManager(models.Manager):
     def status_aanpassen(self, serializer, melding, db="default"):
         from apps.meldingen.models import Melding
         from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
+
+        if melding.afgesloten_op:
+            raise MeldingManager.MeldingAfgeslotenFout(
+                "De status van een afgsloten melding kan niet meer worden veranderd"
+            )
 
         with transaction.atomic():
             try:
@@ -182,6 +193,11 @@ class MeldingManager(models.Manager):
     def gebeurtenis_toevoegen(self, serializer, melding, db="default"):
         from apps.meldingen.models import Melding
 
+        if melding.afgesloten_op:
+            raise MeldingManager.MeldingAfgeslotenFout(
+                "Voor een afgsloten melding kunnen gebeurtenissen niet worden aangemaakt"
+            )
+
         with transaction.atomic():
             try:
                 locked_melding = (
@@ -217,6 +233,11 @@ class MeldingManager(models.Manager):
         from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.status.models import Status
         from apps.taken.models import Taakgebeurtenis, Taakstatus
+
+        if melding.afgesloten_op:
+            raise MeldingManager.MeldingAfgeslotenFout(
+                "Voor een afgsloten melding kunnen taakopdrachten niet worden aangemaakt"
+            )
 
         with transaction.atomic():
             try:
@@ -329,6 +350,11 @@ class MeldingManager(models.Manager):
         from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.status.models import Status
         from apps.taken.models import Taakopdracht, Taakstatus
+
+        if taakopdracht.afgesloten_op:
+            raise MeldingManager.TaakopdrachtAfgeslotenFout(
+                "De status van een afgsloten taakopdracht kan niet meer worden veranderd"
+            )
 
         with transaction.atomic():
             try:
