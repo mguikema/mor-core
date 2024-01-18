@@ -2,7 +2,6 @@ import factory
 from apps.aliassen.models import OnderwerpAlias
 from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.signalen.models import Signaal
-from apps.status import workflow
 from apps.status.models import Status
 
 
@@ -39,7 +38,7 @@ class StatusFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Status
 
-    naam = workflow.AFGEHANDELD
+    naam = Status.NaamOpties.CONTROLE
     melding = factory.SubFactory(MeldingFactory)
 
 
