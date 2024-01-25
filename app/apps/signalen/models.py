@@ -1,5 +1,8 @@
 from apps.applicaties.models import Applicatie
+from apps.bijlagen.models import Bijlage
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
+from utils.fields import DictJSONField
 from utils.models import BasisModel
 
 
@@ -15,6 +18,13 @@ class Signaal(BasisModel):
 
     signaal_url = models.URLField()
     signaal_data = models.JSONField(default=dict)
+    externe_bron_id = models.CharField(max_length=500, null=True, blank=True)
+    externe_bron_melding_id = models.CharField(max_length=500, null=True, blank=True)
+    origineel_aangemaakt = models.DateTimeField(null=True, blank=True)
+    omschrijving_kort = models.CharField(max_length=500, null=True, blank=True)
+    omschrijving = models.CharField(max_length=5000, null=True, blank=True)
+    meta = DictJSONField(default=dict)
+    meta_uitgebreid = DictJSONField(default=dict)
     melder = models.OneToOneField(
         to="melders.Melder", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -25,6 +35,24 @@ class Signaal(BasisModel):
         blank=True,
         null=True,
     )
+    bijlagen = GenericRelation(Bijlage)
+    onderwerpen = models.ManyToManyField(
+        to="aliassen.OnderwerpAlias",
+        related_name="signalen_voor_onderwerpen",
+        blank=True,
+    )
+
+    @property
+    def get_graven(self):
+        return self.locaties_voor_signaal
+
+    @property
+    def get_lichtmasten(self):
+        return self.locaties_voor_signaal
+
+    @property
+    def get_adressen(self):
+        return self.locaties_voor_signaal
 
     def notificatie_melding_afgesloten(self):
         applicatie = Applicatie.vind_applicatie_obv_uri(self.signaal_url)
@@ -33,3 +61,7 @@ class Signaal(BasisModel):
     class Meta:
         verbose_name = "Signaal"
         verbose_name_plural = "Signalen"
+        unique_together = (
+            "externe_bron_id",
+            "externe_bron_melding_id",
+        )

@@ -1,11 +1,11 @@
+from apps.aliassen.serializers import OnderwerpAliasSerializer
 from apps.bijlagen.serializers import BijlageSerializer
+from apps.locatie.models import Adres, Graf, Lichtmast
 from apps.locatie.serializers import (
-    AdresBasisSerializer,
-    GrafBasisSerializer,
-    LichtmastBasisSerializer,
+    AdresSerializer,
+    GrafSerializer,
+    LichtmastSerializer,
 )
-from apps.melders.serializers import MelderSerializer
-from apps.meldingen.models import Melding
 from apps.signalen.models import Signaal
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
@@ -37,26 +37,33 @@ class SignaalLinksSerializer(serializers.Serializer):
 
 class SignaalSerializer(WritableNestedModelSerializer):
     _links = SignaalLinksSerializer(source="*", read_only=True)
-    bijlagen = BijlageSerializer(many=True, required=False, write_only=True)
-    melder = MelderSerializer(required=False, write_only=False)
-    omschrijving_kort = serializers.CharField(max_length=500, write_only=True)
-    omschrijving = serializers.CharField(
-        max_length=5000, allow_blank=True, required=False, write_only=True
-    )
-    meta = serializers.JSONField(default=dict, write_only=True)
-    meta_uitgebreid = serializers.JSONField(default=dict, write_only=True)
-    adressen = AdresBasisSerializer(many=True, required=False, write_only=True)
-    lichtmasten = LichtmastBasisSerializer(many=True, required=False, write_only=True)
-    graven = GrafBasisSerializer(many=True, required=False, write_only=True)
-    origineel_aangemaakt = serializers.DateTimeField(write_only=True)
-    onderwerpen = serializers.ListSerializer(
-        child=serializers.URLField(), write_only=True
-    )
+    graven = GrafSerializer(many=True, required=False)
+    adressen = AdresSerializer(many=True, required=False)
+    lichtmasten = LichtmastSerializer(many=True, required=False)
+    bijlagen = BijlageSerializer(many=True, required=False)
+    onderwerpen = OnderwerpAliasSerializer(many=True, required=False)
+
+    # def create(self, validated_data):
+    #     signaal = Melding.acties.aanmaken(
+    #         validated_data, self.get_initial(), self.context.get("request")
+    #     )
+    #     return signaal
 
     def create(self, validated_data):
-        signaal = Melding.acties.aanmaken(
-            validated_data, self.get_initial(), self.context.get("request")
-        )
+        locaties = (("adressen", Adres), ("lichtmasten", Lichtmast), ("graven", Graf))
+        locaties_data = {
+            loc[0]: validated_data.pop(loc[0], None)
+            for loc in locaties
+            if validated_data.get(loc[0])
+        }
+        signaal = super().create(validated_data)
+
+        for location in locaties:
+            model = location[1]
+            for loc in locaties_data.get(location[0], []):
+                model.objects.create(**loc, signaal=signaal)
+            validated_data.pop(location[0], None)
+
         return signaal
 
     class Meta:
@@ -79,4 +86,4 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "graven",
             "melding",
         )
-        read_only_fields = ("melding",)
+        # read_only_fields = ("melding",)

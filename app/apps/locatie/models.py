@@ -42,7 +42,16 @@ class Locatie(BasisModel):
     melding = models.ForeignKey(
         to="meldingen.Melding",
         related_name="locaties_voor_melding",
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    signaal = models.ForeignKey(
+        to="signalen.Signaal",
+        related_name="locaties_voor_signaal",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
     )
     locatie_type = models.CharField(
         max_length=50, choices=LOCATIE_TYPE_CHOICES, default=LOCATIE_TYPE_CHOICES[0][0]

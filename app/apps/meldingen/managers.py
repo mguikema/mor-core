@@ -44,6 +44,12 @@ class MeldingManager(models.Manager):
     class TaakopdrachtAfgeslotenFout(Exception):
         pass
 
+    def signaal_aanmaken(self, serializer, db="default"):
+        print("signaal_aanmaken")
+        print(serializer.validated_data)
+        result = serializer.save()
+        print(result)
+
     def aanmaken(self, signaal_validated_data, signaal_initial_data, db="default"):
         from apps.meldingen.models import Meldinggebeurtenis
         from apps.meldingen.serializers import MeldingAanmakenSerializer
@@ -90,7 +96,9 @@ class MeldingManager(models.Manager):
                 signaal_url=signaal_initial_data.get("signaal_url"),
                 signaal_data=signaal_initial_data,
                 melding=melding,
-                melder=Melder.objects.create(**signaal_validated_data.get("melder")),
+                melder=Melder.objects.create(**signaal_validated_data.get("melder"))
+                if signaal_validated_data.get("melder")
+                else None,
             )
 
             transaction.on_commit(

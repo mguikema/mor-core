@@ -9,7 +9,14 @@ class GrafAdmin(admin.ModelAdmin):
 
 
 class LocatieAdmin(admin.ModelAdmin):
-    list_display = ("id", "uuid", "aangemaakt_op", "begraafplaats", "melding")
+    list_display = (
+        "id",
+        "uuid",
+        "aangemaakt_op",
+        "begraafplaats",
+        "melding",
+        "signaal",
+    )
 
     # TODO: Remove later!!!
     formfield_overrides = {
@@ -18,11 +25,11 @@ class LocatieAdmin(admin.ModelAdmin):
 
 
 class AdresAdmin(admin.ModelAdmin):
-    list_display = ("id", "uuid", "aangemaakt_op", "melding", "straatnaam")
+    list_display = ("id", "uuid", "aangemaakt_op", "melding", "signaal", "straatnaam")
 
 
 class LichtmastAdmin(admin.ModelAdmin):
-    list_display = ("id", "uuid", "aangemaakt_op", "melding", "lichtmast_id")
+    list_display = ("id", "uuid", "aangemaakt_op", "melding", "signaal", "lichtmast_id")
 
 
 admin.site.register(Graf, GrafAdmin)
