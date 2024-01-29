@@ -85,7 +85,7 @@ class SignaalApiTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_download_afbeelding_unauthenticated(self):
-        client = get_unauthenticated_client()
+        client = get_authenticated_client()
         unauthenticated_client = get_unauthenticated_client()
         signaal_url = reverse("app:signaal-list")
 
