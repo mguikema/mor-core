@@ -36,21 +36,26 @@ class CustomCollector(object):
             )
         return c
 
+    # Wijk toevoegen, via melding - locatie
     def collect_taak_metrics(self):
         c = CounterMetricFamily(
             "morcore_taken_total",
             "Taak aantallen",
-            labels=["taaktype", "status"],
+            labels=["taaktype", "status", "wijk"],
         )
         taken = (
             Taakopdracht.objects.order_by("titel")
-            .values("titel", "status__naam")
+            .values("titel", "status__naam", "melding__locaties_voor_melding__wijknaam")
             .annotate(count=Count("titel"))
             .exclude(count=0)
         )
         for taak in taken:
             c.add_metric(
-                (taak.get("titel"), taak.get("status__naam")),
+                (
+                    taak.get("titel"),
+                    taak.get("status__naam"),
+                    taak.get("melding__locaties_voor_melding__wijknaam"),
+                ),
                 taak.get("count"),
             )
         return c
