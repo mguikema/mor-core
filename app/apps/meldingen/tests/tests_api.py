@@ -85,16 +85,19 @@ class SignaalApiTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_download_afbeelding_unauthenticated(self):
-        client = get_authenticated_client()
-        unauthenticated_client = get_unauthenticated_client()
+        client = get_unauthenticated_client()
+        get_unauthenticated_client()
         signaal_url = reverse("app:signaal-list")
 
         client.post(signaal_url, data=self.signaal_data, format="json")
         melding = Melding.objects.first()
         melding_url = reverse("app:melding-detail", kwargs={"uuid": melding.uuid})
         melding_response = client.get(melding_url, format="json")
-        unauthenticated_response = unauthenticated_client.get(
-            melding_response.json().get("bijlagen", [])[0].get("bestand")
+        unauthenticated_response = client.get(
+            melding_response.json()
+            .get("signalen_voor_melding", [])[0]
+            .get("bijlagen", [])[0]
+            .get("bestand")
         )
         self.assertEqual(
             unauthenticated_response.status_code, status.HTTP_403_FORBIDDEN
@@ -109,7 +112,10 @@ class SignaalApiTest(APITestCase):
         melding_url = reverse("app:melding-detail", kwargs={"uuid": melding.uuid})
         melding_response = client.get(melding_url, format="json")
         authenticated_response = client.get(
-            melding_response.json().get("bijlagen", [])[0].get("bestand")
+            melding_response.json()
+            .get("signalen_voor_melding", [])[0]
+            .get("bijlagen", [])[0]
+            .get("bestand")
         )
         self.assertEqual(authenticated_response.status_code, status.HTTP_200_OK)
 
