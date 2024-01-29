@@ -11,6 +11,7 @@ from rest_framework.reverse import reverse
 
 logger = logging.getLogger(__name__)
 
+signaal_aangemaakt = DjangoSignal()
 aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
 afgesloten = DjangoSignal()
@@ -45,10 +46,71 @@ class MeldingManager(models.Manager):
         pass
 
     def signaal_aanmaken(self, serializer, db="default"):
-        print("signaal_aanmaken")
-        print(serializer.validated_data)
-        result = serializer.save()
-        print(result)
+        from apps.meldingen.models import Meldinggebeurtenis
+        from apps.status.models import Status
+
+        logger.info(f"Signaal data: {serializer.validated_data}")
+        with transaction.atomic():
+            signaal = serializer.save()
+            melding = signaal.melding
+            logger.info(f"Signaal: {signaal}")
+            logger.info(f"Melding: {melding}")
+            melding_gebeurtenis_data = {}
+
+            if not melding:
+                # Als het signaal geen melding relatie heeft, wordt een nieuwe melding aangemaakt
+                melding = self.create(
+                    origineel_aangemaakt=signaal.origineel_aangemaakt,
+                    omschrijving_kort=signaal.omschrijving_kort,
+                    omschrijving=signaal.omschrijving,
+                )
+                for onderwerp in signaal.onderwerpen.all():
+                    melding.onderwerpen.add(onderwerp)
+                for locatie in signaal.locaties_voor_signaal.all():
+                    melding.locaties_voor_melding.add(locatie)
+
+                status = Status()
+                status.melding = melding
+                status.save()
+
+                melding.status = status
+                melding.save()
+                signaal.melding = melding
+                signaal.save()
+
+                melding_gebeurtenis_data.update(
+                    {
+                        "gebeurtenis_type": Meldinggebeurtenis.GebeurtenisType.MELDING_AANGEMAAKT,
+                        "omschrijving_intern": "Melding aangemaakt",
+                        "signaal": signaal,
+                        "status": status,
+                    }
+                )
+            else:
+                # Als het signaal al een melding relatie heeft, wordt een 'dubbele melding' aangemaakt
+                melding_gebeurtenis_data.update(
+                    {
+                        "gebeurtenis_type": Meldinggebeurtenis.GebeurtenisType.SIGNAAL_TOEGEVOEGD,
+                        "omschrijving_intern": "Signaal toegevoegd",
+                        "signaal": signaal,
+                    }
+                )
+
+            melding_gebeurtenis_data.update(
+                {
+                    "melding": melding,
+                }
+            )
+            melding_gebeurtenis = Meldinggebeurtenis(**melding_gebeurtenis_data)
+            melding_gebeurtenis.save()
+            transaction.on_commit(
+                lambda: signaal_aangemaakt.send_robust(
+                    sender=self.__class__,
+                    melding=melding,
+                    signaal=signaal,
+                )
+            )
+        return signaal
 
     def aanmaken(self, signaal_validated_data, signaal_initial_data, db="default"):
         from apps.meldingen.models import Meldinggebeurtenis

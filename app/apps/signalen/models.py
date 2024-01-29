@@ -18,8 +18,8 @@ class Signaal(BasisModel):
 
     signaal_url = models.URLField()
     signaal_data = models.JSONField(default=dict)
-    externe_bron_id = models.CharField(max_length=500, null=True, blank=True)
-    externe_bron_melding_id = models.CharField(max_length=500, null=True, blank=True)
+    bron_id = models.CharField(max_length=500, null=True, blank=True)
+    bron_signaal_id = models.CharField(max_length=500, null=True, blank=True)
     origineel_aangemaakt = models.DateTimeField(null=True, blank=True)
     omschrijving_kort = models.CharField(max_length=500, null=True, blank=True)
     omschrijving = models.CharField(max_length=5000, null=True, blank=True)
@@ -62,6 +62,6 @@ class Signaal(BasisModel):
         verbose_name = "Signaal"
         verbose_name_plural = "Signalen"
         unique_together = (
-            "externe_bron_id",
-            "externe_bron_melding_id",
+            "bron_id",
+            "bron_signaal_id",
         )

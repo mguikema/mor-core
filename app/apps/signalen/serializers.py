@@ -6,7 +6,10 @@ from apps.locatie.serializers import (
     GrafSerializer,
     LichtmastSerializer,
 )
+from apps.melders.serializers import MelderSerializer
+from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.signalen.models import Signaal
+from apps.status.models import Status
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from drf_writable_nested.serializers import WritableNestedModelSerializer
@@ -35,6 +38,103 @@ class SignaalLinksSerializer(serializers.Serializer):
         )
 
 
+class MeldingLinksSerializer(serializers.Serializer):
+    self = serializers.SerializerMethodField()
+
+    @extend_schema_field(OpenApiTypes.URI)
+    def get_self(self, obj):
+        return reverse(
+            "v1:melding-detail",
+            kwargs={"uuid": obj.uuid},
+            request=self.context.get("request"),
+        )
+
+
+class MeldinggebeurtenisSignaalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Meldinggebeurtenis
+        fields = ("omschrijving_extern",)
+        read_only_fields = ("omschrijving_extern",)
+
+
+class StatusSignaalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Status
+        fields = ("naam",)
+        read_only_fields = ("naam",)
+
+
+class MeldingSignaalSerializer(serializers.ModelSerializer):
+    _links = MeldingLinksSerializer(source="*", read_only=True)
+    status = StatusSignaalSerializer(read_only=True)
+    laatste_meldinggebeurtenis = serializers.SerializerMethodField()
+
+    @extend_schema_field(MeldinggebeurtenisSignaalSerializer)
+    def get_laatste_meldinggebeurtenis(self, obj):
+        meldinggebeurtenis = (
+            obj.meldinggebeurtenissen_voor_melding.all()
+            .order_by("-aangemaakt_op")
+            .first()
+        )
+        return MeldinggebeurtenisSignaalSerializer(meldinggebeurtenis).data
+
+    class Meta:
+        model = Melding
+        fields = (
+            "_links",
+            "meta",
+            "aangemaakt_op",
+            "aangepast_op",
+            "origineel_aangemaakt",
+            "afgesloten_op",
+            "status",
+            "resolutie",
+            "laatste_meldinggebeurtenis",
+        )
+
+
+class SignaalMeldingListSerializer(serializers.ModelSerializer):
+    _links = SignaalLinksSerializer(source="*", read_only=True)
+
+    class Meta:
+        model = Signaal
+        fields = (
+            "_links",
+            "bron_id",
+            "bron_signaal_id",
+        )
+        read_only_fields = (
+            "_links",
+            "bron_id",
+            "bron_signaal_id",
+        )
+
+
+class SignaalListSerializer(WritableNestedModelSerializer):
+    _links = SignaalLinksSerializer(source="*", read_only=True)
+    melding = MeldingSignaalSerializer(required=False, read_only=True)
+    melder = MelderSerializer(required=False)
+
+    class Meta:
+        model = Signaal
+        fields = (
+            "_links",
+            "signaal_url",
+            "bron_id",
+            "bron_signaal_id",
+            "melder",
+            "melding",
+        )
+        read_only_fields = (
+            "_links",
+            "signaal_url",
+            "bron_id",
+            "bron_signaal_id",
+            "melder",
+            "melding",
+        )
+
+
 class SignaalSerializer(WritableNestedModelSerializer):
     _links = SignaalLinksSerializer(source="*", read_only=True)
     graven = GrafSerializer(many=True, required=False)
@@ -42,12 +142,7 @@ class SignaalSerializer(WritableNestedModelSerializer):
     lichtmasten = LichtmastSerializer(many=True, required=False)
     bijlagen = BijlageSerializer(many=True, required=False)
     onderwerpen = OnderwerpAliasSerializer(many=True, required=False)
-
-    # def create(self, validated_data):
-    #     signaal = Melding.acties.aanmaken(
-    #         validated_data, self.get_initial(), self.context.get("request")
-    #     )
-    #     return signaal
+    melder = MelderSerializer(required=False)
 
     def create(self, validated_data):
         locaties = (("adressen", Adres), ("lichtmasten", Lichtmast), ("graven", Graf))
@@ -72,7 +167,8 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "_links",
             "uuid",
             "signaal_url",
-            "signaal_data",
+            "bron_id",
+            "bron_signaal_id",
             "origineel_aangemaakt",
             "omschrijving_kort",
             "omschrijving",
@@ -84,6 +180,12 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "adressen",
             "lichtmasten",
             "graven",
-            "melding",
+            "aangemaakt_op",
         )
-        # read_only_fields = ("melding",)
+        read_only_fields = (
+            "aangemaakt_op",
+            "adressen",
+            "lichtmasten",
+            "graven",
+            "locaties_voor_signaal",
+        )

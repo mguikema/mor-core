@@ -8,7 +8,7 @@ from apps.locatie.serializers import (
     LocatieRelatedField,
 )
 from apps.meldingen.models import Melding, Meldinggebeurtenis
-from apps.signalen.serializers import SignaalSerializer
+from apps.signalen.serializers import SignaalMeldingListSerializer, SignaalSerializer
 from apps.status.serializers import StatusSerializer
 from apps.taken.serializers import TaakgebeurtenisSerializer, TaakopdrachtSerializer
 from drf_spectacular.types import OpenApiTypes
@@ -162,6 +162,7 @@ class MeldingSerializer(serializers.ModelSerializer):
     meldingsnummer_lijst = serializers.SerializerMethodField()
     laatste_meldinggebeurtenis = serializers.SerializerMethodField()
     onderwerpen = serializers.SerializerMethodField()
+    signalen_voor_melding = SignaalMeldingListSerializer(many=True, read_only=True)
 
     @extend_schema_field(OpenApiTypes.URI)
     def get_onderwerpen(self, obj):
@@ -200,6 +201,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "onderwerpen",
             "bijlagen",
             "locaties_voor_melding",
+            "signalen_voor_melding",
             "status",
             "resolutie",
             "volgende_statussen",
