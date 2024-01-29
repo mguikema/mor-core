@@ -17,6 +17,8 @@ class SignaalApiTest(APITestCase):
     b64_file = "e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcY29jb2FydGYyNTgwClxjb2NvYXRleHRzY2FsaW5nMFxjb2NvYXBsYXRmb3JtMHtcZm9udHRibFxmMFxmc3dpc3NcZmNoYXJzZXQwIEhlbHZldGljYTt9CntcY29sb3J0Ymw7XHJlZDI1NVxncmVlbjI1NVxibHVlMjU1O30Ke1wqXGV4cGFuZGVkY29sb3J0Ymw7O30KXHBhcGVydzExOTAwXHBhcGVyaDE2ODQwXG1hcmdsMTQ0MFxtYXJncjE0NDBcdmlld3cxMTUyMFx2aWV3aDg0MDBcdmlld2tpbmQwClxwYXJkXHR4NTY2XHR4MTEzM1x0eDE3MDBcdHgyMjY3XHR4MjgzNFx0eDM0MDFcdHgzOTY4XHR4NDUzNVx0eDUxMDJcdHg1NjY5XHR4NjIzNlx0eDY4MDNccGFyZGlybmF0dXJhbFxwYXJ0aWdodGVuZmFjdG9yMAoKXGYwXGZzMjQgXGNmMCBUZXN0IGZpbGV9Cg=="
     signaal_data = {
         "signaal_url": MOCK_URL,
+        "bron_id": "mock_bron_id",
+        "bron_signaal_id": "mock_bron_signaal_id",
         "melder": {
             "naam": "string",
             "email": "user@example.com",
@@ -24,7 +26,9 @@ class SignaalApiTest(APITestCase):
         },
         "origineel_aangemaakt": "2023-03-09T11:56:04.036Z",
         "onderwerpen": [
-            "https://mor-core-acc.forzamor.nl/api/v1/onderwerp/grofvuil-op-straat/"
+            {
+                "bron_url": "https://mor-core-acc.forzamor.nl/api/v1/onderwerp/grofvuil-op-straat/"
+            }
         ],
         "omschrijving_kort": "string",
         "omschrijving": "string",
@@ -90,7 +94,10 @@ class SignaalApiTest(APITestCase):
         melding_url = reverse("app:melding-detail", kwargs={"uuid": melding.uuid})
         melding_response = client.get(melding_url, format="json")
         unauthenticated_response = unauthenticated_client.get(
-            melding_response.json().get("bijlagen", [])[0].get("bestand")
+            melding_response.json()
+            .get("signalen_voor_melding", [])[0]
+            .get("bijlagen", [])[0]
+            .get("bestand")
         )
         self.assertEqual(
             unauthenticated_response.status_code, status.HTTP_403_FORBIDDEN
@@ -105,7 +112,10 @@ class SignaalApiTest(APITestCase):
         melding_url = reverse("app:melding-detail", kwargs={"uuid": melding.uuid})
         melding_response = client.get(melding_url, format="json")
         authenticated_response = client.get(
-            melding_response.json().get("bijlagen", [])[0].get("bestand")
+            melding_response.json()
+            .get("signalen_voor_melding", [])[0]
+            .get("bijlagen", [])[0]
+            .get("bestand")
         )
         self.assertEqual(authenticated_response.status_code, status.HTTP_200_OK)
 

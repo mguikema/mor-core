@@ -3,6 +3,7 @@ from apps.meldingen.managers import (
     aangemaakt,
     afgesloten,
     gebeurtenis_toegevoegd,
+    signaal_aangemaakt,
     status_aangepast,
     taakopdracht_aangemaakt,
     taakopdracht_status_aangepast,
@@ -10,6 +11,12 @@ from apps.meldingen.managers import (
 from apps.meldingen.tasks import task_notificatie_voor_signaal_melding_afgesloten
 from apps.status.models import Status
 from django.dispatch import receiver
+
+
+@receiver(signaal_aangemaakt, dispatch_uid="melding_signaal_aangemaakt")
+def signaal_aangemaakt_handler(sender, melding, signaal, *args, **kwargs):
+    for bijlage in signaal.bijlagen.all():
+        task_aanmaken_afbeelding_versies.delay(bijlage.pk)
 
 
 @receiver(aangemaakt, dispatch_uid="melding_aangemaakt")

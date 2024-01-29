@@ -186,6 +186,7 @@ class MeldingFilter(BasisFilter):
             return queryset.filter(
                 Q(meta__meldingsnummerField__iregex=value)
                 | Q(meta__morId__iregex=value)
+                | Q(signalen_voor_melding__externe_bron_melding_id__iregex=value)
             ).distinct()
         return queryset
 

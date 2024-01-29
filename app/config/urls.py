@@ -2,7 +2,6 @@ from apps.aliassen.viewsets import OnderwerpAliasViewSet
 from apps.applicaties.viewsets import TaakapplicatieViewSet
 from apps.authenticatie.views import GetGebruikerAPIView, SetGebruikerAPIView
 from apps.bijlagen.viewsets import BijlageViewSet
-from apps.classificatie.viewsets import OnderwerpViewSet
 from apps.meldingen.views import (
     login_required_view,
     prometheus_django_metrics,
@@ -30,7 +29,6 @@ router.register(r"melding", MeldingViewSet, basename="melding")
 router.register(
     r"meldinggebeurtenis", MeldinggebeurtenisViewSet, basename="meldinggebeurtenis"
 )
-router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 router.register(r"onderwerp-alias", OnderwerpAliasViewSet, basename="onderwerp-alias")
 router.register(r"applicatie", TaakapplicatieViewSet, basename="applicatie")
 router.register(r"taakapplicatie", TaakapplicatieViewSet, basename="taakapplicatie")
