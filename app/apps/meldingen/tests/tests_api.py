@@ -26,7 +26,9 @@ class SignaalApiTest(APITestCase):
         },
         "origineel_aangemaakt": "2023-03-09T11:56:04.036Z",
         "onderwerpen": [
-            "https://mor-core-acc.forzamor.nl/api/v1/onderwerp/grofvuil-op-straat/"
+            {
+                "bron_url": "https://mor-core-acc.forzamor.nl/api/v1/onderwerp/grofvuil-op-straat/"
+            }
         ],
         "omschrijving_kort": "string",
         "omschrijving": "string",
