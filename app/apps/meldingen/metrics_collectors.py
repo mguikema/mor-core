@@ -1,6 +1,8 @@
+from apps.locatie.models import Locatie
 from apps.meldingen.models import Melding
 from apps.taken.models import Taakopdracht
-from django.db.models import Count
+from django.db.models import Count, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
 from prometheus_client.core import CounterMetricFamily
 
 
@@ -36,21 +38,38 @@ class CustomCollector(object):
             )
         return c
 
+    # Wijk toevoegen, via melding - locatie
     def collect_taak_metrics(self):
         c = CounterMetricFamily(
             "morcore_taken_total",
             "Taak aantallen",
-            labels=["taaktype", "status"],
+            labels=["taaktype", "status", "wijk"],
         )
         taken = (
             Taakopdracht.objects.order_by("titel")
-            .values("titel", "status__naam")
+            .annotate(
+                highest_weight_wijk=Coalesce(
+                    Subquery(
+                        Locatie.objects.filter(
+                            melding=OuterRef("melding"),
+                        )
+                        .order_by("-gewicht")
+                        .values("wijknaam")[:1]
+                    ),
+                    Value("Onbekend"),
+                ),
+            )
+            .values("titel", "status__naam", "highest_weight_wijk")
             .annotate(count=Count("titel"))
             .exclude(count=0)
         )
         for taak in taken:
             c.add_metric(
-                (taak.get("titel"), taak.get("status__naam")),
+                (
+                    taak.get("titel"),
+                    taak.get("status__naam"),
+                    taak.get("highest_weight_wijk"),
+                ),
                 taak.get("count"),
             )
         return c
