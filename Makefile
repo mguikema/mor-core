@@ -1,8 +1,8 @@
 # Build scripts to run commands within the Docker container or create local environments
 
 # Docker variables
-RUN_IN_NEW_WEBCONTEXT = docker-compose run -it core_app
-EXEC_IN_WEB = docker-compose run core_app
+RUN_IN_NEW_WEBCONTEXT = docker compose run -it core_app
+EXEC_IN_WEB = docker compose run core_app
 EXEC_IN_WEB_CMD = $(EXEC_IN_WEB) python manage.py
 
 #  General
@@ -16,11 +16,11 @@ build: ## build the stack
 
 run: ## start the stack
 	@echo Running from file. './docker-compose.yml.'
-	docker-compose up
+	docker compose up
 
 run_and_build: ## Build and then start the stack
 	@echo Building containers and running from file. './docker-compose.yml.'
-	docker-compose up --build
+	docker compose up --build
 
 run_frontend: ## Run the frontend
 	cd app/frontend && \
@@ -29,12 +29,12 @@ run_frontend: ## Run the frontend
 
 stop: ## Stop containers
 	@echo Stopping containers.
-	docker-compose down
+	docker compose down
 
 clear_docker_volumes: ## clear docker volumes
 	check_clean_db
 	@echo Stopping and removing containers.
-	docker-compose down -v
+	docker compose down -v
 
 create_superuser: ## create superuser for public tenant
 	@echo Create superuser. You will be prompted for email and password
