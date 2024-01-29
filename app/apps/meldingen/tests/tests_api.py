@@ -86,14 +86,14 @@ class SignaalApiTest(APITestCase):
 
     def test_download_afbeelding_unauthenticated(self):
         client = get_unauthenticated_client()
-        get_unauthenticated_client()
+        unauthenticated_client = get_unauthenticated_client()
         signaal_url = reverse("app:signaal-list")
 
         client.post(signaal_url, data=self.signaal_data, format="json")
         melding = Melding.objects.first()
         melding_url = reverse("app:melding-detail", kwargs={"uuid": melding.uuid})
         melding_response = client.get(melding_url, format="json")
-        unauthenticated_response = client.get(
+        unauthenticated_response = unauthenticated_client.get(
             melding_response.json()
             .get("signalen_voor_melding", [])[0]
             .get("bijlagen", [])[0]
