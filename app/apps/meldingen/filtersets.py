@@ -186,7 +186,14 @@ class MeldingFilter(BasisFilter):
             return queryset.filter(
                 Q(meta__meldingsnummerField__iregex=value)
                 | Q(meta__morId__iregex=value)
-                | Q(signalen_voor_melding__externe_bron_melding_id__iregex=value)
+                | Q(signalen_voor_melding__bron_signaal_id__iregex=value)
+                | Q(meta__melderTelefoonField__iregex=value)
+                | Q(meta__melderEmailField__iregex=value)
+                | Q(meta__melderNaamField__iregex=value)
+                # B&C fields
+                | Q(meta__email_melder__iregex=value)
+                | Q(meta__telefoon_melder__iregex=value)
+                | Q(meta__naam_melder__iregex=value)
             ).distinct()
         return queryset
 
