@@ -183,18 +183,26 @@ class MeldingFilter(BasisFilter):
 
     def get_q(self, queryset, name, value):
         if value:
-            return queryset.filter(
-                Q(meta__meldingsnummerField__iregex=value)
-                | Q(meta__morId__iregex=value)
-                | Q(signalen_voor_melding__bron_signaal_id__iregex=value)
-                | Q(meta__melderTelefoonField__iregex=value)
-                | Q(meta__melderEmailField__iregex=value)
-                | Q(meta__melderNaamField__iregex=value)
-                # B&C fields
-                | Q(meta__email_melder__iregex=value)
-                | Q(meta__telefoon_melder__iregex=value)
-                | Q(meta__naam_melder__iregex=value)
-            ).distinct()
+            search_terms = value.split(",")
+            combined_q = Q()
+
+            for term in search_terms:
+                term = term.strip()
+                combined_q &= (
+                    Q(meta__meldingsnummerField__iregex=term)
+                    | Q(meta__morId__iregex=term)
+                    | Q(signalen_voor_melding__bron_signaal_id__iregex=term)
+                    # MeldR fields
+                    | Q(meta__melderTelefoonField__iregex=term)
+                    | Q(meta__melderEmailField__iregex=term)
+                    | Q(meta__melderNaamField__iregex=term)
+                    # B&C fields
+                    | Q(meta__email_melder__iregex=term)
+                    | Q(meta__telefoon_melder__iregex=term)
+                    | Q(meta__naam_melder__iregex=term)
+                )
+            return queryset.filter(combined_q).distinct()
+
         return queryset
 
     def get_buurt(self, queryset, name, value):
