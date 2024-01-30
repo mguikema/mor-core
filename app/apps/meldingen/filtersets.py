@@ -181,6 +181,7 @@ class MeldingFilter(BasisFilter):
             return qs
         return queryset
 
+    # Er kan op meerdere komma separated zoektermen gezocht worden
     def get_q(self, queryset, name, value):
         if value:
             search_terms = value.split(",")
