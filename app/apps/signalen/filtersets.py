@@ -9,7 +9,7 @@ from rest_framework import filters as rest_filters
 class SignaalFilter(filters.FilterSet):
     signaal_url = filters.CharFilter(field_name="signaal_url")
     melding__origineel_aangemaakt_gte = filters.DateTimeFilter(
-        field_name="melding_origineel_aangemaakt", lookup_expr="gte"
+        field_name="melding__origineel_aangemaakt", lookup_expr="gte"
     )
 
     class Meta:
