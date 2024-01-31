@@ -30,12 +30,6 @@ class MeldingLinksSerializer(serializers.Serializer):
         )
 
 
-class BijlageRelatedField(serializers.RelatedField):
-    def to_representation(self, value):
-        serializer = BijlageSerializer(value, context=self.context)
-        return serializer.data
-
-
 class MeldingGebeurtenisLinksSerializer(serializers.Serializer):
     self = serializers.SerializerMethodField()
 
@@ -151,7 +145,7 @@ class MeldingAanmakenSerializer(WritableNestedModelSerializer):
 class MeldingSerializer(serializers.ModelSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
-    bijlagen = BijlageRelatedField(many=True, read_only=True)
+    bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(read_only=True)
     volgende_statussen = serializers.ListField(
         source="status.volgende_statussen",
@@ -229,7 +223,7 @@ class MeldingSerializer(serializers.ModelSerializer):
 class MeldingDetailSerializer(MeldingSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
-    bijlagen = BijlageRelatedField(many=True, read_only=True)
+    bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer()
     volgende_statussen = serializers.ListField(
         source="status.volgende_statussen",
