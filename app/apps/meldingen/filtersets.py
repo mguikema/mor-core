@@ -198,6 +198,7 @@ class MeldingFilter(BasisFilter):
                     | Q(meta__melderEmailField__iregex=term)
                     | Q(meta__melderNaamField__iregex=term)
                     | Q(meta__straatnaamField__iregex=term)
+                    | Q(locaties_voor_melding__straatnaam__iregex=term)
                     # B&C fields
                     | Q(meta__email_melder__iregex=term)
                     | Q(meta__telefoon_melder__iregex=term)
