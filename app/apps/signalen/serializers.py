@@ -95,6 +95,13 @@ class MeldingSignaalSerializer(serializers.ModelSerializer):
 
 class SignaalMeldingListSerializer(serializers.ModelSerializer):
     _links = SignaalLinksSerializer(source="*", read_only=True)
+    bijlagen = serializers.SerializerMethodField()
+
+    @extend_schema_field(BijlageSerializer(many=True))
+    def get_bijlagen(self, obj):
+        b = obj.bijlagen.first()
+        bijlagen = [b] if b else []
+        return BijlageSerializer(bijlagen, many=True).data
 
     class Meta:
         model = Signaal
@@ -102,11 +109,15 @@ class SignaalMeldingListSerializer(serializers.ModelSerializer):
             "_links",
             "bron_id",
             "bron_signaal_id",
+            "aangemaakt_op",
+            "bijlagen",
         )
         read_only_fields = (
             "_links",
             "bron_id",
             "bron_signaal_id",
+            "aangemaakt_op",
+            "bijlagen",
         )
 
 
@@ -181,6 +192,7 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "lichtmasten",
             "graven",
             "aangemaakt_op",
+            "melding",
         )
         read_only_fields = (
             "aangemaakt_op",
