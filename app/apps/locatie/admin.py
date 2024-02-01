@@ -15,7 +15,9 @@ class LocatieAdmin(admin.ModelAdmin):
         "aangemaakt_op",
         "begraafplaats",
         "melding",
-        "signaal",
+        "huisnummer",
+        "straatnaam",
+        "geometrie",
     )
 
     # TODO: Remove later!!!

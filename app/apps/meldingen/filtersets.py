@@ -2,6 +2,8 @@ from collections import OrderedDict
 from typing import List, Tuple
 
 from apps.meldingen.models import Melding
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
 from django.db.models import F, Max, Q
@@ -128,6 +130,9 @@ class MeldingFilter(BasisFilter):
 
     actieve_meldingen = filters.BooleanFilter(method="get_actieve_meldingen")
     onderwerp = MultipleValueFilter(field_class=CharField, method="get_onderwerpen")
+    onderwerp_url = MultipleValueFilter(
+        field_class=CharField, method="get_onderwerp_urls"
+    )
     status = MultipleValueFilter(field_class=CharField, method="get_statussen")
     buurt = MultipleValueFilter(field_class=CharField, method="get_buurt")
     wijk = MultipleValueFilter(field_class=CharField, method="get_wijk")
@@ -152,6 +157,23 @@ class MeldingFilter(BasisFilter):
     begraafplaats_grafnummer_lt = filters.NumberFilter(
         method="get_begraafplaats_grafnummer"
     )
+    within = filters.CharFilter(method="get_within")
+
+    def get_within(self, queryset, name, value):
+        # ./?within=lat:51.924392,d:100,lon:4.477738
+        try:
+            d = {
+                n: float(value.split(f"{n}:")[1].split(",")[0])
+                for n in ["lat", "lon", "d"]
+            }
+        except Exception:
+            return queryset
+        return queryset.filter(
+            locaties_voor_melding__geometrie__distance_lt=(
+                Point(d["lon"], d["lat"]),
+                D(m=d["d"]),
+            )
+        )
 
     def get_begraafplaats_grafnummer(self, queryset, name, value):
         if value:
@@ -243,6 +265,11 @@ class MeldingFilter(BasisFilter):
     def get_onderwerpen(self, queryset, name, value):
         if value:
             return queryset.filter(onderwerpen__in=value).distinct()
+        return queryset
+
+    def get_onderwerp_urls(self, queryset, name, value):
+        if value:
+            return queryset.filter(onderwerpen__bron_url__in=value).distinct()
         return queryset
 
     def get_actieve_meldingen(self, queryset, name, value):

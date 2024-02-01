@@ -117,6 +117,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
         .prefetch_related(
             "locaties_voor_melding",
+            "signalen_voor_melding",
             "bijlagen",
             "onderwerpen",
         )
