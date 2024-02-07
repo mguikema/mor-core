@@ -63,9 +63,11 @@ class LimitOffsetPagination(DRFLimitOffsetPagination):
     def _get_filter_options(self, f_qs, qs, fields=[]):
         out = {}
 
-        def value_lookup(obj, key, f: list | tuple):
-            if isinstance(obj, dict):
+        def value_lookup(obj, key, fallback_obj, f: list | tuple):
+            if isinstance(obj, dict) and obj.get(key, key):
                 return obj.get(key, key)
+            if isinstance(fallback_obj, dict) and fallback_obj.get(key, key):
+                return fallback_obj.get(key, key)
             if isinstance(obj, (str, int)):
                 return obj
             return key
@@ -74,16 +76,17 @@ class LimitOffsetPagination(DRFLimitOffsetPagination):
             f = f if isinstance(f, (list, tuple)) else (f,)
             key = f[1] if len(f) > 1 else f[0]
             value_lookup_str = f[2] if len(f) > 2 else key
+            fallback_value_lookup_str = f[3] if len(f) > 3 else value_lookup_str
             f_dict = {
-                ll[0]: (value_lookup(ll[1], ll[0], f), 0)
+                ll[0]: (value_lookup(ll[1], ll[0], ll[2], f), 0)
                 for ll in qs.order_by(key)
-                .values_list(key, value_lookup_str)
+                .values_list(key, value_lookup_str, fallback_value_lookup_str)
                 .distinct(key)
             }
             ff_dict = {
-                fl[0]: (value_lookup(fl[1], fl[0], f), fl[2])
+                fl[0]: (value_lookup(fl[1], fl[0], fl[2], f), fl[3])
                 for fl in f_qs.order_by(key)
-                .values_list(key, value_lookup_str)
+                .values_list(key, value_lookup_str, fallback_value_lookup_str)
                 .annotate(count=Count(key))
             }
             f_dict.update(ff_dict)

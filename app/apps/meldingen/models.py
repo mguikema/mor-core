@@ -25,6 +25,7 @@ class Meldinggebeurtenis(BasisModel):
             "Taakopdracht status wijziging",
         )
         LOCATIE_AANGEMAAKT = "locatie_aangemaakt", "Locatie aangemaakt"
+        SIGNAAL_TOEGEVOEGD = "signaal_toegevoegd", "Signaal toegevoegd"
 
     gebeurtenis_type = models.CharField(
         max_length=40,
@@ -65,6 +66,13 @@ class Meldinggebeurtenis(BasisModel):
     locatie = models.ForeignKey(
         to="locatie.Locatie",
         related_name="meldinggebeurtenissen_voor_locatie",
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+    )
+    signaal = models.ForeignKey(
+        to="signalen.Signaal",
+        related_name="meldinggebeurtenissen_voor_signaal",
         blank=True,
         null=True,
         on_delete=models.CASCADE,

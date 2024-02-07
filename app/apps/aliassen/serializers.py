@@ -39,6 +39,7 @@ class OnderwerpAliasSerializer(serializers.ModelSerializer):
     """
 
     def create(self, validated_data):
+        print(f"onderwwerp data: {validated_data}")
         onderwerpalias, aangemaakt = OnderwerpAlias.objects.get_or_create(
             **validated_data
         )

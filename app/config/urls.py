@@ -1,7 +1,7 @@
 from apps.aliassen.viewsets import OnderwerpAliasViewSet
 from apps.applicaties.viewsets import TaakapplicatieViewSet
+from apps.authenticatie.views import GetGebruikerAPIView, SetGebruikerAPIView
 from apps.bijlagen.viewsets import BijlageViewSet
-from apps.classificatie.viewsets import OnderwerpViewSet
 from apps.meldingen.views import (
     login_required_view,
     prometheus_django_metrics,
@@ -29,7 +29,6 @@ router.register(r"melding", MeldingViewSet, basename="melding")
 router.register(
     r"meldinggebeurtenis", MeldinggebeurtenisViewSet, basename="meldinggebeurtenis"
 )
-router.register(r"onderwerp", OnderwerpViewSet, basename="onderwerp")
 router.register(r"onderwerp-alias", OnderwerpAliasViewSet, basename="onderwerp-alias")
 router.register(r"applicatie", TaakapplicatieViewSet, basename="applicatie")
 router.register(r"taakapplicatie", TaakapplicatieViewSet, basename="taakapplicatie")
@@ -39,6 +38,12 @@ router.register(r"bijlage", BijlageViewSet, basename="bijlage")
 
 urlpatterns = [
     path("api/v1/", include((router.urls, "app"), namespace="v1")),
+    path(
+        "api/v1/gebruiker/<str:email>/",
+        GetGebruikerAPIView.as_view(),
+        name="get_gebruiker",
+    ),
+    path("api/v1/gebruiker/", SetGebruikerAPIView.as_view(), name="set_gebruiker"),
     path("api-token-auth/", views.obtain_auth_token),
     path("admin/", admin.site.urls),
     path("login/", login_required_view, name="login_required"),

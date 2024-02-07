@@ -2,6 +2,8 @@ from collections import OrderedDict
 from typing import List, Tuple
 
 from apps.meldingen.models import Melding
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
 from django.db.models import F, Max, Q
@@ -128,6 +130,9 @@ class MeldingFilter(BasisFilter):
 
     actieve_meldingen = filters.BooleanFilter(method="get_actieve_meldingen")
     onderwerp = MultipleValueFilter(field_class=CharField, method="get_onderwerpen")
+    onderwerp_url = MultipleValueFilter(
+        field_class=CharField, method="get_onderwerp_urls"
+    )
     status = MultipleValueFilter(field_class=CharField, method="get_statussen")
     buurt = MultipleValueFilter(field_class=CharField, method="get_buurt")
     wijk = MultipleValueFilter(field_class=CharField, method="get_wijk")
@@ -152,6 +157,23 @@ class MeldingFilter(BasisFilter):
     begraafplaats_grafnummer_lt = filters.NumberFilter(
         method="get_begraafplaats_grafnummer"
     )
+    within = filters.CharFilter(method="get_within")
+
+    def get_within(self, queryset, name, value):
+        # ./?within=lat:51.924392,d:100,lon:4.477738
+        try:
+            d = {
+                n: float(value.split(f"{n}:")[1].split(",")[0])
+                for n in ["lat", "lon", "d"]
+            }
+        except Exception:
+            return queryset
+        return queryset.filter(
+            locaties_voor_melding__geometrie__distance_lt=(
+                Point(d["lon"], d["lat"]),
+                D(m=d["d"]),
+            )
+        )
 
     def get_begraafplaats_grafnummer(self, queryset, name, value):
         if value:
@@ -181,12 +203,39 @@ class MeldingFilter(BasisFilter):
             return qs
         return queryset
 
+    # Er kan op meerdere komma separated zoektermen gezocht worden
     def get_q(self, queryset, name, value):
         if value:
-            return queryset.filter(
-                Q(meta__meldingsnummerField__iregex=value)
-                | Q(meta__morId__iregex=value)
-            ).distinct()
+            search_terms = value.split(",")
+            combined_q = Q()
+
+            for term in search_terms:
+                term = term.strip()
+                combined_q &= (
+                    # MeldR-nummer fields
+                    Q(meta__meldingsnummerField__iregex=term)
+                    # | Q(meta__morId__iregex=term) Not used, previously needed for msb import meldingen
+                    | Q(signalen_voor_melding__bron_signaal_id__iregex=term)
+                    # Melder fields
+                    | Q(signalen_voor_melding__melder__naam__iregex=term)
+                    # | Q(signalen_voor_melding__melder__voornaam__iregex=term) Currently not used
+                    # | Q(signalen_voor_melding__melder__achternaam__iregex=term) Currently not used
+                    | Q(signalen_voor_melding__melder__email__iregex=term)
+                    | Q(signalen_voor_melding__melder__telefoonnummer__iregex=term)
+                    | Q(locaties_voor_melding__straatnaam__iregex=term)
+                    | Q(
+                        signalen_voor_melding__locaties_voor_signaal__straatnaam__iregex=term
+                    )
+                    # Old meta fields
+                    # | Q(meta__email_melder__iregex=term)
+                    # | Q(meta__telefoon_melder__iregex=term)
+                    # | Q(meta__naam_melder__iregex=term)
+                    # | Q(meta__melderTelefoonField__iregex=term)
+                    # | Q(meta__melderEmailField__iregex=term)
+                    # | Q(meta__melderNaamField__iregex=term)
+                )
+            return queryset.filter(combined_q).distinct()
+
         return queryset
 
     def get_buurt(self, queryset, name, value):
@@ -216,6 +265,11 @@ class MeldingFilter(BasisFilter):
     def get_onderwerpen(self, queryset, name, value):
         if value:
             return queryset.filter(onderwerpen__in=value).distinct()
+        return queryset
+
+    def get_onderwerp_urls(self, queryset, name, value):
+        if value:
+            return queryset.filter(onderwerpen__bron_url__in=value).distinct()
         return queryset
 
     def get_actieve_meldingen(self, queryset, name, value):

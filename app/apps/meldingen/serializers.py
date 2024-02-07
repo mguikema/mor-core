@@ -8,7 +8,7 @@ from apps.locatie.serializers import (
     LocatieRelatedField,
 )
 from apps.meldingen.models import Melding, Meldinggebeurtenis
-from apps.signalen.serializers import SignaalSerializer
+from apps.signalen.serializers import SignaalMeldingListSerializer, SignaalSerializer
 from apps.status.serializers import StatusSerializer
 from apps.taken.serializers import TaakgebeurtenisSerializer, TaakopdrachtSerializer
 from drf_spectacular.types import OpenApiTypes
@@ -28,12 +28,6 @@ class MeldingLinksSerializer(serializers.Serializer):
             kwargs={"uuid": obj.uuid},
             request=self.context.get("request"),
         )
-
-
-class BijlageRelatedField(serializers.RelatedField):
-    def to_representation(self, value):
-        serializer = BijlageSerializer(value, context=self.context)
-        return serializer.data
 
 
 class MeldingGebeurtenisLinksSerializer(serializers.Serializer):
@@ -151,7 +145,7 @@ class MeldingAanmakenSerializer(WritableNestedModelSerializer):
 class MeldingSerializer(serializers.ModelSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
-    bijlagen = BijlageRelatedField(many=True, read_only=True)
+    bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(read_only=True)
     volgende_statussen = serializers.ListField(
         source="status.volgende_statussen",
@@ -162,6 +156,7 @@ class MeldingSerializer(serializers.ModelSerializer):
     meldingsnummer_lijst = serializers.SerializerMethodField()
     laatste_meldinggebeurtenis = serializers.SerializerMethodField()
     onderwerpen = serializers.SerializerMethodField()
+    signalen_voor_melding = SignaalMeldingListSerializer(many=True, read_only=True)
 
     @extend_schema_field(OpenApiTypes.URI)
     def get_onderwerpen(self, obj):
@@ -200,6 +195,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "onderwerpen",
             "bijlagen",
             "locaties_voor_melding",
+            "signalen_voor_melding",
             "status",
             "resolutie",
             "volgende_statussen",
@@ -227,7 +223,7 @@ class MeldingSerializer(serializers.ModelSerializer):
 class MeldingDetailSerializer(MeldingSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
-    bijlagen = BijlageRelatedField(many=True, read_only=True)
+    bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer()
     volgende_statussen = serializers.ListField(
         source="status.volgende_statussen",

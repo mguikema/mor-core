@@ -3,7 +3,7 @@ from django.contrib import admin
 
 
 class DefaultAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("id", "naam", "signaal")
 
 
 admin.site.register(Melder, DefaultAdmin)
