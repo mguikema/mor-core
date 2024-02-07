@@ -141,6 +141,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "begraafplaats",
             "locaties_voor_melding__begraafplaats",
             "meta_uitgebreid__begraafplaats__choices",
+            "signalen_voor_melding__meta_uitgebreid__begraafplaats__choices",
         ),
         (
             "status",
