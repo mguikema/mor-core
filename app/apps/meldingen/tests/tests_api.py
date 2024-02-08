@@ -1,7 +1,9 @@
 import requests_mock
 from apps.aliassen.models import OnderwerpAlias
 from apps.bijlagen.models import Bijlage
+from apps.locatie.models import Adres
 from apps.meldingen.models import Melding
+from django.contrib.gis.geos import Point
 from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status
@@ -154,3 +156,67 @@ class MeldingApiTest(APITestCase):
         data = response.json()
 
         self.assertEqual(len(data["results"]), 3)
+
+    def test_filter_melding_within_distance(self):
+        reference_lat = 51.924409
+        reference_lon = 4.477736
+        d = 30
+
+        client = get_authenticated_client()
+        m1 = baker.make(Melding)
+        baker.make(Adres, geometrie=Point(reference_lon, reference_lat), melding=m1)
+        m2 = baker.make(Melding)
+        baker.make(Adres, geometrie=Point(4.478122, 51.924488), melding=m2)
+
+        url = reverse("app:melding-list")
+
+        response = client.get(
+            f"{url}?within=lat:{reference_lat},lon:{reference_lon},d:{d}"
+        )
+        data = response.json()
+
+        self.assertEqual(len(data["results"]), 2)
+
+    def test_filter_melding_not_within_distance(self):
+        reference_lat = 51.924409
+        reference_lon = 4.477736
+        d = 20
+
+        client = get_authenticated_client()
+        m1 = baker.make(Melding)
+        baker.make(Adres, geometrie=Point(reference_lon, reference_lat), melding=m1)
+        m2 = baker.make(Melding)
+        baker.make(Adres, geometrie=Point(4.478122, 51.924488), melding=m2)
+
+        url = reverse("app:melding-list")
+
+        response = client.get(
+            f"{url}?within=lat:{reference_lat},lon:{reference_lon},d:{d}"
+        )
+        data = response.json()
+
+        self.assertEqual(len(data["results"]), 1)
+
+    def test_filter_melding_with_mutiple_locations_within_distance(self):
+        reference_lat = 51.924409
+        reference_lon = 4.477736
+        d = 30
+
+        client = get_authenticated_client()
+        m1 = baker.make(Melding)
+        baker.make(
+            Adres, geometrie=Point(reference_lon, reference_lat), melding=m1, gewicht=1
+        )
+        baker.make(Adres, geometrie=Point(4.479677, 51.924818), melding=m1, gewicht=0.5)
+        m2 = baker.make(Melding)
+        baker.make(Adres, geometrie=Point(4.478122, 51.924488), melding=m2, gewicht=1)
+        baker.make(Adres, geometrie=Point(4.475525, 51.924012), melding=m2, gewicht=0.5)
+
+        url = reverse("app:melding-list")
+
+        response = client.get(
+            f"{url}?within=lat:{reference_lat},lon:{reference_lon},d:{d}"
+        )
+        data = response.json()
+
+        self.assertEqual(len(data["results"]), 2)
