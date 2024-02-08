@@ -134,6 +134,7 @@ class Applicatie(BasisModel):
                 "username": self.applicatie_gebruiker_naam,
                 "password": f.decrypt(self.applicatie_gebruiker_wachtwoord).decode(),
             }
+            token_response = None
             try:
                 token_response = requests.post(
                     f"{self.basis_url}{settings.TOKEN_API_RELATIVE_URL}",
@@ -142,14 +143,14 @@ class Applicatie(BasisModel):
             except Exception as e:
                 logger.error(f"Token request mislukt: e: {e}")
 
-            if token_response.status_code == 200:
+            if token_response and token_response.status_code == 200:
                 applicatie_token = token_response.json().get("token")
                 cache.set(
                     self.get_token_cache_key(),
                     applicatie_token,
                     settings.MELDINGEN_TOKEN_TIMEOUT,
                 )
-            else:
+            elif token_response:
                 logger.error(
                     f"Token request mislukt: status code: {token_response.status_code}, text: {token_response.text}"
                 )

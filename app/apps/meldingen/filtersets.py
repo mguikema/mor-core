@@ -1,12 +1,14 @@
+import logging
 from collections import OrderedDict
 from typing import List, Tuple
 
+from apps.locatie.models import Locatie
 from apps.meldingen.models import Melding
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
-from django.db.models import F, Max, Q
+from django.db.models import F, Max, OuterRef, Q
 from django.db.models.functions import Greatest
 from django.forms.fields import CharField, MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
@@ -14,6 +16,8 @@ from django_filters import rest_framework as filters
 from rest_framework import filters as rest_filters
 from rest_framework.filters import SearchFilter
 from rest_framework.settings import api_settings
+
+logger = logging.getLogger(__name__)
 
 
 class DjangoPreFilterBackend(filters.DjangoFilterBackend):
@@ -161,6 +165,7 @@ class MeldingFilter(BasisFilter):
 
     def get_within(self, queryset, name, value):
         # ./?within=lat:51.924392,d:100,lon:4.477738
+        logger.info(f"Within raw value: {value}")
         try:
             d = {
                 n: float(value.split(f"{n}:")[1].split(",")[0])
@@ -168,12 +173,20 @@ class MeldingFilter(BasisFilter):
             }
         except Exception:
             return queryset
-        return queryset.filter(
-            locaties_voor_melding__geometrie__distance_lt=(
+        logger.info(f"Within syntax ✅: {d}")
+        locaties = Locatie.objects.filter(melding=OuterRef("pk")).order_by("-gewicht")
+        return queryset.annotate(geometrie=locaties.values("geometrie")[:1]).filter(
+            geometrie__distance_lt=(
                 Point(d["lon"], d["lat"]),
                 D(m=d["d"]),
             )
         )
+        # return queryset.filter(
+        #     locaties_voor_melding__geometrie__distance_lt=(
+        #         Point(d["lon"], d["lat"]),
+        #         D(m=d["d"]),
+        #     )
+        # )
 
     def get_begraafplaats_grafnummer(self, queryset, name, value):
         if value:
