@@ -29,14 +29,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Build Docker test image
-        run: docker compose -f docker-compose.test.yaml build
-
       - name: Create Docker network
-        run: docker network create mor_network
-
-      - name: Start Docker Containers
-        run: docker compose -f docker-compose.test.yaml up -d
+        run: docker network create mor_test_network
 
       - name: Run Tests
         run: docker compose -f docker-compose.test.yaml run app python manage.py test

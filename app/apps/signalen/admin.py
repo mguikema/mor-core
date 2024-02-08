@@ -6,6 +6,7 @@ class SignaalAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "uuid",
+        "signaal_url",
         "aangemaakt_op",
         "bron_id",
         "bron_signaal_id",

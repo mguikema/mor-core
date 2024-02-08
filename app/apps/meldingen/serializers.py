@@ -153,7 +153,6 @@ class MeldingSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     aantal_actieve_taken = serializers.SerializerMethodField()
-    meldingsnummer_lijst = serializers.SerializerMethodField()
     laatste_meldinggebeurtenis = serializers.SerializerMethodField()
     onderwerpen = serializers.SerializerMethodField()
     signalen_voor_melding = SignaalMeldingListSerializer(many=True, read_only=True)
@@ -165,12 +164,6 @@ class MeldingSerializer(serializers.ModelSerializer):
     @extend_schema_field(OpenApiTypes.INT)
     def get_aantal_actieve_taken(self, obj):
         return obj.actieve_taakopdrachten().count()
-
-    def get_meldingsnummer_lijst(self, obj):
-        return [
-            signaal.signaal_data.get("meta", {}).get("meldingsnummerField")
-            for signaal in obj.signalen_voor_melding.all()
-        ]
 
     def get_laatste_meldinggebeurtenis(self, obj):
         meldinggebeurtenis = (
@@ -200,7 +193,6 @@ class MeldingSerializer(serializers.ModelSerializer):
             "resolutie",
             "volgende_statussen",
             "aantal_actieve_taken",
-            "meldingsnummer_lijst",
             "laatste_meldinggebeurtenis",
         )
 
@@ -260,6 +252,5 @@ class MeldingDetailSerializer(MeldingSerializer):
             "meldinggebeurtenissen",
             "taakopdrachten_voor_melding",
             "signalen_voor_melding",
-            "meldingsnummer_lijst",
             "laatste_meldinggebeurtenis",
         )
