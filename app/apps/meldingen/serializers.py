@@ -1,4 +1,5 @@
 from apps.aliassen.serializers import OnderwerpAliasSerializer
+from apps.bijlagen.models import Bijlage
 from apps.bijlagen.serializers import BijlageSerializer
 from apps.locatie.models import Adres, Graf, Lichtmast
 from apps.locatie.serializers import (
@@ -8,9 +9,13 @@ from apps.locatie.serializers import (
     LocatieRelatedField,
 )
 from apps.meldingen.models import Melding, Meldinggebeurtenis
+from apps.signalen.models import Signaal
 from apps.signalen.serializers import SignaalMeldingListSerializer, SignaalSerializer
 from apps.status.serializers import StatusSerializer
+from apps.taken.models import Taakgebeurtenis
 from apps.taken.serializers import TaakgebeurtenisSerializer, TaakopdrachtSerializer
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from drf_writable_nested.serializers import WritableNestedModelSerializer
@@ -145,17 +150,51 @@ class MeldingAanmakenSerializer(WritableNestedModelSerializer):
 class MeldingSerializer(serializers.ModelSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
-    bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer(read_only=True)
     volgende_statussen = serializers.ListField(
         source="status.volgende_statussen",
         child=serializers.CharField(),
         read_only=True,
     )
+    bijlage = serializers.SerializerMethodField()
     aantal_actieve_taken = serializers.SerializerMethodField()
     laatste_meldinggebeurtenis = serializers.SerializerMethodField()
     onderwerpen = serializers.SerializerMethodField()
     signalen_voor_melding = SignaalMeldingListSerializer(many=True, read_only=True)
+
+    @extend_schema_field(BijlageSerializer)
+    def get_bijlage(self, obj):
+        taakgebeurtenissen_voor_melding = Taakgebeurtenis.objects.all().filter(
+            taakopdracht__in=obj.taakopdrachten_voor_melding.all()
+        )
+        return BijlageSerializer(
+            Bijlage.objects.filter(
+                Q(
+                    object_id__in=obj.meldinggebeurtenissen_voor_melding.all().values_list(
+                        "id", flat=True
+                    ),
+                    content_type=ContentType.objects.get_for_model(Meldinggebeurtenis),
+                )
+                | Q(
+                    object_id__in=taakgebeurtenissen_voor_melding.values_list(
+                        "id", flat=True
+                    ),
+                    content_type=ContentType.objects.get_for_model(Taakgebeurtenis),
+                )
+                | Q(
+                    object_id__in=obj.signalen_voor_melding.all().values_list(
+                        "id", flat=True
+                    ),
+                    content_type=ContentType.objects.get_for_model(Signaal),
+                )
+                | Q(
+                    object_id=obj.id,
+                    content_type=ContentType.objects.get_for_model(Melding),
+                )
+            )
+            .order_by("aangemaakt_op")
+            .first()
+        ).data
 
     @extend_schema_field(OpenApiTypes.URI)
     def get_onderwerpen(self, obj):
@@ -186,7 +225,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "omschrijving_kort",
             "meta",
             "onderwerpen",
-            "bijlagen",
+            "bijlage",
             "locaties_voor_melding",
             "signalen_voor_melding",
             "status",
