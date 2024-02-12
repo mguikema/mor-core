@@ -10,6 +10,8 @@ class Status(BasisModel):
         CONTROLE = "controle", "Controle"
         AFGEHANDELD = "afgehandeld", "Afgehandeld"
         GEANNULEERD = "geannuleerd", "Geannuleerd"
+        WACHTEN_MELDER = "wachten_melder", "Wachten melder"
+        PAUZE = "pauze", "Pauze"
 
     naam = models.CharField(
         max_length=50,
@@ -38,24 +40,48 @@ class Status(BasisModel):
             return naam_opties
 
         match self.naam:
-            case Status.NaamOpties.IN_BEHANDELING:
-                return [
-                    Status.NaamOpties.CONTROLE,
-                    Status.NaamOpties.AFGEHANDELD,
-                    Status.NaamOpties.GEANNULEERD,
-                ]
             case Status.NaamOpties.OPENSTAAND:
                 return [
                     Status.NaamOpties.IN_BEHANDELING,
                     Status.NaamOpties.AFGEHANDELD,
                     Status.NaamOpties.GEANNULEERD,
+                    Status.NaamOpties.WACHTEN_MELDER,
+                    Status.NaamOpties.PAUZE,
+                ]
+            case Status.NaamOpties.IN_BEHANDELING:
+                return [
+                    Status.NaamOpties.CONTROLE,
+                    Status.NaamOpties.AFGEHANDELD,
+                    Status.NaamOpties.GEANNULEERD,
+                    Status.NaamOpties.WACHTEN_MELDER,
+                    Status.NaamOpties.PAUZE,
                 ]
             case Status.NaamOpties.CONTROLE:
                 return [
                     Status.NaamOpties.IN_BEHANDELING,
                     Status.NaamOpties.AFGEHANDELD,
                     Status.NaamOpties.GEANNULEERD,
+                    Status.NaamOpties.WACHTEN_MELDER,
+                    Status.NaamOpties.PAUZE,
                 ]
+            case Status.NaamOpties.PAUZE:
+                return [
+                    Status.NaamOpties.IN_BEHANDELING,
+                    Status.NaamOpties.AFGEHANDELD,
+                    Status.NaamOpties.GEANNULEERD,
+                    Status.NaamOpties.CONTROLE,
+                ]
+            case Status.NaamOpties.WACHTEN_MELDER:
+                return [
+                    Status.NaamOpties.IN_BEHANDELING,
+                    Status.NaamOpties.AFGEHANDELD,
+                    Status.NaamOpties.GEANNULEERD,
+                    Status.NaamOpties.CONTROLE,
+                ]
+            case Status.NaamOpties.AFGEHANDELD:
+                return []
+            case Status.NaamOpties.GEANNULEERD:
+                return []
             case _:
                 return []
 
