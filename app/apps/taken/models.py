@@ -115,6 +115,7 @@ class Taakopdracht(BasisModel):
         NIET_GEVONDEN = "niet_gevonden", "Niets aangetroffen"
 
     afgesloten_op = models.DateTimeField(null=True, blank=True)
+    afhandeltijd = models.DurationField(null=True, blank=True)
     melding = models.ForeignKey(
         to="meldingen.Melding",
         related_name="taakopdrachten_voor_melding",
@@ -189,5 +190,9 @@ class Taakopdracht(BasisModel):
                 )
 
     def save(self, *args, **kwargs):
+        if self.afgesloten_op and self.aangemaakt_op:
+            self.afhandeltijd = self.afgesloten_op - self.aangemaakt_op
+        else:
+            self.afhandeltijd = None
         self.full_clean()
         return super().save(*args, **kwargs)
