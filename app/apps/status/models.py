@@ -66,17 +66,15 @@ class Status(BasisModel):
                 ]
             case Status.NaamOpties.PAUZE:
                 return [
-                    Status.NaamOpties.IN_BEHANDELING,
+                    Status.NaamOpties.OPENSTAAND,
                     Status.NaamOpties.AFGEHANDELD,
                     Status.NaamOpties.GEANNULEERD,
-                    Status.NaamOpties.CONTROLE,
                 ]
             case Status.NaamOpties.WACHTEN_MELDER:
                 return [
-                    Status.NaamOpties.IN_BEHANDELING,
+                    Status.NaamOpties.OPENSTAAND,
                     Status.NaamOpties.AFGEHANDELD,
                     Status.NaamOpties.GEANNULEERD,
-                    Status.NaamOpties.CONTROLE,
                 ]
             case Status.NaamOpties.AFGEHANDELD:
                 return []
