@@ -1,6 +1,7 @@
 from apps.bijlagen.models import Bijlage
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
+from django.utils.dateparse import parse_datetime
 from rest_framework.exceptions import APIException
 from utils.fields import DictJSONField
 from utils.models import BasisModel
@@ -191,6 +192,10 @@ class Taakopdracht(BasisModel):
 
     def save(self, *args, **kwargs):
         if self.afgesloten_op and self.aangemaakt_op:
+            if isinstance(self.afgesloten_op, str):
+                self.afgesloten_op = parse_datetime(self.afgesloten_op)
+            if isinstance(self.aangemaakt_op, str):
+                self.aangemaakt_op = parse_datetime(self.aangemaakt_op)
             self.afhandeltijd = self.afgesloten_op - self.aangemaakt_op
         else:
             self.afhandeltijd = None
