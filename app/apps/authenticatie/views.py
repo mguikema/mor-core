@@ -2,7 +2,6 @@ import logging
 from urllib import parse
 
 import requests
-from apps.authenticatie.models import Gebruiker
 from apps.authenticatie.serializers import GebruikerSerializer
 from django.conf import settings
 from django.core.cache import cache
@@ -51,33 +50,17 @@ class GetGebruikerAPIView(APIView):
                 {"email": "is not a valid email address"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        # Check if data is available in cache
-        cache_key = f"gebruiker_{email}"
-        gebruiker_data = cache.get(cache_key)
-        gebruiker_serializer = GebruikerSerializer(data=gebruiker_data)
-        if not gebruiker_serializer.is_valid():
-            # Fetch gebruiker data from your source
-            try:
-                gebruiker = Gebruiker.objects.get(email=email)
-            except Gebruiker.DoesNotExist:
-                return Response(
-                    {"email": "User does not exist"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
-            # Serialize gebruiker data
-            gebruiker_serializer = GebruikerSerializer(data=gebruiker)
-
-            # Check if serialized data is valid
-            if not gebruiker_serializer.is_valid():
-                return Response(
-                    gebruiker_serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                )
-            # Cache the data
-            cache.set(cache_key, gebruiker_serializer.validated_data)
-
-        return Response(gebruiker_serializer.validated_data, status=status.HTTP_200_OK)
+        cache_gebruiker = cache.get(f"gebruiker_{email}", {})
+        cache_gebruiker.update({"email": email})
+        gebruiker_serializer = GebruikerSerializer(data=cache_gebruiker)
+        if gebruiker_serializer.is_valid():
+            logger.info(
+                f"Get gebruiker info: email={email}, data={gebruiker_serializer.validated_data}"
+            )
+            return Response(
+                gebruiker_serializer.validated_data, status=status.HTTP_200_OK
+            )
+        return Response(gebruiker_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SetGebruikerAPIView(APIView):
@@ -90,5 +73,6 @@ class SetGebruikerAPIView(APIView):
             cache.set(
                 f"gebruiker_{serializer.data.get('email')}", serializer.validated_data
             )
+            print(cache.get(f"gebruiker_{serializer.data.get('email')}"))
             return Response({}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
