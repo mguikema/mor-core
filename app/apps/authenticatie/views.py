@@ -73,6 +73,5 @@ class SetGebruikerAPIView(APIView):
             cache.set(
                 f"gebruiker_{serializer.data.get('email')}", serializer.validated_data
             )
-            print(cache.get(f"gebruiker_{serializer.data.get('email')}"))
             return Response({}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
