@@ -20,6 +20,7 @@ class GebruikerAdmin(UserAdmin):
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         ("Permissions", {"fields": ("is_staff", "is_active", "is_superuser")}),
+        ("Name", {"fields": ("first_name", "last_name")}),
     )
     add_fieldsets = (
         (
