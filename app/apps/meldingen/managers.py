@@ -246,7 +246,7 @@ class MeldingManager(models.Manager):
                 )
                 Taakgebeurtenis.objects.bulk_create(taakgebeurtenissen)
 
-                locked_melding.afgesloten_op = timezone.now().isoformat()
+                locked_melding.afgesloten_op = timezone.now()
                 if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
                     locked_melding.resolutie = resolutie
             locked_melding.save()
@@ -455,7 +455,7 @@ class MeldingManager(models.Manager):
                 locked_taakopdracht.additionele_informatie["uitvoerder"] = None
 
             if not locked_taakopdracht.status.volgende_statussen():
-                locked_taakopdracht.afgesloten_op = timezone.now().isoformat()
+                locked_taakopdracht.afgesloten_op = timezone.now()
                 if resolutie in [ro[0] for ro in Taakopdracht.ResolutieOpties.choices]:
                     locked_taakopdracht.resolutie = resolutie
 
