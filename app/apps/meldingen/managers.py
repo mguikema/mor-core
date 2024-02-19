@@ -481,7 +481,7 @@ class MeldingManager(models.Manager):
                 )
             )
 
-            if taak_status_aanpassen_response.status_code != 200:
+            if taak_status_aanpassen_response.status_code not in [200, 404]:
                 raise Exception(
                     f"De taakstatus kon niet worden aangepast: {locked_taakopdracht.taak_url}status-aanpassen/"
                 )
