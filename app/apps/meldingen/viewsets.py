@@ -11,6 +11,7 @@ from apps.meldingen.serializers import (
     MeldingDetailSerializer,
     MeldinggebeurtenisSerializer,
     MeldingGebeurtenisStatusSerializer,
+    MeldingGebeurtenisUrgentieSerializer,
     MeldingSerializer,
 )
 from apps.taken.serializers import TaakopdrachtSerializer
@@ -211,6 +212,34 @@ class MeldingViewSet(
         )
         if serializer.is_valid():
             Melding.acties.status_aanpassen(serializer, self.get_object())
+
+            serializer = MeldingDetailSerializer(
+                self.get_object(), context={"request": request}
+            )
+            return Response(serializer.data)
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    @extend_schema(
+        description="Verander de urgentie van een melding",
+        request=MeldingGebeurtenisUrgentieSerializer,
+        responses={status.HTTP_200_OK: MeldingDetailSerializer},
+        parameters=None,
+    )
+    @action(detail=True, methods=["patch"], url_path="urgentie-aanpassen")
+    def urgentie_aanpassen(self, request, uuid):
+        melding = self.get_object()
+        data = {"melding": melding.id}
+        data.update(request.data)
+        data["gebeurtenis_type"] = Meldinggebeurtenis.GebeurtenisType.URGENTIE_AANGEPAST
+        serializer = MeldingGebeurtenisUrgentieSerializer(
+            data=data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            Melding.acties.urgentie_aanpassen(serializer, self.get_object())
 
             serializer = MeldingDetailSerializer(
                 self.get_object(), context={"request": request}

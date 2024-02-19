@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 signaal_aangemaakt = DjangoSignal()
 aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
+urgentie_aangepast = DjangoSignal()
 afgesloten = DjangoSignal()
 gebeurtenis_toegevoegd = DjangoSignal()
 taakopdracht_aangemaakt = DjangoSignal()
@@ -129,6 +130,36 @@ class MeldingManager(models.Manager):
                 )
             )
         return signaal
+
+    def urgentie_aanpassen(self, serializer, melding, db="default"):
+        from apps.meldingen.models import Melding
+
+        if melding.afgesloten_op:
+            raise MeldingManager.MeldingAfgeslotenFout(
+                "De urgentie van een afgsloten melding kan niet meer worden veranderd"
+            )
+
+        with transaction.atomic():
+            try:
+                locked_melding = (
+                    Melding.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=melding.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.MeldingInGebruik
+
+            melding_gebeurtenis = serializer.save()
+            vorige_urgentie = locked_melding.urgentie
+            locked_melding.urgentie = melding_gebeurtenis.urgentie
+            locked_melding.save()
+            transaction.on_commit(
+                lambda: status_aangepast.send_robust(
+                    sender=self.__class__,
+                    melding=locked_melding,
+                    vorige_urgentie=vorige_urgentie,
+                )
+            )
 
     def status_aanpassen(self, serializer, melding, db="default"):
         from apps.meldingen.models import Melding

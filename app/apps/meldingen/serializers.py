@@ -69,6 +69,17 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
         read_only_fields = ("aangemaakt_op",)
 
 
+class MeldingGebeurtenisUrgentieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Meldinggebeurtenis
+        fields = (
+            "urgentie",
+            "gebeurtenis_type",
+            "melding",
+            "gebruiker",
+        )
+
+
 class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
     _links = MeldingGebeurtenisLinksSerializer(source="*", read_only=True)
     bijlagen = BijlageSerializer(many=True, required=False)
@@ -90,6 +101,7 @@ class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
             "taakgebeurtenis",
             "gebruiker",
             "locatie",
+            "urgentie",
         )
         read_only_fields = (
             "_links",
@@ -99,6 +111,7 @@ class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
             "melding",
             "taakgebeurtenis",
             "locatie",
+            "urgentie",
         )
         validators = []
 

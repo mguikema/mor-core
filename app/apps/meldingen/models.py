@@ -26,13 +26,14 @@ class Meldinggebeurtenis(BasisModel):
         )
         LOCATIE_AANGEMAAKT = "locatie_aangemaakt", "Locatie aangemaakt"
         SIGNAAL_TOEGEVOEGD = "signaal_toegevoegd", "Signaal toegevoegd"
+        URGENTIE_AANGEPAST = "urgentie_aangepast", "Urgentie aangepast"
 
     gebeurtenis_type = models.CharField(
         max_length=40,
         choices=GebeurtenisType.choices,
         default=GebeurtenisType.STANDAARD,
     )
-
+    urgentie = models.FloatField(null=True, blank=True)
     bijlagen = GenericRelation(Bijlage)
     status = models.OneToOneField(
         to="status.Status",
