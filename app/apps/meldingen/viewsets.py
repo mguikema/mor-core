@@ -11,6 +11,7 @@ from apps.meldingen.serializers import (
     MeldingDetailSerializer,
     MeldinggebeurtenisSerializer,
     MeldingGebeurtenisStatusSerializer,
+    MeldingGebeurtenisUrgentieSerializer,
     MeldingSerializer,
 )
 from apps.taken.serializers import TaakopdrachtSerializer
@@ -109,14 +110,8 @@ class MeldinggebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewS
         ),
     ]
 )
-class MeldingViewSet(
-    mixins.UpdateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = "uuid"
-    http_method_names = ["get", "patch"]
     queryset = (
         Melding.objects.select_related(
             "status",
@@ -186,8 +181,6 @@ class MeldingViewSet(
         return super().filter_queryset(queryset)
 
     def get_serializer_class(self):
-        if self.action == "partial_update":
-            return self.serializer_detail_class
         if self.action == "retrieve":
             return self.serializer_detail_class
         return super().get_serializer_class()
@@ -211,6 +204,34 @@ class MeldingViewSet(
         )
         if serializer.is_valid():
             Melding.acties.status_aanpassen(serializer, self.get_object())
+
+            serializer = MeldingDetailSerializer(
+                self.get_object(), context={"request": request}
+            )
+            return Response(serializer.data)
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    @extend_schema(
+        description="Verander de urgentie van een melding",
+        request=MeldingGebeurtenisUrgentieSerializer,
+        responses={status.HTTP_200_OK: MeldingDetailSerializer},
+        parameters=None,
+    )
+    @action(detail=True, methods=["patch"], url_path="urgentie-aanpassen")
+    def urgentie_aanpassen(self, request, uuid):
+        melding = self.get_object()
+        data = {"melding": melding.id}
+        data.update(request.data)
+        data["gebeurtenis_type"] = Meldinggebeurtenis.GebeurtenisType.URGENTIE_AANGEPAST
+        serializer = MeldingGebeurtenisUrgentieSerializer(
+            data=data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            Melding.acties.urgentie_aanpassen(serializer, self.get_object())
 
             serializer = MeldingDetailSerializer(
                 self.get_object(), context={"request": request}
