@@ -14,6 +14,14 @@ class TaakgebeurtenisAdmin(admin.ModelAdmin):
     )
 
 
+@admin.action(description="Zet taak afgesloten_op voor afgesloten meldingen")
+def action_set_taak_afgesloten_op_for_melding_afgesloten(modeladmin, request, queryset):
+    for taakopdracht in queryset.all():
+        if taakopdracht.melding.afgesloten_op and not taakopdracht.afgesloten_op:
+            taakopdracht.afgesloten_op = taakopdracht.melding.afgesloten_op
+            taakopdracht.save()
+
+
 class TaakopdrachtAdmin(admin.ModelAdmin):
     list_editable = ("taaktype", "taak_url")
     list_display = (
@@ -23,13 +31,15 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         # "uuid",
         "titel",
         # "aangemaakt_op",
-        # "aangepast_op",
+        "afgesloten_op",
+        "melding__afgesloten_op",
+        "afhandeltijd",
         "pretty_afhandeltijd",
         "melding",
         "status",
         "resolutie",
     )
-
+    actions = (action_set_taak_afgesloten_op_for_melding_afgesloten,)
     readonly_fields = (
         "pretty_afhandeltijd",
         "aangemaakt_op",
@@ -66,6 +76,12 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def melding__afgesloten_op(self, obj):
+        if obj.melding.afgesloten_op:
+            return obj.melding.afgesloten_op
+        else:
+            return "-"
 
     def pretty_afhandeltijd(self, obj):
         if obj.afhandeltijd:
