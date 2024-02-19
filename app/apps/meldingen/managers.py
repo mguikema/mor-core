@@ -234,6 +234,7 @@ class MeldingManager(models.Manager):
                     )
                     to.status = taakstatus
                     to.resolutie = "geannuleerd"
+                    to.afgesloten_op = timezone.now()
                     taakgebeurtenissen.append(
                         Taakgebeurtenis(
                             taakopdracht=to,
