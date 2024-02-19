@@ -110,14 +110,8 @@ class MeldinggebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewS
         ),
     ]
 )
-class MeldingViewSet(
-    mixins.UpdateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     lookup_field = "uuid"
-    http_method_names = ["get", "patch"]
     queryset = (
         Melding.objects.select_related(
             "status",
@@ -187,8 +181,6 @@ class MeldingViewSet(
         return super().filter_queryset(queryset)
 
     def get_serializer_class(self):
-        if self.action == "partial_update":
-            return self.serializer_detail_class
         if self.action == "retrieve":
             return self.serializer_detail_class
         return super().get_serializer_class()
