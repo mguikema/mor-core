@@ -130,7 +130,6 @@ class MeldingViewSet(
         .all()
     )
     prefiltered_queryset = None
-    permission_classes = ()
     serializer_class = MeldingSerializer
     serializer_detail_class = MeldingDetailSerializer
     pre_filter_backends = (DjangoPreFilterBackend,)
