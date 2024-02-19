@@ -30,7 +30,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "taak_url",
         # "uuid",
         "titel",
-        # "aangemaakt_op",
+        "aangepast_op",
         "afgesloten_op",
         "melding__afgesloten_op",
         "afhandeltijd",
