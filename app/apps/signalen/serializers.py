@@ -172,6 +172,7 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "bron_id",
             "bron_signaal_id",
             "origineel_aangemaakt",
+            "urgentie",
             "omschrijving_kort",
             "omschrijving",
             "meta",

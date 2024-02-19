@@ -19,6 +19,7 @@ class MeldingAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "uuid",
+        "urgentie",
         "status_naam",
         "onderwerp_naam",
         "origineel_aangemaakt",

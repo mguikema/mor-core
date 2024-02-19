@@ -1,10 +1,14 @@
+from datetime import datetime, timedelta
+
 import requests_mock
 from apps.aliassen.models import OnderwerpAlias
 from apps.bijlagen.models import Bijlage
 from apps.locatie.models import Adres
 from apps.meldingen.models import Melding
+from apps.status.models import Status
 from django.contrib.gis.geos import Point
 from django.urls import reverse
+from django.utils.timezone import get_current_timezone, make_aware
 from model_bakery import baker
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -220,3 +224,108 @@ class MeldingApiTest(APITestCase):
         data = response.json()
 
         self.assertEqual(len(data["results"]), 2)
+
+    @requests_mock.Mocker()
+    def test_filter_ontdubbel_melding(self, m):
+        client = get_authenticated_client()
+        url = reverse("app:melding-list")
+
+        tz = get_current_timezone()
+        melding_1_dt = make_aware(datetime(2000, 1, 1, 0, 0, 20), tz)
+        melding_2_dt = make_aware(datetime(2000, 1, 1, 0, 0, 10), tz)
+        zoek_dt = make_aware(datetime(2000, 1, 1, 0, 0, 30), tz) - timedelta(seconds=15)
+
+        d = 10
+
+        p1 = [4.477737, 51.924411]
+        # diff: 9.94 meters from p1
+        p2 = [4.477592, 51.924411]
+        # diff: 10.08 meters from p1
+        p3 = [4.477590, 51.924411]
+
+        onderwerp_1_url = "https://onderwerpen.com/mock_onderwerp_1"
+        onderwerp_2_url = "https://onderwerpen.com/mock_onderwerp_2"
+        m.get(onderwerp_1_url, json={}, status_code=200)
+        m.get(onderwerp_2_url, json={}, status_code=200)
+        onderwerp_1 = baker.make(OnderwerpAlias, bron_url=onderwerp_1_url)
+        onderwerp_2 = baker.make(OnderwerpAlias, bron_url=onderwerp_2_url)
+
+        status_naam_1 = "openstaand"
+        status_naam_2 = "afgehandeld"
+
+        # melding 1
+        melding_1_status = baker.make(Status, naam=status_naam_1)
+        m1 = melding_1_status.melding
+        m1.omschrijving_kort = "melding 1"
+        m1.origineel_aangemaakt = melding_1_dt
+        m1.status = melding_1_status
+        m1.onderwerpen.add(onderwerp_1)
+        m1.save()
+        baker.make(Adres, geometrie=Point(*p1), melding=m1, gewicht=1)
+
+        # melding 2
+        # change origineel_aangemaakt
+        melding_2_status = baker.make(Status, naam=status_naam_1)
+        m2 = melding_2_status.melding
+        m2.omschrijving_kort = "melding 2"
+        m2.origineel_aangemaakt = melding_2_dt
+        m2.status = melding_2_status
+        m2.onderwerpen.add(onderwerp_1)
+        m2.save()
+        baker.make(Adres, geometrie=Point(*p2), melding=m2, gewicht=1)
+
+        # melding 3
+        # change status
+        melding_3_status = baker.make(Status, naam=status_naam_2)
+        m3 = melding_3_status.melding
+        m3.omschrijving_kort = "melding 3"
+        m3.origineel_aangemaakt = melding_1_dt
+        m3.status = melding_3_status
+        m3.onderwerpen.add(onderwerp_1)
+        m3.save()
+        baker.make(Adres, geometrie=Point(*p2), melding=m3, gewicht=1)
+
+        # melding 4
+        # change onderwerp
+        melding_4_status = baker.make(Status, naam=status_naam_1)
+        m4 = melding_4_status.melding
+        m4.omschrijving_kort = "melding 4"
+        m4.origineel_aangemaakt = melding_1_dt
+        m4.status = melding_4_status
+        m4.onderwerpen.add(onderwerp_2)
+        m4.save()
+        baker.make(Adres, geometrie=Point(*p2), melding=m4, gewicht=1)
+
+        # melding 5
+        # change point to p3 (uitside range)
+        melding_5_status = baker.make(Status, naam=status_naam_1)
+        m5 = melding_5_status.melding
+        m5.omschrijving_kort = "melding 4"
+        m5.origineel_aangemaakt = melding_1_dt
+        m5.status = melding_5_status
+        m5.onderwerpen.add(onderwerp_1)
+        m5.save()
+        baker.make(Adres, geometrie=Point(*p3), melding=m5, gewicht=1)
+        baker.make(Adres, geometrie=Point(*p2), melding=m5, gewicht=0.8)
+        baker.make(Adres, geometrie=Point(*p1), melding=m5, gewicht=0.5)
+
+        data = {
+            "within": f"lat:{p1[1]},lon:{p1[0]},d:{d}",
+            "onderwerp_url": onderwerp_1_url,
+            "origineel_aangemaakt_gt": zoek_dt.isoformat(),
+            "status": [
+                "openstaand",
+                "in_behandeling",
+                "controle",
+                "wachten_melder",
+                "pauze",
+            ],
+            "ordering": "origineel_aangemaakt",
+            "limit": "5",
+        }
+        response = client.get(url, data=data)
+        data = response.json()
+
+        self.assertEqual(Melding.objects.count(), 5)
+        self.assertEqual(len(data["results"]), 1)
+        self.assertEqual(data["results"][0].get("omschrijving_kort"), "melding 1")

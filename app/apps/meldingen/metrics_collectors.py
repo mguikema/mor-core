@@ -135,15 +135,15 @@ class CustomCollector(object):
         )
 
         for taak in taken:
-            avg_openstaand_duration = taak.get("avg_openstaand")
-            avg_openstaand_seconds = avg_openstaand_duration.total_seconds()
+            if avg_openstaand_duration := taak.get("avg_openstaand"):
+                avg_openstaand_seconds = avg_openstaand_duration.total_seconds()
 
-            c.add_metric(
-                (
-                    taak.get("titel"),
-                    taak.get("status__naam"),
-                    taak.get("highest_weight_wijk"),
-                ),
-                avg_openstaand_seconds,
-            )
+                c.add_metric(
+                    (
+                        taak.get("titel"),
+                        taak.get("status__naam"),
+                        taak.get("highest_weight_wijk"),
+                    ),
+                    avg_openstaand_seconds,
+                )
         return c
