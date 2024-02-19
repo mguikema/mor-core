@@ -1,6 +1,7 @@
 import logging
 
 from apps.applicaties.models import Applicatie
+from apps.services.onderwerpen import OnderwerpenService
 from django.contrib.gis.db import models
 from django.db import OperationalError, transaction
 from django.db.models import Max
@@ -66,6 +67,12 @@ class MeldingManager(models.Manager):
                 )
                 for onderwerp in signaal.onderwerpen.all():
                     melding.onderwerpen.add(onderwerp)
+                    onderwerp_response = OnderwerpenService().get_onderwerp(
+                        onderwerp.bron_url
+                    )
+                    if onderwerp_response.get("priority") == "high":
+                        melding.urgentie = 0.5
+
                 for locatie in signaal.locaties_voor_signaal.all():
                     melding.locaties_voor_melding.add(locatie)
 
