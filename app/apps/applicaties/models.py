@@ -2,6 +2,7 @@ import logging
 from urllib.parse import urlencode, urlparse
 
 import requests
+from apps.meldingen.tasks import task_notificatie_voor_melding_veranderd
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -9,6 +10,7 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.cache import cache
 from requests import Request, Response
+from rest_framework.reverse import reverse
 from utils.models import BasisModel
 
 logger = logging.getLogger(__name__)
@@ -90,6 +92,15 @@ class Applicatie(BasisModel):
 
     class AntwoordFout(Exception):
         ...
+
+    @classmethod
+    def melding_veranderd_notificatie(cls, melding_uuid, notificatie_type):
+        for applicatie in cls.objects.all():
+            task_notificatie_voor_melding_veranderd.delay(
+                applicatie.id,
+                melding_uuid,
+                notificatie_type,
+            )
 
     @classmethod
     def vind_applicatie_obv_uri(cls, uri):
@@ -218,6 +229,20 @@ class Applicatie(BasisModel):
         if raw_response:
             return response
         return response.json()
+
+    def melding_veranderd_notificatie_voor_applicatie(
+        self, melding_uuid, notificatie_type
+    ):
+        return self._do_request(
+            settings.MELDING_VERANDERD_NOTIFICATIE_URL,
+            params={
+                "melding_url": reverse(
+                    "v1:melding-detail",
+                    kwargs={"uuid": melding_uuid},
+                ),
+                "notificatie_type": notificatie_type,
+            },
+        )
 
     def taak_aanmaken(self, data):
         return self._do_request("/api/v1/taak/", method="post", data=data)
