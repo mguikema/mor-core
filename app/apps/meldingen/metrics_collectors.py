@@ -123,7 +123,12 @@ class CustomCollector(object):
             .annotate(
                 avg_openstaand=Avg(
                     Case(
-                        When(status__naam="voltooid", then=F("afhandeltijd")),
+                        When(
+                            afgesloten_op__isnull=False,
+                            aangemaakt_op__isnull=False,
+                            afhandeltijd__isnull=False,
+                            then=F("afhandeltijd"),
+                        ),
                         default=ExpressionWrapper(
                             timezone.now() - F("aangemaakt_op"),
                             output_field=DurationField(),
