@@ -74,6 +74,7 @@ class MeldingGebeurtenisUrgentieSerializer(serializers.ModelSerializer):
         model = Meldinggebeurtenis
         fields = (
             "urgentie",
+            "omschrijving_intern",
             "gebeurtenis_type",
             "melding",
             "gebruiker",
