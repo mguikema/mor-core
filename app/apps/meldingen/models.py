@@ -26,13 +26,14 @@ class Meldinggebeurtenis(BasisModel):
         )
         LOCATIE_AANGEMAAKT = "locatie_aangemaakt", "Locatie aangemaakt"
         SIGNAAL_TOEGEVOEGD = "signaal_toegevoegd", "Signaal toegevoegd"
+        URGENTIE_AANGEPAST = "urgentie_aangepast", "Urgentie aangepast"
 
     gebeurtenis_type = models.CharField(
         max_length=40,
         choices=GebeurtenisType.choices,
         default=GebeurtenisType.STANDAARD,
     )
-
+    urgentie = models.FloatField(null=True, blank=True)
     bijlagen = GenericRelation(Bijlage)
     status = models.OneToOneField(
         to="status.Status",
@@ -98,9 +99,10 @@ class Melding(BasisModel):
         NIET_OPGELOST = "niet_opgelost", "Niet opgelost"
 
     origineel_aangemaakt = models.DateTimeField()
+    afgesloten_op = models.DateTimeField(null=True, blank=True)
+    urgentie = models.FloatField(default=0.2)
     omschrijving_kort = models.CharField(max_length=500)
     omschrijving = models.CharField(max_length=5000, null=True, blank=True)
-    afgesloten_op = models.DateTimeField(null=True, blank=True)
     meta = models.JSONField(default=dict)
     meta_uitgebreid = models.JSONField(default=dict)
     status = models.OneToOneField(
