@@ -171,6 +171,7 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "_links",
             "uuid",
             "signaal_url",
+            "signaal_data",
             "bron_id",
             "bron_signaal_id",
             "origineel_aangemaakt",
@@ -190,6 +191,7 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "locaties_voor_signaal",
         )
         read_only_fields = (
+            "signaal_data",
             "aangemaakt_op",
             "adressen",
             "lichtmasten",
