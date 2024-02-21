@@ -3,8 +3,11 @@ import logging
 from apps.bijlagen.models import Bijlage
 from apps.meldingen.managers import MeldingManager
 from apps.meldingen.querysets import MeldingQuerySet
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
+from django.contrib.sites.models import Site
+from rest_framework.reverse import reverse
 from utils.models import BasisModel
 
 logger = logging.getLogger(__name__)
@@ -141,6 +144,15 @@ class Melding(BasisModel):
 
     def actieve_taakopdrachten(self):
         return self.taakopdrachten_voor_melding.exclude(status__naam="voltooid")
+
+    def get_absolute_url(self):
+        domain = Site.objects.get_current().domain
+        url_basis = f"{settings.PROTOCOL}://{domain}{settings.PORT}"
+        pad = reverse(
+            "v1:melding-detail",
+            kwargs={"uuid": self.uuid},
+        )
+        return f"{url_basis}{pad}"
 
     class Meta:
         verbose_name = "Melding"
