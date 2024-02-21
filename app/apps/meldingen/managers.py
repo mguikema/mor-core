@@ -12,7 +12,6 @@ from rest_framework.reverse import reverse
 logger = logging.getLogger(__name__)
 
 signaal_aangemaakt = DjangoSignal()
-aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
 urgentie_aangepast = DjangoSignal()
 afgesloten = DjangoSignal()
@@ -154,7 +153,7 @@ class MeldingManager(models.Manager):
             locked_melding.urgentie = melding_gebeurtenis.urgentie
             locked_melding.save()
             transaction.on_commit(
-                lambda: status_aangepast.send_robust(
+                lambda: urgentie_aangepast.send_robust(
                     sender=self.__class__,
                     melding=locked_melding,
                     vorige_urgentie=vorige_urgentie,
