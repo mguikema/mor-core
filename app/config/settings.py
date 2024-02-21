@@ -34,6 +34,9 @@ USE_I18N = False
 LANGUAGE_CODE = "nl-NL"
 LANGUAGES = [("nl", "Dutch")]
 
+PROTOCOL = "https" if not DEBUG else "http"
+PORT = "" if not DEBUG else ":8002"
+
 DEFAULT_ALLOWED_HOSTS = ".forzamor.nl,localhost,127.0.0.1,.mor.local"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", DEFAULT_ALLOWED_HOSTS).split(",")
 

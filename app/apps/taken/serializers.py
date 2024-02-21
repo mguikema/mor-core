@@ -139,6 +139,7 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
             "melding",
             "taakgebeurtenissen_voor_taakopdracht",
             "gebruiker",
+            "taak_url",
         )
         read_only_fields = (
             "_links",
@@ -148,4 +149,5 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
             "resolutie",
             "melding",
             "taakgebeurtenissen_voor_taakopdracht",
+            "taak_url",
         )

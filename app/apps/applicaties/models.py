@@ -10,7 +10,6 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.cache import cache
 from requests import Request, Response
-from rest_framework.reverse import reverse
 from utils.models import BasisModel
 
 logger = logging.getLogger(__name__)
@@ -94,11 +93,11 @@ class Applicatie(BasisModel):
         ...
 
     @classmethod
-    def melding_veranderd_notificatie(cls, melding_uuid, notificatie_type):
+    def melding_veranderd_notificatie(cls, melding_url, notificatie_type):
         for applicatie in cls.objects.all():
             task_notificatie_voor_melding_veranderd.delay(
                 applicatie.id,
-                melding_uuid,
+                melding_url,
                 notificatie_type,
             )
 
@@ -231,15 +230,12 @@ class Applicatie(BasisModel):
         return response.json()
 
     def melding_veranderd_notificatie_voor_applicatie(
-        self, melding_uuid, notificatie_type
+        self, melding_url, notificatie_type
     ):
         return self._do_request(
             settings.MELDING_VERANDERD_NOTIFICATIE_URL,
             params={
-                "melding_url": reverse(
-                    "v1:melding-detail",
-                    kwargs={"uuid": melding_uuid},
-                ),
+                "melding_url": melding_url,
                 "notificatie_type": notificatie_type,
             },
         )
