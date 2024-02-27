@@ -6,6 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
     dependencies = [
         ("meldingen", "0010_merge_0008_datawarehouse_0009_auto_20240219_1818"),
+        ("taken", "0005_taakgebeurtenis_additionele_informatie"),
     ]
 
     operations = [
