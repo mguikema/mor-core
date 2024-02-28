@@ -188,11 +188,12 @@ class MeldingManager(models.Manager):
             locked_melding.status = melding_gebeurtenis.status
 
             # TODO: hoe willen we checken dat de melding afgehandeld wordt
-            # Sluiten van melding en bijbehorende open taken. Zet afgesloten_op
+            # Sluiten van melding en bijbehorende open taken. Zet afgesloten_op.
+            # When reopening "openstaand" is the only volgende status.
             if (
-                "openstaand" in locked_melding.status.volgende_statussen()
-                or not locked_melding.status.volgende_statussen()
-            ):
+                len(locked_melding.status.volgende_statussen()) == 1
+                and locked_melding.status.volgende_statussen()[0] == "openstaand"
+            ) or not locked_melding.status.volgende_statussen():
                 try:
                     locked_taakopdrachten = (
                         Taakopdracht.objects.using(db)
@@ -242,8 +243,8 @@ class MeldingManager(models.Manager):
 
                 locked_melding.afgesloten_op = timezone.now()
 
-                if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
-                    locked_melding.resolutie = resolutie
+            if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
+                locked_melding.resolutie = resolutie
             locked_melding.save()
 
             transaction.on_commit(
