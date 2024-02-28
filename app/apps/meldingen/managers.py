@@ -135,7 +135,7 @@ class MeldingManager(models.Manager):
 
         if melding.afgesloten_op:
             raise MeldingManager.MeldingAfgeslotenFout(
-                "De urgentie van een afgsloten melding kan niet meer worden veranderd"
+                "De urgentie van een afgesloten melding kan niet meer worden veranderd"
             )
 
         with transaction.atomic():
@@ -164,10 +164,11 @@ class MeldingManager(models.Manager):
         from apps.meldingen.models import Melding
         from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
 
-        if melding.afgesloten_op:
-            raise MeldingManager.MeldingAfgeslotenFout(
-                "De status van een afgsloten melding kan niet meer worden veranderd"
-            )
+        # Blocks the ability to reopen a melding so commented
+        # if melding.afgesloten_op:
+        #     raise MeldingManager.MeldingAfgeslotenFout(
+        #         "De status van een afgesloten melding kan niet meer worden veranderd"
+        #     )
 
         with transaction.atomic():
             try:
@@ -187,7 +188,11 @@ class MeldingManager(models.Manager):
             locked_melding.status = melding_gebeurtenis.status
 
             # TODO: hoe willen we checken dat de melding afgehandeld wordt
-            if not locked_melding.status.volgende_statussen():
+            # Sluiten van melding en bijbehorende open taken. Zet afgesloten_op
+            if (
+                "openstaand" in locked_melding.status.volgende_statussen()
+                or not locked_melding.status.volgende_statussen()
+            ):
                 try:
                     locked_taakopdrachten = (
                         Taakopdracht.objects.using(db)
@@ -236,6 +241,7 @@ class MeldingManager(models.Manager):
                 Taakgebeurtenis.objects.bulk_create(taakgebeurtenissen)
 
                 locked_melding.afgesloten_op = timezone.now()
+
                 if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
                     locked_melding.resolutie = resolutie
             locked_melding.save()

@@ -215,6 +215,38 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
     @extend_schema(
+        description="Melding heropenen",
+        request=MeldingGebeurtenisStatusSerializer,
+        responses={status.HTTP_200_OK: MeldingDetailSerializer},
+        parameters=None,
+    )
+    @action(detail=True, methods=["patch"], url_path="heropenen")
+    def heropenen(self, request, uuid):
+        melding = self.get_object()
+        melding.afgesloten_op = None
+        melding.save()
+
+        data = {"melding": melding.id}
+        data.update(request.data)
+        data["status"]["melding"] = melding.id
+        data["gebeurtenis_type"] = Meldinggebeurtenis.GebeurtenisType.MELDING_HEROPEND
+        serializer = MeldingGebeurtenisStatusSerializer(
+            data=data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            Melding.acties.status_aanpassen(serializer, self.get_object())
+
+            serializer = MeldingDetailSerializer(
+                self.get_object(), context={"request": request}
+            )
+            return Response(serializer.data)
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    @extend_schema(
         description="Verander de urgentie van een melding",
         request=MeldingGebeurtenisUrgentieSerializer,
         responses={status.HTTP_200_OK: MeldingDetailSerializer},
