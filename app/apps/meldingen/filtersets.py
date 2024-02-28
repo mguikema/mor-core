@@ -162,6 +162,13 @@ class MeldingFilter(BasisFilter):
         method="get_begraafplaats_grafnummer"
     )
     within = filters.CharFilter(method="get_within")
+    urgentie = filters.NumberFilter(
+        field_name="urgentie",
+    )
+    urgentie_gt = filters.NumberFilter(field_name="urgentie", lookup_expr="gt")
+    urgentie_gte = filters.NumberFilter(field_name="urgentie", lookup_expr="gte")
+    urgentie_lt = filters.NumberFilter(field_name="urgentie", lookup_expr="lt")
+    urgentie_lte = filters.NumberFilter(field_name="urgentie", lookup_expr="lte")
 
     def get_within(self, queryset, name, value):
         # ./?within=lat:51.924392,d:100,lon:4.477738
