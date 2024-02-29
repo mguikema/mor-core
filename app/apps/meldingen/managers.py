@@ -160,7 +160,7 @@ class MeldingManager(models.Manager):
                 )
             )
 
-    def status_aanpassen(self, serializer, melding, db="default"):
+    def status_aanpassen(self, serializer, melding, db="default", heropen=False):
         from apps.meldingen.models import Melding
         from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
 
@@ -242,9 +242,13 @@ class MeldingManager(models.Manager):
                 Taakgebeurtenis.objects.bulk_create(taakgebeurtenissen)
 
                 locked_melding.afgesloten_op = timezone.now()
-
-            if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
-                locked_melding.resolutie = resolutie
+                if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
+                    locked_melding.resolutie = resolutie
+            # When reopening melding set afgesloten op to None
+            if heropen:
+                locked_melding.afgesloten_op = None
+                if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
+                    locked_melding.resolutie = resolutie
             locked_melding.save()
 
             transaction.on_commit(
