@@ -34,11 +34,19 @@ USE_I18N = False
 LANGUAGE_CODE = "nl-NL"
 LANGUAGES = [("nl", "Dutch")]
 
+PROTOCOL = "https" if not DEBUG else "http"
+PORT = "" if not DEBUG else ":8002"
+
 DEFAULT_ALLOWED_HOSTS = ".forzamor.nl,localhost,127.0.0.1,.mor.local"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", DEFAULT_ALLOWED_HOSTS).split(",")
 
 SIGNALEN_API = os.getenv("SIGNALEN_API")
 MELDING_API = os.getenv("MELDING_API")
+
+MELDING_VERANDERD_NOTIFICATIE_URL = os.getenv(
+    "MELDING_VERANDERD_NOTIFICATIE_URL", "/api/v1/melding/"
+)
+
 APPLICATIE_BASIS_URL = os.getenv("APPLICATIE_BASIS_URL")
 ALLOW_UNAUTHORIZED_MEDIA_ACCESS = (
     os.getenv("ALLOW_UNAUTHORIZED_MEDIA_ACCESS", False) in TRUE_VALUES

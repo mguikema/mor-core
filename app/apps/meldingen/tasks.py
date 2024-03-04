@@ -24,3 +24,17 @@ def task_notificatie_voor_signaal_melding_afgesloten(self, signaal_id):
     signaal_instantie.notificatie_melding_afgesloten()
 
     return f"Signaal id: {signaal_instantie.pk}"
+
+
+@shared_task(bind=True, base=BaseTaskWithRetry)
+def task_notificatie_voor_melding_veranderd(
+    self, applicatie_id, melding_url, notificatie_type
+):
+    from apps.applicaties.models import Applicatie
+
+    applicatie = Applicatie.objects.get(pk=applicatie_id)
+    notificatie_response = applicatie.melding_veranderd_notificatie_voor_applicatie(
+        melding_url,
+        notificatie_type,
+    )
+    return f"Applicatie id: {applicatie_id}, melding_url={melding_url}, notificatie_type={notificatie_type}, status code={notificatie_response.status_code}"

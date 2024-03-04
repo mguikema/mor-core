@@ -1,7 +1,7 @@
 import logging
 
 from apps.applicaties.models import Applicatie
-from apps.melders.models import Melder
+from apps.services.onderwerpen import OnderwerpenService
 from django.contrib.gis.db import models
 from django.db import OperationalError, transaction
 from django.db.models import Max
@@ -12,8 +12,8 @@ from rest_framework.reverse import reverse
 logger = logging.getLogger(__name__)
 
 signaal_aangemaakt = DjangoSignal()
-aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
+urgentie_aangepast = DjangoSignal()
 afgesloten = DjangoSignal()
 gebeurtenis_toegevoegd = DjangoSignal()
 taakopdracht_aangemaakt = DjangoSignal()
@@ -46,7 +46,7 @@ class MeldingManager(models.Manager):
         pass
 
     def signaal_aanmaken(self, serializer, db="default"):
-        from apps.meldingen.models import Meldinggebeurtenis
+        from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.status.models import Status
 
         logger.info(f"Signaal data: {serializer.validated_data}")
@@ -61,11 +61,18 @@ class MeldingManager(models.Manager):
                 # Als het signaal geen melding relatie heeft, wordt een nieuwe melding aangemaakt
                 melding = self.create(
                     origineel_aangemaakt=signaal.origineel_aangemaakt,
+                    urgentie=signaal.urgentie,
                     omschrijving_kort=signaal.omschrijving_kort,
                     omschrijving=signaal.omschrijving,
                 )
                 for onderwerp in signaal.onderwerpen.all():
                     melding.onderwerpen.add(onderwerp)
+                    onderwerp_response = OnderwerpenService().get_onderwerp(
+                        onderwerp.bron_url
+                    )
+                    if onderwerp_response.get("priority") == "high":
+                        melding.urgentie = 0.5
+
                 for locatie in signaal.locaties_voor_signaal.all():
                     melding.locaties_voor_melding.add(locatie)
 
@@ -91,10 +98,21 @@ class MeldingManager(models.Manager):
                 melding_gebeurtenis_data.update(
                     {
                         "gebeurtenis_type": Meldinggebeurtenis.GebeurtenisType.SIGNAAL_TOEGEVOEGD,
-                        "omschrijving_intern": "Signaal toegevoegd",
+                        "omschrijving_intern": signaal.bron_signaal_id,
                         "signaal": signaal,
                     }
                 )
+                if signaal.urgentie > melding.urgentie:
+                    try:
+                        locked_melding = (
+                            Melding.objects.using(db)
+                            .select_for_update(nowait=True)
+                            .get(pk=melding.pk)
+                        )
+                    except OperationalError:
+                        raise MeldingManager.MeldingInGebruik
+                    locked_melding.urgentie = signaal.urgentie
+                    locked_melding.save()
 
             melding_gebeurtenis_data.update(
                 {
@@ -112,74 +130,45 @@ class MeldingManager(models.Manager):
             )
         return signaal
 
-    def aanmaken(self, signaal_validated_data, signaal_initial_data, db="default"):
-        from apps.meldingen.models import Meldinggebeurtenis
-        from apps.meldingen.serializers import MeldingAanmakenSerializer
-        from apps.signalen.models import Signaal
-        from apps.status.models import Status
-
-        with transaction.atomic():
-            gevalideerde_onderwerpen = []
-            for onderwerp in signaal_validated_data.get("onderwerpen", []):
-                gevalideerde_onderwerpen.append(
-                    {
-                        "bron_url": onderwerp,
-                    }
-                )
-            if not gevalideerde_onderwerpen:
-                raise MeldingManager.OnderwerpenNietValide
-
-            melding_data = {}
-            melding_data.update(signaal_initial_data)
-            signaal_initial_data.pop("bijlagen", None)
-
-            melding_data["onderwerpen"] = gevalideerde_onderwerpen
-            melding_serializer = MeldingAanmakenSerializer(data=melding_data)
-            if melding_serializer.is_valid():
-                melding = melding_serializer.save()
-            else:
-                raise Exception(melding_serializer.errors)
-
-            status_instance = Status()
-            status_instance.melding = melding
-            status_instance.save()
-            melding.status = status_instance
-            melding.save()
-
-            melding_gebeurtenis = Meldinggebeurtenis(
-                melding=melding,
-                gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.MELDING_AANGEMAAKT,
-                status=status_instance,
-                omschrijving_intern="Melding aangemaakt",
-            )
-            melding_gebeurtenis.save()
-
-            signaal = Signaal.objects.create(
-                signaal_url=signaal_initial_data.get("signaal_url"),
-                signaal_data=signaal_initial_data,
-                melding=melding,
-                melder=Melder.objects.create(**signaal_validated_data.get("melder"))
-                if signaal_validated_data.get("melder")
-                else None,
-            )
-
-            transaction.on_commit(
-                lambda: aangemaakt.send_robust(
-                    sender=self.__class__,
-                    melding=melding,
-                    status=status_instance,
-                )
-            )
-        return signaal
-
-    def status_aanpassen(self, serializer, melding, db="default"):
+    def urgentie_aanpassen(self, serializer, melding, db="default"):
         from apps.meldingen.models import Melding
-        from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
 
         if melding.afgesloten_op:
             raise MeldingManager.MeldingAfgeslotenFout(
-                "De status van een afgsloten melding kan niet meer worden veranderd"
+                "De urgentie van een afgesloten melding kan niet meer worden veranderd"
             )
+
+        with transaction.atomic():
+            try:
+                locked_melding = (
+                    Melding.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=melding.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.MeldingInGebruik
+
+            melding_gebeurtenis = serializer.save()
+            vorige_urgentie = locked_melding.urgentie
+            locked_melding.urgentie = melding_gebeurtenis.urgentie
+            locked_melding.save()
+            transaction.on_commit(
+                lambda: urgentie_aangepast.send_robust(
+                    sender=self.__class__,
+                    melding=locked_melding,
+                    vorige_urgentie=vorige_urgentie,
+                )
+            )
+
+    def status_aanpassen(self, serializer, melding, db="default", heropen=False):
+        from apps.meldingen.models import Melding
+        from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
+
+        # Blocks the ability to reopen a melding so commented
+        # if melding.afgesloten_op:
+        #     raise MeldingManager.MeldingAfgeslotenFout(
+        #         "De status van een afgesloten melding kan niet meer worden veranderd"
+        #     )
 
         with transaction.atomic():
             try:
@@ -199,7 +188,12 @@ class MeldingManager(models.Manager):
             locked_melding.status = melding_gebeurtenis.status
 
             # TODO: hoe willen we checken dat de melding afgehandeld wordt
-            if not locked_melding.status.volgende_statussen():
+            # Sluiten van melding en bijbehorende open taken. Zet afgesloten_op.
+            # When reopening "openstaand" is the only volgende status.
+            if (
+                len(locked_melding.status.volgende_statussen()) == 1
+                and locked_melding.status.volgende_statussen()[0] == "openstaand"
+            ) or not locked_melding.status.volgende_statussen():
                 try:
                     locked_taakopdrachten = (
                         Taakopdracht.objects.using(db)
@@ -234,6 +228,7 @@ class MeldingManager(models.Manager):
                     )
                     to.status = taakstatus
                     to.resolutie = "geannuleerd"
+                    to.afgesloten_op = timezone.now()
                     taakgebeurtenissen.append(
                         Taakgebeurtenis(
                             taakopdracht=to,
@@ -247,6 +242,11 @@ class MeldingManager(models.Manager):
                 Taakgebeurtenis.objects.bulk_create(taakgebeurtenissen)
 
                 locked_melding.afgesloten_op = timezone.now()
+                if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
+                    locked_melding.resolutie = resolutie
+            # When reopening melding set afgesloten op to None
+            if heropen:
+                locked_melding.afgesloten_op = None
                 if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
                     locked_melding.resolutie = resolutie
             locked_melding.save()
@@ -481,7 +481,7 @@ class MeldingManager(models.Manager):
                 )
             )
 
-            if taak_status_aanpassen_response.status_code != 200:
+            if taak_status_aanpassen_response.status_code not in [200, 404]:
                 raise Exception(
                     f"De taakstatus kon niet worden aangepast: {locked_taakopdracht.taak_url}status-aanpassen/"
                 )

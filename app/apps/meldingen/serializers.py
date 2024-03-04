@@ -69,6 +69,18 @@ class MeldingGebeurtenisStatusSerializer(WritableNestedModelSerializer):
         read_only_fields = ("aangemaakt_op",)
 
 
+class MeldingGebeurtenisUrgentieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Meldinggebeurtenis
+        fields = (
+            "urgentie",
+            "omschrijving_intern",
+            "gebeurtenis_type",
+            "melding",
+            "gebruiker",
+        )
+
+
 class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
     _links = MeldingGebeurtenisLinksSerializer(source="*", read_only=True)
     bijlagen = BijlageSerializer(many=True, required=False)
@@ -90,6 +102,7 @@ class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
             "taakgebeurtenis",
             "gebruiker",
             "locatie",
+            "urgentie",
         )
         read_only_fields = (
             "_links",
@@ -99,6 +112,7 @@ class MeldinggebeurtenisSerializer(WritableNestedModelSerializer):
             "melding",
             "taakgebeurtenis",
             "locatie",
+            "urgentie",
         )
         validators = []
 
@@ -222,6 +236,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "aangepast_op",
             "origineel_aangemaakt",
             "afgesloten_op",
+            "urgentie",
             "omschrijving_kort",
             "meta",
             "onderwerpen",
@@ -232,6 +247,30 @@ class MeldingSerializer(serializers.ModelSerializer):
             "resolutie",
             "volgende_statussen",
             "aantal_actieve_taken",
+            "laatste_meldinggebeurtenis",
+        )
+        read_only_fields = (
+            "_links",
+            "id",
+            "uuid",
+            "aangemaakt_op",
+            "aangepast_op",
+            "urgentie",
+            "origineel_aangemaakt",
+            "afgesloten_op",
+            "omschrijving",
+            "omschrijving_kort",
+            "meta",
+            "meta_uitgebreid",
+            "onderwerpen",
+            "bijlagen",
+            "locaties_voor_melding",
+            "status",
+            "resolutie",
+            "volgende_statussen",
+            "meldinggebeurtenissen",
+            "taakopdrachten_voor_melding",
+            "signalen_voor_melding",
             "laatste_meldinggebeurtenis",
         )
 
@@ -276,6 +315,31 @@ class MeldingDetailSerializer(MeldingSerializer):
             "uuid",
             "aangemaakt_op",
             "aangepast_op",
+            "origineel_aangemaakt",
+            "afgesloten_op",
+            "urgentie",
+            "omschrijving",
+            "omschrijving_kort",
+            "meta",
+            "meta_uitgebreid",
+            "onderwerpen",
+            "bijlagen",
+            "locaties_voor_melding",
+            "status",
+            "resolutie",
+            "volgende_statussen",
+            "meldinggebeurtenissen",
+            "taakopdrachten_voor_melding",
+            "signalen_voor_melding",
+            "laatste_meldinggebeurtenis",
+        )
+        read_only_fields = (
+            "_links",
+            "id",
+            "uuid",
+            "aangemaakt_op",
+            "aangepast_op",
+            "urgentie",
             "origineel_aangemaakt",
             "afgesloten_op",
             "omschrijving",

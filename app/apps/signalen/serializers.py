@@ -5,6 +5,7 @@ from apps.locatie.serializers import (
     AdresSerializer,
     GrafSerializer,
     LichtmastSerializer,
+    LocatieSerializer,
 )
 from apps.melders.serializers import MelderSerializer
 from apps.meldingen.models import Melding, Meldinggebeurtenis
@@ -139,12 +140,13 @@ class SignaalListSerializer(WritableNestedModelSerializer):
 
 class SignaalSerializer(WritableNestedModelSerializer):
     _links = SignaalLinksSerializer(source="*", read_only=True)
-    graven = GrafSerializer(many=True, required=False)
-    adressen = AdresSerializer(many=True, required=False)
-    lichtmasten = LichtmastSerializer(many=True, required=False)
+    graven = GrafSerializer(many=True, required=False, write_only=True)
+    adressen = AdresSerializer(many=True, required=False, write_only=True)
+    lichtmasten = LichtmastSerializer(many=True, required=False, write_only=True)
     bijlagen = BijlageSerializer(many=True, required=False)
     onderwerpen = OnderwerpAliasSerializer(many=True, required=False)
     melder = MelderSerializer(required=False)
+    locaties_voor_signaal = LocatieSerializer(many=True, read_only=True)
 
     def create(self, validated_data):
         locaties = (("adressen", Adres), ("lichtmasten", Lichtmast), ("graven", Graf))
@@ -169,9 +171,11 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "_links",
             "uuid",
             "signaal_url",
+            "signaal_data",
             "bron_id",
             "bron_signaal_id",
             "origineel_aangemaakt",
+            "urgentie",
             "omschrijving_kort",
             "omschrijving",
             "meta",
@@ -184,8 +188,10 @@ class SignaalSerializer(WritableNestedModelSerializer):
             "graven",
             "aangemaakt_op",
             "melding",
+            "locaties_voor_signaal",
         )
         read_only_fields = (
+            "signaal_data",
             "aangemaakt_op",
             "adressen",
             "lichtmasten",

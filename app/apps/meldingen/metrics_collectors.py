@@ -123,7 +123,12 @@ class CustomCollector(object):
             .annotate(
                 avg_openstaand=Avg(
                     Case(
-                        When(status__naam="voltooid", then=F("afhandeltijd")),
+                        When(
+                            afgesloten_op__isnull=False,
+                            aangemaakt_op__isnull=False,
+                            afhandeltijd__isnull=False,
+                            then=F("afhandeltijd"),
+                        ),
                         default=ExpressionWrapper(
                             timezone.now() - F("aangemaakt_op"),
                             output_field=DurationField(),
@@ -135,15 +140,15 @@ class CustomCollector(object):
         )
 
         for taak in taken:
-            avg_openstaand_duration = taak.get("avg_openstaand")
-            avg_openstaand_seconds = avg_openstaand_duration.total_seconds()
+            if avg_openstaand_duration := taak.get("avg_openstaand"):
+                avg_openstaand_seconds = avg_openstaand_duration.total_seconds()
 
-            c.add_metric(
-                (
-                    taak.get("titel"),
-                    taak.get("status__naam"),
-                    taak.get("highest_weight_wijk"),
-                ),
-                avg_openstaand_seconds,
-            )
+                c.add_metric(
+                    (
+                        taak.get("titel"),
+                        taak.get("status__naam"),
+                        taak.get("highest_weight_wijk"),
+                    ),
+                    avg_openstaand_seconds,
+                )
         return c

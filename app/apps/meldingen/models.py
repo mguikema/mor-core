@@ -3,8 +3,11 @@ import logging
 from apps.bijlagen.models import Bijlage
 from apps.meldingen.managers import MeldingManager
 from apps.meldingen.querysets import MeldingQuerySet
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
+from django.contrib.sites.models import Site
+from rest_framework.reverse import reverse
 from utils.models import BasisModel
 
 logger = logging.getLogger(__name__)
@@ -26,13 +29,15 @@ class Meldinggebeurtenis(BasisModel):
         )
         LOCATIE_AANGEMAAKT = "locatie_aangemaakt", "Locatie aangemaakt"
         SIGNAAL_TOEGEVOEGD = "signaal_toegevoegd", "Signaal toegevoegd"
+        URGENTIE_AANGEPAST = "urgentie_aangepast", "Urgentie aangepast"
+        MELDING_HEROPEND = "melding_heropend", "Melding heropend"
 
     gebeurtenis_type = models.CharField(
         max_length=40,
         choices=GebeurtenisType.choices,
         default=GebeurtenisType.STANDAARD,
     )
-
+    urgentie = models.FloatField(null=True, blank=True)
     bijlagen = GenericRelation(Bijlage)
     status = models.OneToOneField(
         to="status.Status",
@@ -98,9 +103,10 @@ class Melding(BasisModel):
         NIET_OPGELOST = "niet_opgelost", "Niet opgelost"
 
     origineel_aangemaakt = models.DateTimeField()
+    afgesloten_op = models.DateTimeField(null=True, blank=True)
+    urgentie = models.FloatField(default=0.2)
     omschrijving_kort = models.CharField(max_length=500)
     omschrijving = models.CharField(max_length=5000, null=True, blank=True)
-    afgesloten_op = models.DateTimeField(null=True, blank=True)
     meta = models.JSONField(default=dict)
     meta_uitgebreid = models.JSONField(default=dict)
     status = models.OneToOneField(
@@ -139,6 +145,15 @@ class Melding(BasisModel):
 
     def actieve_taakopdrachten(self):
         return self.taakopdrachten_voor_melding.exclude(status__naam="voltooid")
+
+    def get_absolute_url(self):
+        domain = Site.objects.get_current().domain
+        url_basis = f"{settings.PROTOCOL}://{domain}{settings.PORT}"
+        pad = reverse(
+            "v1:melding-detail",
+            kwargs={"uuid": self.uuid},
+        )
+        return f"{url_basis}{pad}"
 
     class Meta:
         verbose_name = "Melding"
