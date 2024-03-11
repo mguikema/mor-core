@@ -74,19 +74,22 @@ class LimitOffsetPagination(DRFLimitOffsetPagination):
 
         for f in fields:
             f = f if isinstance(f, (list, tuple)) else (f,)
-            key = f[1] if len(f) > 1 else f[0]
-            value_lookup_str = f[2] if len(f) > 2 else key
-            fallback_value_lookup_str = f[3] if len(f) > 3 else value_lookup_str
+            key = f[1] if len(f) > 1 and f[1] else f[0]
+            value_lookup_str = f[2] if len(f) > 2 and f[2] else key
+            fallback_value_lookup_str = (
+                f[3] if len(f) > 3 and f[3] else value_lookup_str
+            )
+            group = f[4] if len(f) > 4 and f[4] else key
             f_dict = {
-                ll[0]: (value_lookup(ll[1], ll[0], ll[2], f), 0)
+                ll[0]: (value_lookup(ll[1], ll[0], ll[2], f), ll[3], 0)
                 for ll in qs.order_by(key)
-                .values_list(key, value_lookup_str, fallback_value_lookup_str)
+                .values_list(key, value_lookup_str, fallback_value_lookup_str, group)
                 .distinct(key)
             }
             ff_dict = {
-                fl[0]: (value_lookup(fl[1], fl[0], fl[2], f), fl[3])
+                fl[0]: (value_lookup(fl[1], fl[0], fl[2], f), fl[3], fl[4])
                 for fl in f_qs.order_by(key)
-                .values_list(key, value_lookup_str, fallback_value_lookup_str)
+                .values_list(key, value_lookup_str, fallback_value_lookup_str, group)
                 .annotate(count=Count(key))
             }
             f_dict.update(ff_dict)
