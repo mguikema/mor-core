@@ -77,9 +77,13 @@ class Status(BasisModel):
                     Status.NaamOpties.GEANNULEERD,
                 ]
             case Status.NaamOpties.AFGEHANDELD:
-                return []
+                return [
+                    Status.NaamOpties.OPENSTAAND,
+                ]
             case Status.NaamOpties.GEANNULEERD:
-                return []
+                return [
+                    Status.NaamOpties.OPENSTAAND,
+                ]
             case _:
                 return []
 
