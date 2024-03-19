@@ -16,15 +16,12 @@ class TaakapplicatieAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if obj.pk:
-            logger.info(f"Delete cache key: obj pk: {obj.pk}")
             cache.delete(obj.get_token_cache_key())
-            logger.info(f"Get application object: obj pk: {obj.pk}")
             orig_obj = Applicatie.objects.get(pk=obj.pk)
             if (
                 obj.applicatie_gebruiker_wachtwoord
                 != orig_obj.applicatie_gebruiker_wachtwoord
             ):
-                logger.info(f"Try to encrypt password: obj pk: {obj.pk}")
                 try:
                     obj.encrypt_applicatie_gebruiker_wachtwoord(
                         obj.applicatie_gebruiker_wachtwoord

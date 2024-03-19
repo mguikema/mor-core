@@ -54,9 +54,6 @@ class GetGebruikerAPIView(APIView):
         cache_gebruiker.update({"email": email})
         gebruiker_serializer = GebruikerSerializer(data=cache_gebruiker)
         if gebruiker_serializer.is_valid():
-            logger.info(
-                f"Get gebruiker info: email={email}, data={gebruiker_serializer.validated_data}"
-            )
             return Response(
                 gebruiker_serializer.validated_data, status=status.HTTP_200_OK
             )
@@ -69,7 +66,6 @@ class SetGebruikerAPIView(APIView):
     def post(self, request):
         serializer = GebruikerSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            logger.info(f"Set gebruiker info: data={serializer.validated_data}")
             cache.set(
                 f"gebruiker_{serializer.data.get('email')}",
                 serializer.validated_data,
