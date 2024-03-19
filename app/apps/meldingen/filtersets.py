@@ -171,16 +171,17 @@ class MeldingFilter(BasisFilter):
     urgentie_lte = filters.NumberFilter(field_name="urgentie", lookup_expr="lte")
 
     def get_within(self, queryset, name, value):
-        # ./?within=lat:51.924392,d:100,lon:4.477738
-        logger.info(f"Within raw value: {value}")
+        """
+        ./?within=lat:51.924392,d:100,lon:4.477738
+        """
         try:
             d = {
                 n: float(value.split(f"{n}:")[1].split(",")[0])
                 for n in ["lat", "lon", "d"]
             }
         except Exception:
+            logger.warning(f"Warning: within syntax not ok: {value}")
             return queryset
-        logger.info(f"Within syntax ✅: {d}")
         locaties = Locatie.objects.filter(melding=OuterRef("pk")).order_by("-gewicht")
         return queryset.annotate(geometrie=locaties.values("geometrie")[:1]).filter(
             geometrie__distance_lt=(
@@ -188,12 +189,6 @@ class MeldingFilter(BasisFilter):
                 D(m=d["d"]),
             )
         )
-        # return queryset.filter(
-        #     locaties_voor_melding__geometrie__distance_lt=(
-        #         Point(d["lon"], d["lat"]),
-        #         D(m=d["d"]),
-        #     )
-        # )
 
     def get_begraafplaats_grafnummer(self, queryset, name, value):
         if value:
