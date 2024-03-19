@@ -1,6 +1,10 @@
+import logging
+
 from apps.applicaties.models import Applicatie
 from health_check.backends import BaseHealthCheckBackend
 from health_check.exceptions import HealthCheckException
+
+logger = logging.getLogger(__name__)
 
 
 class ApplicatieTokenAPIHealthCheck(BaseHealthCheckBackend):
@@ -30,8 +34,10 @@ class ApplicatieTokenAPIHealthCheck(BaseHealthCheckBackend):
             }
             try:
                 r["token"] = applicatie._get_token()
-            except Exception:
-                print(applicatie.naam)
+            except Exception as e:
+                logger.error(
+                    f"Error fetching token for applicatie={applicatie.naam}, e={e}"
+                )
 
             r["result"] = (
                 result_waardes[0]
