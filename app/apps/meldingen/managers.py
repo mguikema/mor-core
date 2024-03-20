@@ -49,12 +49,9 @@ class MeldingManager(models.Manager):
         from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.status.models import Status
 
-        logger.info(f"Signaal data: {serializer.validated_data}")
         with transaction.atomic():
             signaal = serializer.save()
             melding = signaal.melding
-            logger.info(f"Signaal: {signaal}")
-            logger.info(f"Melding: {melding}")
             melding_gebeurtenis_data = {}
 
             if not melding:
