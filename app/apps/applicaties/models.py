@@ -107,7 +107,7 @@ class Applicatie(BasisModel):
         ).first()
         if not applicatie:
             applicatie = Applicatie.objects.filter(
-                valide_basis_urls__contains=f"{url_o.scheme}://{url_o.netloc}"
+                valide_basis_urls__contains=[f"{url_o.scheme}://{url_o.netloc}"]
             ).first()
         if not applicatie:
             raise cls.ApplicatieWerdNietGevondenFout(f"uri: {uri}")
@@ -260,14 +260,21 @@ class Applicatie(BasisModel):
         return self._do_request(url, method="patch", data=data)
 
     def notificatie_melding_afgesloten(self, signaal_uri):
-        response = self._do_request(f"{signaal_uri}melding-afgesloten/")
+        melding_afgesloten_url = f"{signaal_uri}melding-afgesloten/"
+        response = self._do_request(melding_afgesloten_url)
         if response.status_code == 200:
             try:
                 return response.json()
-            except Exception:
-                raise Applicatie.NotificatieVoorApplicatieFout(
-                    f"url: '{signaal_uri}melding-afgesloten/', response tekst: {response.text}"
+            except Exception as e:
+                logger.warning(
+                    f"Melding is waarschijnlijk goed afgesloten, maar response is niet van het type json: url='{melding_afgesloten_url}', response tekst={response.text}, error={e}"
                 )
-        raise Applicatie.NotificatieVoorApplicatieFout(
-            f"url: '{signaal_uri}melding-afgesloten/', status code: {response.status_code}"
+
+        if response.status_code == 404:
+            logger.warning(
+                f"Melding kon niet worden afgesloten, vermoedelijk ondersteund de applicatie 'melding afgesloten' niet. url='{melding_afgesloten_url}', status code={response.status_code}, response tekst={response.text}"
+            )
+
+        logger.error(
+            f"Melding kon niet worden afgesloten. '{melding_afgesloten_url}', status code: {response.status_code}, response tekst={response.text}"
         )
