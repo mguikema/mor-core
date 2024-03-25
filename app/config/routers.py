@@ -15,6 +15,6 @@ class DatabaseRouter:
         # relationships between objects from different databases
         return False
 
-    def allow_migrate(self, db, app_label, model_name=None, **hints):
-        # Only allow migrations on the primary
-        return db == settings.DEFAULT_DATABASE_KEY
+    # def allow_migrate(self, db, app_label, model_name=None, **hints):
+    #     # Only allow migrations on the primary
+    #     return False# db == settings.DEFAULT_DATABASE_KEY
