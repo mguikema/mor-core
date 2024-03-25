@@ -17,7 +17,7 @@ class DatabaseRouter:
     def allow_relation(self, obj1, obj2, **hints):
         # We have a fully replicated cluster, so we can allow
         # relationships between objects from different databases
-        return True
+        return False
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         # Only allow migrations on the primary
