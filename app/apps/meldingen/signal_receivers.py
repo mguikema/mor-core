@@ -62,12 +62,17 @@ def gebeurtenis_toegevoegd_handler(
 
 @receiver(taakopdracht_aangemaakt, dispatch_uid="taakopdracht_aangemaakt")
 def taakopdracht_aangemaakt_handler(sender, taakopdracht, melding, *args, **kwargs):
-    ...
+    Applicatie.melding_veranderd_notificatie(
+        melding.get_absolute_url(), "taakopdracht_aangemaakt"
+    )
 
 
 @receiver(taakopdracht_status_aangepast, dispatch_uid="taakopdracht_status_aangepast")
 def taakopdracht_status_aangepast_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
+    Applicatie.melding_veranderd_notificatie(
+        melding.get_absolute_url(), "taakopdracht_status_aangepast"
+    )
     for bijlage in taakgebeurtenis.bijlagen.all():
         task_aanmaken_afbeelding_versies.delay(bijlage.pk)

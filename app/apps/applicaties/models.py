@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def encrypt_gebruiker_wachtwoord(wachtwoord_decrypted):
-    logger.info("Get fernet key from settings")
     f = Fernet(settings.FERNET_KEY)
-    logger.info("Try to encrypt")
     try:
         wachtwoord_encrypted = f.encrypt(wachtwoord_decrypted.encode()).decode()
     except Exception as e:
@@ -103,20 +101,14 @@ class Applicatie(BasisModel):
 
     @classmethod
     def vind_applicatie_obv_uri(cls, uri):
-        logger.info(f"Applicatie vind_applicatie_obv_uri: uri={uri}")
         url_o = urlparse(uri)
-        logger.info(f"url object: {url_o}")
         applicatie = Applicatie.objects.filter(
             basis_url=f"{url_o.scheme}://{url_o.netloc}"
         ).first()
-        logger.info(f"filter resultaat obv basis_url: {applicatie.basis_url}")
         if not applicatie:
             applicatie = Applicatie.objects.filter(
-                valide_basis_urls__contains=f"{url_o.scheme}://{url_o.netloc}"
+                valide_basis_urls__contains=[f"{url_o.scheme}://{url_o.netloc}"]
             ).first()
-        logger.info(
-            f"filter resultaat obv valide_basis_urls__contains: {applicatie.valide_basis_urls}"
-        )
         if not applicatie:
             raise cls.ApplicatieWerdNietGevondenFout(f"uri: {uri}")
         return applicatie
@@ -169,14 +161,8 @@ class Applicatie(BasisModel):
 
     def _get_url(self, url):
         url_o = urlparse(url)
-        logger.info(f"Applicatie GET URL: url={url}, applicatie={self}")
-        logger.info(f"url object: {url_o}")
-        logger.info(
-            f"basis_url: {self.basis_url}, valide_basis_urls: {self.valide_basis_urls}"
-        )
         if not url_o.scheme and not url_o.netloc:
             nieuwe_url = f"{self.basis_url}{url}"
-            logger.info(f"url basis is toegevoegd aan pad: {nieuwe_url}")
             return nieuwe_url
         if (
             f"{url_o.scheme}://{url_o.netloc}" == self.basis_url
@@ -185,7 +171,6 @@ class Applicatie(BasisModel):
             nieuwe_url = (
                 f"{self.basis_url}{url_o.path}{'?' if url_o.query else ''}{url_o.query}"
             )
-            logger.info(f"nieuwe url: {nieuwe_url}")
             return nieuwe_url
         raise Applicatie.ApplicatieBasisUrlFout(
             f"url: {url}, basis_url: {self.basis_url}"
@@ -266,7 +251,7 @@ class Applicatie(BasisModel):
                 return []
             return taaktypes_response.json().get("results", [])
         else:
-            logger.info(
+            logger.error(
                 f"taaktypes voor applicatie '{self.naam}' konden niet worden opgehaald: basis_url ontbreekt"
             )
         return []
@@ -275,14 +260,21 @@ class Applicatie(BasisModel):
         return self._do_request(url, method="patch", data=data)
 
     def notificatie_melding_afgesloten(self, signaal_uri):
-        response = self._do_request(f"{signaal_uri}melding-afgesloten/")
+        melding_afgesloten_url = f"{signaal_uri}melding-afgesloten/"
+        response = self._do_request(melding_afgesloten_url)
         if response.status_code == 200:
             try:
                 return response.json()
-            except Exception:
-                raise Applicatie.NotificatieVoorApplicatieFout(
-                    f"url: '{signaal_uri}melding-afgesloten/', response tekst: {response.text}"
+            except Exception as e:
+                logger.warning(
+                    f"Melding is waarschijnlijk goed afgesloten, maar response is niet van het type json: url='{melding_afgesloten_url}', response tekst={response.text}, error={e}"
                 )
-        raise Applicatie.NotificatieVoorApplicatieFout(
-            f"url: '{signaal_uri}melding-afgesloten/', status code: {response.status_code}"
+
+        if response.status_code == 404:
+            logger.warning(
+                f"Melding kon niet worden afgesloten, vermoedelijk ondersteund de applicatie 'melding afgesloten' niet. url='{melding_afgesloten_url}', status code={response.status_code}, response tekst={response.text}"
+            )
+
+        logger.error(
+            f"Melding kon niet worden afgesloten. '{melding_afgesloten_url}', status code: {response.status_code}, response tekst={response.text}"
         )

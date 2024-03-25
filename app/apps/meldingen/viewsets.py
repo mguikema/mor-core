@@ -154,6 +154,9 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         (
             "buurt",
             "locaties_voor_melding__buurtnaam",
+            None,
+            None,
+            "locaties_voor_melding__wijknaam",
         ),
         (
             "onderwerp",

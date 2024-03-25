@@ -49,7 +49,6 @@ class SignaalViewSet(
         return super().get_serializer_class()
 
     def create(self, request):
-        logger.info(f"Signaal create: data={request.data}")
         serializer = self.serializer_class(
             data=request.data,
             context={"request": request},
@@ -57,7 +56,6 @@ class SignaalViewSet(
         if serializer.is_valid():
             signaal = Melding.acties.signaal_aanmaken(serializer)
             serializer = self.serializer_class(signaal)
-            logger.info(f"Signaal created: serializer.data={serializer.data}")
             return Response(
                 serializer.data,
                 status=status.HTTP_201_CREATED,
