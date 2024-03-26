@@ -15,6 +15,8 @@ from apps.meldingen.serializers import (
     MeldingSerializer,
 )
 from apps.taken.serializers import TaakopdrachtSerializer
+from config.context import db
+from django.conf import settings
 from django.db.models.query import QuerySet
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
@@ -121,6 +123,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "signalen_voor_melding",
             "bijlagen",
             "onderwerpen",
+            "meldinggebeurtenissen_voor_melding__bijlagen",
         )
         .all()
     )
@@ -187,6 +190,14 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == "retrieve":
             return self.serializer_detail_class
         return super().get_serializer_class()
+
+    def list(self, request):
+        with db(settings.READONLY_DATABASE_KEY):
+            return super().list(request)
+
+    def retrieve(self, request, uuid=None):
+        with db(settings.READONLY_DATABASE_KEY):
+            return super().retrieve(request, uuid)
 
     @extend_schema(
         description="Verander de status van een melding",

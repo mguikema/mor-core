@@ -14,6 +14,8 @@ from apps.signalen.serializers import SignaalMeldingListSerializer, SignaalSeria
 from apps.status.serializers import StatusSerializer
 from apps.taken.models import Taakgebeurtenis
 from apps.taken.serializers import TaakgebeurtenisSerializer, TaakopdrachtSerializer
+from config.context import db
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
@@ -161,70 +163,74 @@ class MeldingAanmakenSerializer(WritableNestedModelSerializer):
         return melding
 
 
+class OnderwerpBronUrlField(serializers.RelatedField):
+    def to_representation(self, value):
+        return value.bron_url
+
+
 class MeldingSerializer(serializers.ModelSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     status = StatusSerializer(read_only=True)
-    volgende_statussen = serializers.ListField(
-        source="status.volgende_statussen",
-        child=serializers.CharField(),
-        read_only=True,
-    )
     bijlage = serializers.SerializerMethodField()
     aantal_actieve_taken = serializers.SerializerMethodField()
     laatste_meldinggebeurtenis = serializers.SerializerMethodField()
-    onderwerpen = serializers.SerializerMethodField()
+    onderwerpen = OnderwerpBronUrlField(many=True, read_only=True)
     signalen_voor_melding = SignaalMeldingListSerializer(many=True, read_only=True)
 
     @extend_schema_field(BijlageSerializer)
     def get_bijlage(self, obj):
-        taakgebeurtenissen_voor_melding = Taakgebeurtenis.objects.all().filter(
-            taakopdracht__in=obj.taakopdrachten_voor_melding.all()
-        )
-        return BijlageSerializer(
-            Bijlage.objects.filter(
-                Q(
-                    object_id__in=obj.meldinggebeurtenissen_voor_melding.all().values_list(
-                        "id", flat=True
-                    ),
-                    content_type=ContentType.objects.get_for_model(Meldinggebeurtenis),
-                )
-                | Q(
-                    object_id__in=taakgebeurtenissen_voor_melding.values_list(
-                        "id", flat=True
-                    ),
-                    content_type=ContentType.objects.get_for_model(Taakgebeurtenis),
-                )
-                | Q(
-                    object_id__in=obj.signalen_voor_melding.all().values_list(
-                        "id", flat=True
-                    ),
-                    content_type=ContentType.objects.get_for_model(Signaal),
-                )
-                | Q(
-                    object_id=obj.id,
-                    content_type=ContentType.objects.get_for_model(Melding),
-                )
+        with db(settings.READONLY_DATABASE_KEY):
+            print(obj.taakopdrachten_special)
+            taakgebeurtenissen_voor_melding = Taakgebeurtenis.objects.all().filter(
+                taakopdracht__in=obj.taakopdrachten_voor_melding.all()
             )
-            .order_by("aangemaakt_op")
-            .first()
-        ).data
-
-    @extend_schema_field(OpenApiTypes.URI)
-    def get_onderwerpen(self, obj):
-        return obj.onderwerpen.values_list("bron_url", flat=True)
+            return BijlageSerializer(
+                Bijlage.objects.filter(
+                    Q(
+                        object_id__in=obj.meldinggebeurtenissen_voor_melding.all().values_list(
+                            "id", flat=True
+                        ),
+                        content_type=ContentType.objects.get_for_model(
+                            Meldinggebeurtenis
+                        ),
+                    )
+                    | Q(
+                        object_id__in=taakgebeurtenissen_voor_melding.values_list(
+                            "id", flat=True
+                        ),
+                        content_type=ContentType.objects.get_for_model(Taakgebeurtenis),
+                    )
+                    | Q(
+                        object_id__in=obj.signalen_voor_melding.all().values_list(
+                            "id", flat=True
+                        ),
+                        content_type=ContentType.objects.get_for_model(Signaal),
+                    )
+                    | Q(
+                        object_id=obj.id,
+                        content_type=ContentType.objects.get_for_model(Melding),
+                    )
+                )
+                .order_by("aangemaakt_op")
+                .first()
+            ).data
 
     @extend_schema_field(OpenApiTypes.INT)
     def get_aantal_actieve_taken(self, obj):
-        return obj.actieve_taakopdrachten().count()
+        with db(settings.READONLY_DATABASE_KEY):
+            return obj.taakopdrachten_voor_melding.exclude(
+                status__naam="voltooid"
+            ).count()
 
     def get_laatste_meldinggebeurtenis(self, obj):
-        meldinggebeurtenis = (
-            obj.meldinggebeurtenissen_voor_melding.all()
-            .order_by("-aangemaakt_op")
-            .first()
-        )
-        return MeldinggebeurtenisSerializer(meldinggebeurtenis).data
+        with db(settings.READONLY_DATABASE_KEY):
+            meldinggebeurtenis = (
+                obj.meldinggebeurtenissen_voor_melding.all()
+                .order_by("-aangemaakt_op")
+                .first()
+            )
+            return MeldinggebeurtenisSerializer(meldinggebeurtenis).data
 
     class Meta:
         model = Melding
@@ -245,7 +251,6 @@ class MeldingSerializer(serializers.ModelSerializer):
             "signalen_voor_melding",
             "status",
             "resolutie",
-            "volgende_statussen",
             "aantal_actieve_taken",
             "laatste_meldinggebeurtenis",
         )
@@ -263,13 +268,10 @@ class MeldingSerializer(serializers.ModelSerializer):
             "meta",
             "meta_uitgebreid",
             "onderwerpen",
-            "bijlagen",
+            "bijlage",
             "locaties_voor_melding",
             "status",
             "resolutie",
-            "volgende_statussen",
-            "meldinggebeurtenissen",
-            "taakopdrachten_voor_melding",
             "signalen_voor_melding",
             "laatste_meldinggebeurtenis",
         )
