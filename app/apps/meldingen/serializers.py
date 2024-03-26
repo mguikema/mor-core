@@ -306,7 +306,7 @@ class MeldingDetailSerializer(MeldingSerializer):
     )
     taakopdrachten_voor_melding = TaakopdrachtSerializer(many=True, read_only=True)
     signalen_voor_melding = SignaalSerializer(many=True, read_only=True)
-    onderwerpen = serializers.SerializerMethodField()
+    onderwerpen = OnderwerpBronUrlField(many=True, read_only=True)
 
     class Meta:
         model = Melding
