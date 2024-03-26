@@ -21,6 +21,7 @@ FERNET_KEY = os.getenv(
 
 
 GIT_SHA = os.getenv("GIT_SHA")
+DEPLOY_DATE = os.getenv("DEPLOY_DATE", "")
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 DEBUG = ENVIRONMENT == "development"
 
@@ -76,8 +77,9 @@ INSTALLED_APPS = (
     "django_extensions",
     "django_spaghetti",
     "health_check",
-    "health_check.db",
     "health_check.cache",
+    "health_check.storage",
+    "health_check.db",
     "health_check.contrib.migrations",
     "health_check.contrib.celery_ping",
     "sorl.thumbnail",

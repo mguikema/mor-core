@@ -50,6 +50,7 @@
   {% block content %}
     <h1>System status</h1>
     <small>git sha: {{ GIT_SHA }}</small>
+    {% if DEPLOY_DATE %}<br/><small>Deploy date: {{ DEPLOY_DATE }}</small>{% endif %}
     <table>
       <thead>
         <th colspan="2">Service</th>
