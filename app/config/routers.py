@@ -17,7 +17,11 @@ def set_active_db(connection_name):
 class DatabaseRouter:
     @staticmethod
     def _get_db(*args, **kwargs):
-        db = get_active_db()
+        db = (
+            get_active_db()
+            if settings.ENVIRONMENT not in ["test"]
+            else settings.DEFAULT_DATABASE_KEY
+        )
         return db
 
     db_for_read = _get_db

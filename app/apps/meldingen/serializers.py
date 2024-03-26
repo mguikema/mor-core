@@ -181,7 +181,6 @@ class MeldingSerializer(serializers.ModelSerializer):
     @extend_schema_field(BijlageSerializer)
     def get_bijlage(self, obj):
         with db(settings.READONLY_DATABASE_KEY):
-            print(obj.taakopdrachten_special)
             taakgebeurtenissen_voor_melding = Taakgebeurtenis.objects.all().filter(
                 taakopdracht__in=obj.taakopdrachten_voor_melding.all()
             )
