@@ -59,8 +59,9 @@ class MeldingManager(models.Manager):
                 melding = self.create(
                     origineel_aangemaakt=signaal.origineel_aangemaakt,
                     urgentie=signaal.urgentie,
-                    omschrijving_kort=signaal.omschrijving_kort,
-                    omschrijving=signaal.omschrijving,
+                    omschrijving_melder=signaal.omschrijving_melder,
+                    aanvullende_informatie=signaal.aanvullende_informatie,
+                    aanvullende_vragen=signaal.aanvullende_vragen,
                 )
                 for onderwerp in signaal.onderwerpen.all():
                     melding.onderwerpen.add(onderwerp)

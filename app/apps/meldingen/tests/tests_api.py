@@ -36,8 +36,12 @@ class SignaalApiTest(APITestCase):
                 "bron_url": "https://onderwerpen-acc.forzamor.nl/api/v1/group/41202ca5-929f-423b-9b46-b9127e0a19e0/category/ca1c979e-ab3a-4ca2-8f02-e93fda448c15/"
             }
         ],
-        "omschrijving_kort": "string",
-        "omschrijving": "string",
+        "omschrijving_melder": "string",
+        "aanvullende_informatie": "string",
+        "aanvullende_vragen": [
+            {"question": "Wat voor grofvuil ligt er?", "answer": "Iets anders"},
+            {"question": "Waar ligt het grofvuil?", "answer": "Op straat"},
+        ],
         "meta": {
             "additionalProp1": "string",
             "additionalProp2": "string",

@@ -105,8 +105,9 @@ class Melding(BasisModel):
     origineel_aangemaakt = models.DateTimeField()
     afgesloten_op = models.DateTimeField(null=True, blank=True)
     urgentie = models.FloatField(default=0.2)
-    omschrijving_kort = models.CharField(max_length=500)
-    omschrijving = models.CharField(max_length=5000, null=True, blank=True)
+    omschrijving_melder = models.CharField(max_length=500)
+    aanvullende_informatie = models.CharField(max_length=5000, null=True, blank=True)
+    aanvullende_vragen = models.JSONField(default=list)
     meta = models.JSONField(default=dict)
     meta_uitgebreid = models.JSONField(default=dict)
     status = models.OneToOneField(
