@@ -30,7 +30,7 @@ class MeldingFactory(factory.django.DjangoModelFactory):
         model = Melding
 
     origineel_aangemaakt = factory.Faker("date_time_this_decade")
-    omschrijving_kort = factory.Faker("sentence")
+    omschrijving_melder = factory.Faker("sentence")
     # Add other fields as needed
 
 
