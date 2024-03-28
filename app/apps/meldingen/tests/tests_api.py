@@ -39,8 +39,11 @@ class SignaalApiTest(APITestCase):
         "omschrijving_melder": "string",
         "aanvullende_informatie": "string",
         "aanvullende_vragen": [
-            {"question": "Wat voor grofvuil ligt er?", "answer": "Iets anders"},
-            {"question": "Waar ligt het grofvuil?", "answer": "Op straat"},
+            {
+                "question": "Wat voor grofvuil ligt er?",
+                "answers": ["Karton", "Iets anders"],
+            },
+            {"question": "Waar ligt het grofvuil?", "answers": ["Op straat"]},
         ],
         "meta": {
             "additionalProp1": "string",

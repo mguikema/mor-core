@@ -19,37 +19,13 @@ class BaseTaskWithRetry(celery.Task):
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def task_notificatie_voor_signaal_melding_afgesloten(self, signaal_id):
+def convert_aanvullende_informatie_to_aanvullende_vragen(self, signaal_ids):
     from apps.signalen.models import Signaal
 
-    signaal_instantie = Signaal.objects.get(pk=signaal_id)
-    signaal_instantie.notificatie_melding_afgesloten()
-
-    return f"Signaal id: {signaal_instantie.pk}"
-
-
-@shared_task(bind=True, base=BaseTaskWithRetry)
-def task_notificatie_voor_melding_veranderd(
-    self, applicatie_id, melding_url, notificatie_type
-):
-    from apps.applicaties.models import Applicatie
-
-    applicatie = Applicatie.objects.get(pk=applicatie_id)
-    notificatie_response = applicatie.melding_veranderd_notificatie_voor_applicatie(
-        melding_url,
-        notificatie_type,
-    )
-    return f"Applicatie id: {applicatie_id}, melding_url={melding_url}, notificatie_type={notificatie_type}, status code={notificatie_response.status_code}"
-
-
-@shared_task(bind=True, base=BaseTaskWithRetry)
-def convert_aanvullende_informatie_to_aanvullende_vragen(self, melding_ids):
-    from apps.meldingen.models import Melding
-
-    for melding_id in melding_ids:
-        melding = Melding.objects.get(pk=melding_id)
+    for signaal_id in signaal_ids:
+        signaal = Signaal.objects.get(pk=signaal_id)
         try:
-            aanvullende_informatie = melding.aanvullende_informatie
+            aanvullende_informatie = signaal.aanvullende_informatie
             print(f"Aanvullende informatie: {aanvullende_informatie}")
             if aanvullende_informatie:
                 lines = aanvullende_informatie.strip().split("\\n")
@@ -81,13 +57,13 @@ def convert_aanvullende_informatie_to_aanvullende_vragen(self, melding_ids):
                     aanvullende_vragen.append(
                         {"question": question.strip(), "answers": answers}
                     )
-                melding.aanvullende_vragen = json.dumps(aanvullende_vragen)
-                print(f"Aanvullende vragen end: {melding.aanvullende_vragen}")
-                melding.save()
+                signaal.aanvullende_vragen = json.dumps(aanvullende_vragen)
+                print(f"Aanvullende vragen end: {signaal.aanvullende_vragen}")
+                signaal.save()
         except Exception as e:
             print(
-                f"Error converting aanvullende_informatie to aanvullende_vragen for melding {melding.pk}: {e}"
+                f"Error converting aanvullende_informatie to aanvullende_vragen for signaal {signaal.pk}: {e}"
             )
             logger.error(
-                f"Error converting aanvullende_informatie to aanvullende_vragen for melding {melding.pk}: {e}"
+                f"Error converting aanvullende_informatie to aanvullende_vragen for signaal {signaal.pk}: {e}"
             )
