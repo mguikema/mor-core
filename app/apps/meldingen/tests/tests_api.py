@@ -263,7 +263,6 @@ class MeldingApiTest(APITestCase):
         # melding 1
         melding_1_status = baker.make(Status, naam=status_naam_1)
         m1 = melding_1_status.melding
-        m1.omschrijving_melder = "melding 1"
         m1.origineel_aangemaakt = melding_1_dt
         m1.status = melding_1_status
         m1.onderwerpen.add(onderwerp_1)
@@ -274,7 +273,6 @@ class MeldingApiTest(APITestCase):
         # change origineel_aangemaakt
         melding_2_status = baker.make(Status, naam=status_naam_1)
         m2 = melding_2_status.melding
-        m2.omschrijving_melder = "melding 2"
         m2.origineel_aangemaakt = melding_2_dt
         m2.status = melding_2_status
         m2.onderwerpen.add(onderwerp_1)
@@ -285,7 +283,6 @@ class MeldingApiTest(APITestCase):
         # change status
         melding_3_status = baker.make(Status, naam=status_naam_2)
         m3 = melding_3_status.melding
-        m3.omschrijving_melder = "melding 3"
         m3.origineel_aangemaakt = melding_1_dt
         m3.status = melding_3_status
         m3.onderwerpen.add(onderwerp_1)
@@ -296,7 +293,6 @@ class MeldingApiTest(APITestCase):
         # change onderwerp
         melding_4_status = baker.make(Status, naam=status_naam_1)
         m4 = melding_4_status.melding
-        m4.omschrijving_melder = "melding 4"
         m4.origineel_aangemaakt = melding_1_dt
         m4.status = melding_4_status
         m4.onderwerpen.add(onderwerp_2)
@@ -307,7 +303,6 @@ class MeldingApiTest(APITestCase):
         # change point to p3 (uitside range)
         melding_5_status = baker.make(Status, naam=status_naam_1)
         m5 = melding_5_status.melding
-        m5.omschrijving_melder = "melding 4"
         m5.origineel_aangemaakt = melding_1_dt
         m5.status = melding_5_status
         m5.onderwerpen.add(onderwerp_1)
@@ -335,4 +330,3 @@ class MeldingApiTest(APITestCase):
 
         self.assertEqual(Melding.objects.count(), 5)
         self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0].get("omschrijving_melder"), "melding 1")

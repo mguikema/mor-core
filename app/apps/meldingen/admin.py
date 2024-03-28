@@ -1,8 +1,5 @@
 from apps.meldingen.models import Melding, Meldinggebeurtenis
-from apps.meldingen.tasks import (
-    convert_aanvullende_informatie_to_aanvullende_vragen,
-    task_notificatie_voor_signaal_melding_afgesloten,
-)
+from apps.meldingen.tasks import task_notificatie_voor_signaal_melding_afgesloten
 from apps.status.models import Status
 from django.contrib import admin
 
@@ -31,21 +28,7 @@ class MeldingAdmin(admin.ModelAdmin):
         "afgesloten_op",
     )
 
-    # Define the custom admin action
-    def convert_to_aanvullende_vragen(self, request, queryset):
-        melding_ids = queryset.values_list("id", flat=True)
-        convert_aanvullende_informatie_to_aanvullende_vragen(melding_ids)
-        self.message_user(request, "Conversion started for selected meldingen.")
-
-    convert_to_aanvullende_vragen.short_description = (
-        "Convert aanvullende informatie to aanvullende vragen"
-    )
-
-    # Register the admin action
-    actions = (
-        action_notificatie_voor_signaal_melding_afgesloten,
-        convert_to_aanvullende_vragen,
-    )
+    actions = (action_notificatie_voor_signaal_melding_afgesloten,)
 
     def status_naam(self, obj):
         try:

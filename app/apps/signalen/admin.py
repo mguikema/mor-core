@@ -18,8 +18,8 @@ class SignaalAdmin(admin.ModelAdmin):
 
     # Define the custom admin action
     def convert_to_aanvullende_vragen(self, request, queryset):
-        signaal_ids = queryset.values_list("id", flat=True)
-        convert_aanvullende_informatie_to_aanvullende_vragen(signaal_ids)
+        signaal_ids = list(queryset.values_list("id", flat=True))
+        convert_aanvullende_informatie_to_aanvullende_vragen.delay(signaal_ids)
         self.message_user(request, "Conversion started for selected signaals.")
 
     convert_to_aanvullende_vragen.short_description = (
@@ -27,7 +27,7 @@ class SignaalAdmin(admin.ModelAdmin):
     )
 
     # Register the admin action
-    actions = ["convert_to_aanvullende_vragen"]
+    actions = [convert_to_aanvullende_vragen]
 
 
 admin.site.register(Signaal, SignaalAdmin)
