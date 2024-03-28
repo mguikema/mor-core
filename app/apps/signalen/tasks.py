@@ -39,7 +39,7 @@ def convert_aanvullende_informatie_to_aanvullende_vragen(self, signaal_ids):
                     if "?" in line:
                         if question:
                             aanvullende_vragen.append(
-                                {"question": question.strip(), "answers": answers}
+                                {"question": f"{question.strip()}?", "answers": answers}
                             )
                             answers = []
                         question, *temp_answers = line.split("?")
@@ -55,7 +55,7 @@ def convert_aanvullende_informatie_to_aanvullende_vragen(self, signaal_ids):
                 if question and answers:
                     print(f"Question: {question}")
                     aanvullende_vragen.append(
-                        {"question": question.strip(), "answers": answers}
+                        {"question": f"{question.strip()}?", "answers": answers}
                     )
                 signaal.aanvullende_vragen = json.dumps(aanvullende_vragen)
                 print(f"Aanvullende vragen end: {signaal.aanvullende_vragen}")
