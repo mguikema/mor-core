@@ -1,5 +1,5 @@
 from apps.aliassen.serializers import OnderwerpAliasSerializer
-from apps.bijlagen.serializers import BijlageSerializer
+from apps.bijlagen.serializers import BijlageAlleenLezenSerializer, BijlageSerializer
 from apps.locatie.models import Adres, Graf, Lichtmast
 from apps.locatie.serializers import (
     AdresSerializer,
@@ -68,7 +68,7 @@ class StatusSignaalSerializer(serializers.ModelSerializer):
 class MeldingSignaalSerializer(serializers.ModelSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     status = StatusSignaalSerializer(read_only=True)
-    laatste_meldinggebeurtenis = serializers.SerializerMethodField()
+    # laatste_meldinggebeurtenis = serializers.SerializerMethodField()
 
     @extend_schema_field(MeldinggebeurtenisSignaalSerializer)
     def get_laatste_meldinggebeurtenis(self, obj):
@@ -90,12 +90,13 @@ class MeldingSignaalSerializer(serializers.ModelSerializer):
             "afgesloten_op",
             "status",
             "resolutie",
-            "laatste_meldinggebeurtenis",
+            # "laatste_meldinggebeurtenis",
         )
 
 
 class SignaalMeldingListSerializer(serializers.ModelSerializer):
     _links = SignaalLinksSerializer(source="*", read_only=True)
+    bijlagen = BijlageAlleenLezenSerializer(many=True, read_only=True)  # OK
 
     class Meta:
         model = Signaal
@@ -104,6 +105,7 @@ class SignaalMeldingListSerializer(serializers.ModelSerializer):
             "bron_id",
             "bron_signaal_id",
             "aangemaakt_op",
+            "bijlagen",
         )
         read_only_fields = (
             "_links",
