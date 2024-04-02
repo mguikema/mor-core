@@ -277,6 +277,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "aangepast_op",
             "urgentie",
             "origineel_aangemaakt",
+            "omschrijving_kort",
             "afgesloten_op",
             "meta",
             "meta_uitgebreid",
