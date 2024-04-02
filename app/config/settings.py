@@ -378,6 +378,16 @@ THUMBNAIL_STANDAARD = "1480x1480"
 BESTANDEN_PREFIX = "bestanden"
 
 
+def show_debug_toolbar(request):
+    return DEBUG and os.getenv("SHOW_DEBUG_TOOLBAR") in TRUE_VALUES
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": show_debug_toolbar,
+    "INSERT_BEFORE": "</head>",
+}
+
+
 LOG_LEVEL = "DEBUG" if DEBUG else "INFO"
 
 LOGGING = {

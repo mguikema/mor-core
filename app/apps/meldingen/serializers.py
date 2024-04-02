@@ -1,6 +1,6 @@
 from apps.aliassen.serializers import OnderwerpAliasSerializer
 from apps.bijlagen.models import Bijlage
-from apps.bijlagen.serializers import BijlageSerializer
+from apps.bijlagen.serializers import BijlageAlleenLezenSerializer, BijlageSerializer
 from apps.locatie.models import Adres, Graf, Lichtmast
 from apps.locatie.serializers import (
     AdresSerializer,
@@ -9,15 +9,10 @@ from apps.locatie.serializers import (
     LocatieRelatedField,
 )
 from apps.meldingen.models import Melding, Meldinggebeurtenis
-from apps.signalen.models import Signaal
 from apps.signalen.serializers import SignaalMeldingListSerializer, SignaalSerializer
 from apps.status.serializers import StatusSerializer
-from apps.taken.models import Taakgebeurtenis
+from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
 from apps.taken.serializers import TaakgebeurtenisSerializer, TaakopdrachtSerializer
-from config.context import db
-from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from drf_writable_nested.serializers import WritableNestedModelSerializer
@@ -166,68 +161,93 @@ class OnderwerpBronUrlField(serializers.RelatedField):
         return value.bron_url
 
 
+class MeldinggebeurtenisMeldingLijstSerializer(serializers.ModelSerializer):
+    bijlagen = BijlageAlleenLezenSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Meldinggebeurtenis
+        fields = (
+            "omschrijving_extern",
+            "bijlagen",
+        )
+        read_only_fields = ("omschrijving_extern",)
+
+
+class TaakopdrachtStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Taakstatus
+        fields = ("naam",)
+
+
+class TaakgebeurtenisMeldingLijstSerializer(TaakgebeurtenisSerializer):
+    bijlagen = BijlageAlleenLezenSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Taakgebeurtenis
+        fields = ("bijlagen",)
+
+
+class TaakopdrachtMeldingLijstSerializer(serializers.ModelSerializer):
+    status = TaakopdrachtStatusSerializer(read_only=True)
+    taakgebeurtenissen_voor_taakopdracht = TaakgebeurtenisMeldingLijstSerializer(
+        many=True, read_only=True
+    )
+
+    class Meta:
+        model = Taakopdracht
+        fields = (
+            "titel",
+            "resolutie",
+            "status",
+            "taakgebeurtenissen_voor_taakopdracht",
+        )
+
+
+class BijlageRecentSerializer(BijlageSerializer):
+    class Meta:
+        model = Bijlage
+        fields = (
+            "afbeelding",
+            "afbeelding_verkleind",
+            "is_afbeelding",
+            "afbeelding_relative_url",
+            "afbeelding_verkleind_relative_url",
+        )
+        read_only_fields = (
+            "afbeelding",
+            "afbeelding_verkleind",
+            "is_afbeelding",
+            "afbeelding_relative_url",
+            "afbeelding_verkleind_relative_url",
+        )
+
+    def to_representation(self, instance):
+        print("to_representation")
+        representation = super().to_representation(
+            instance.order_by("-aangemaakt_op").first()
+        )
+        return representation
+
+
 class MeldingSerializer(serializers.ModelSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
-    locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     status = StatusSerializer(read_only=True)
-    bijlage = serializers.SerializerMethodField()
-    aantal_actieve_taken = serializers.SerializerMethodField()
-    laatste_meldinggebeurtenis = serializers.SerializerMethodField()
     onderwerpen = OnderwerpBronUrlField(many=True, read_only=True)
     signalen_voor_melding = SignaalMeldingListSerializer(many=True, read_only=True)
+    taakopdrachten_voor_melding = TaakopdrachtMeldingLijstSerializer(
+        many=True, read_only=True
+    )
+    locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
+    bijlagen = BijlageAlleenLezenSerializer(many=True, read_only=True)
+    meldinggebeurtenissen_voor_melding = MeldinggebeurtenisMeldingLijstSerializer(
+        many=True, read_only=True
+    )
 
-    @extend_schema_field(BijlageSerializer)
-    def get_bijlage(self, obj):
-        with db(settings.READONLY_DATABASE_KEY):
-            taakgebeurtenissen_voor_melding = Taakgebeurtenis.objects.all().filter(
-                taakopdracht__in=obj.taakopdrachten_voor_melding.all()
-            )
-            return BijlageSerializer(
-                Bijlage.objects.filter(
-                    Q(
-                        object_id__in=obj.meldinggebeurtenissen_voor_melding.all().values_list(
-                            "id", flat=True
-                        ),
-                        content_type=ContentType.objects.get_for_model(
-                            Meldinggebeurtenis
-                        ),
-                    )
-                    | Q(
-                        object_id__in=taakgebeurtenissen_voor_melding.values_list(
-                            "id", flat=True
-                        ),
-                        content_type=ContentType.objects.get_for_model(Taakgebeurtenis),
-                    )
-                    | Q(
-                        object_id__in=obj.signalen_voor_melding.all().values_list(
-                            "id", flat=True
-                        ),
-                        content_type=ContentType.objects.get_for_model(Signaal),
-                    )
-                    | Q(
-                        object_id=obj.id,
-                        content_type=ContentType.objects.get_for_model(Melding),
-                    )
-                )
-                .order_by("aangemaakt_op")
-                .first()
-            ).data
-
-    @extend_schema_field(OpenApiTypes.INT)
-    def get_aantal_actieve_taken(self, obj):
-        with db(settings.READONLY_DATABASE_KEY):
-            return obj.taakopdrachten_voor_melding.exclude(
-                status__naam="voltooid"
-            ).count()
-
-    def get_laatste_meldinggebeurtenis(self, obj):
-        with db(settings.READONLY_DATABASE_KEY):
-            meldinggebeurtenis = (
-                obj.meldinggebeurtenissen_voor_melding.all()
-                .order_by("-aangemaakt_op")
-                .first()
-            )
-            return MeldinggebeurtenisSerializer(meldinggebeurtenis).data
+    def get_meldinggebeurtenissen_voor_melding(self, instance):
+        songs = instance.meldinggebeurtenissen_voor_melding.all().order_by(
+            "-aangemaakt_op"
+        )
+        return MeldinggebeurtenisMeldingLijstSerializer(songs, many=True).data
 
     class Meta:
         model = Melding
@@ -240,34 +260,28 @@ class MeldingSerializer(serializers.ModelSerializer):
             "origineel_aangemaakt",
             "afgesloten_op",
             "urgentie",
+            "bijlagen",
             "meta",
             "onderwerpen",
-            "bijlage",
             "locaties_voor_melding",
             "signalen_voor_melding",
             "status",
             "resolutie",
-            "aantal_actieve_taken",
-            "laatste_meldinggebeurtenis",
+            "taakopdrachten_voor_melding",
+            "meldinggebeurtenissen_voor_melding",
         )
         read_only_fields = (
-            "_links",
             "id",
             "uuid",
             "aangemaakt_op",
             "aangepast_op",
             "urgentie",
             "origineel_aangemaakt",
+            "omschrijving_kort",
             "afgesloten_op",
             "meta",
             "meta_uitgebreid",
-            "onderwerpen",
-            "bijlage",
-            "locaties_voor_melding",
-            "status",
             "resolutie",
-            "signalen_voor_melding",
-            "laatste_meldinggebeurtenis",
         )
 
     def to_representation(self, instance):
@@ -325,7 +339,7 @@ class MeldingDetailSerializer(MeldingSerializer):
             "meldinggebeurtenissen",
             "taakopdrachten_voor_melding",
             "signalen_voor_melding",
-            "laatste_meldinggebeurtenis",
+            # "laatste_meldinggebeurtenis",
         )
         read_only_fields = (
             "_links",
@@ -347,5 +361,5 @@ class MeldingDetailSerializer(MeldingSerializer):
             "meldinggebeurtenissen",
             "taakopdrachten_voor_melding",
             "signalen_voor_melding",
-            "laatste_meldinggebeurtenis",
+            # "laatste_meldinggebeurtenis",
         )

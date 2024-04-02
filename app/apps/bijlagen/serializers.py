@@ -49,3 +49,35 @@ class BijlageSerializer(serializers.ModelSerializer):
             "afbeelding_relative_url",
             "afbeelding_verkleind_relative_url",
         )
+
+
+class BijlageAlleenLezenSerializer(serializers.ModelSerializer):
+    """
+    Alleen lezen Bijlage serializer
+    """
+
+    afbeelding_relative_url = serializers.SerializerMethodField()
+    afbeelding_verkleind_relative_url = serializers.SerializerMethodField()
+
+    def get_afbeelding_relative_url(self, obj):
+        return obj.afbeelding.url if obj.afbeelding else None
+
+    def get_afbeelding_verkleind_relative_url(self, obj):
+        return obj.afbeelding_verkleind.url if obj.afbeelding_verkleind else None
+
+    class Meta:
+        model = Bijlage
+        fields = (
+            "aangemaakt_op",
+            "afbeelding",
+            "afbeelding_verkleind",
+            "afbeelding_relative_url",
+            "afbeelding_verkleind_relative_url",
+        )
+        read_only_fields = (
+            "aangemaakt_op",
+            "afbeelding",
+            "afbeelding_verkleind",
+            "afbeelding_relative_url",
+            "afbeelding_verkleind_relative_url",
+        )

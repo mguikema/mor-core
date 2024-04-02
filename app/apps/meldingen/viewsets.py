@@ -120,10 +120,12 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
         .prefetch_related(
             "locaties_voor_melding",
-            "signalen_voor_melding",
+            "signalen_voor_melding__bijlagen",
             "bijlagen",
             "onderwerpen",
             "meldinggebeurtenissen_voor_melding__bijlagen",
+            "taakopdrachten_voor_melding__status",
+            "taakopdrachten_voor_melding__taakgebeurtenissen_voor_taakopdracht__bijlagen",
         )
         .all()
     )
@@ -138,21 +140,12 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = "__all_related__"
     filterset_class = MeldingFilter
     pre_filterset_class = MeldingPreFilter
-
     filter_options_fields = (
         (
             "begraafplaats",
             "locaties_voor_melding__begraafplaats",
             "meta_uitgebreid__begraafplaats__choices",
             "signalen_voor_melding__meta_uitgebreid__begraafplaats__choices",
-        ),
-        (
-            "status",
-            "status__naam",
-        ),
-        (
-            "wijk",
-            "locaties_voor_melding__wijknaam",
         ),
         (
             "buurt",
