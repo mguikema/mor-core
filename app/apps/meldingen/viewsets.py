@@ -140,7 +140,6 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = "__all_related__"
     filterset_class = MeldingFilter
     pre_filterset_class = MeldingPreFilter
-    permission_classes = ()
     filter_options_fields = (
         (
             "begraafplaats",
