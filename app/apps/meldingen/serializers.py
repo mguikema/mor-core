@@ -261,7 +261,6 @@ class MeldingSerializer(serializers.ModelSerializer):
             "afgesloten_op",
             "urgentie",
             "bijlagen",
-            "omschrijving_kort",
             "meta",
             "onderwerpen",
             "locaties_voor_melding",
