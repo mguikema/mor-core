@@ -68,7 +68,7 @@ class StatusSignaalSerializer(serializers.ModelSerializer):
 class MeldingSignaalSerializer(serializers.ModelSerializer):
     _links = MeldingLinksSerializer(source="*", read_only=True)
     status = StatusSignaalSerializer(read_only=True)
-    # laatste_meldinggebeurtenis = serializers.SerializerMethodField()
+    laatste_meldinggebeurtenis = serializers.SerializerMethodField()
 
     @extend_schema_field(MeldinggebeurtenisSignaalSerializer)
     def get_laatste_meldinggebeurtenis(self, obj):
@@ -90,7 +90,7 @@ class MeldingSignaalSerializer(serializers.ModelSerializer):
             "afgesloten_op",
             "status",
             "resolutie",
-            # "laatste_meldinggebeurtenis",
+            "laatste_meldinggebeurtenis",
         )
 
 
