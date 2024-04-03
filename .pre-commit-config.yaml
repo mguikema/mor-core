@@ -24,3 +24,9 @@ repos:
       rev: '6.1.0'
       hooks:
       - id: flake8
+  -   repo: https://github.com/djlint/djLint
+      rev: v1.34.1
+      hooks:
+      - id: djlint-reformat-django
+      - id: djlint-django
+        args: ["--ignore", "H006,H013,H023"]

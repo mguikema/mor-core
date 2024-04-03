@@ -15,6 +15,8 @@ from apps.meldingen.serializers import (
     MeldingSerializer,
 )
 from apps.taken.serializers import TaakopdrachtSerializer
+from config.context import db
+from django.conf import settings
 from django.db.models.query import QuerySet
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
@@ -118,9 +120,12 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
         .prefetch_related(
             "locaties_voor_melding",
-            "signalen_voor_melding",
+            "signalen_voor_melding__bijlagen",
             "bijlagen",
             "onderwerpen",
+            "meldinggebeurtenissen_voor_melding__bijlagen",
+            "taakopdrachten_voor_melding__status",
+            "taakopdrachten_voor_melding__taakgebeurtenissen_voor_taakopdracht__bijlagen",
         )
         .all()
     )
@@ -135,21 +140,12 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = "__all_related__"
     filterset_class = MeldingFilter
     pre_filterset_class = MeldingPreFilter
-
     filter_options_fields = (
         (
             "begraafplaats",
             "locaties_voor_melding__begraafplaats",
             "meta_uitgebreid__begraafplaats__choices",
             "signalen_voor_melding__meta_uitgebreid__begraafplaats__choices",
-        ),
-        (
-            "status",
-            "status__naam",
-        ),
-        (
-            "wijk",
-            "locaties_voor_melding__wijknaam",
         ),
         (
             "buurt",
@@ -187,6 +183,14 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == "retrieve":
             return self.serializer_detail_class
         return super().get_serializer_class()
+
+    def list(self, request):
+        with db(settings.READONLY_DATABASE_KEY):
+            return super().list(request)
+
+    def retrieve(self, request, uuid=None):
+        with db(settings.READONLY_DATABASE_KEY):
+            return super().retrieve(request, uuid)
 
     @extend_schema(
         description="Verander de status van een melding",

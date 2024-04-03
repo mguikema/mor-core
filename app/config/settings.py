@@ -21,6 +21,7 @@ FERNET_KEY = os.getenv(
 
 
 GIT_SHA = os.getenv("GIT_SHA")
+DEPLOY_DATE = os.getenv("DEPLOY_DATE", "")
 ENVIRONMENT = os.getenv("ENVIRONMENT")
 DEBUG = ENVIRONMENT == "development"
 
@@ -76,8 +77,9 @@ INSTALLED_APPS = (
     "django_extensions",
     "django_spaghetti",
     "health_check",
-    "health_check.db",
     "health_check.cache",
+    "health_check.storage",
+    "health_check.db",
     "health_check.contrib.migrations",
     "health_check.contrib.celery_ping",
     "sorl.thumbnail",
@@ -154,11 +156,20 @@ if DEBUG:
     ]
 
 # Database settings
+DEFAULT_DATABASE_KEY = "default"
+READONLY_DATABASE_KEY = "readonly"
+
 DATABASE_NAME = os.getenv("DATABASE_NAME")
 DATABASE_USER = os.getenv("DATABASE_USER")
 DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
 DATABASE_HOST = os.getenv("DATABASE_HOST_OVERRIDE")
 DATABASE_PORT = os.getenv("DATABASE_PORT_OVERRIDE")
+
+READONLY_DATABASE_NAME = os.getenv("READONLY_DATABASE_NAME", DATABASE_NAME)
+READONLY_DATABASE_USER = os.getenv("READONLY_DATABASE_USER", DATABASE_USER)
+READONLY_DATABASE_PASSWORD = os.getenv("READONLY_DATABASE_PASSWORD", DATABASE_PASSWORD)
+READONLY_DATABASE_HOST = os.getenv("READONLY_DATABASE_HOST", DATABASE_HOST)
+READONLY_DATABASE_PORT = os.getenv("READONLY_DATABASE_PORT", DATABASE_PORT)
 
 DEFAULT_DATABASE = {
     "ENGINE": "django.contrib.gis.db.backends.postgis",
@@ -168,9 +179,18 @@ DEFAULT_DATABASE = {
     "HOST": DATABASE_HOST,  # noqa
     "PORT": DATABASE_PORT,  # noqa
 }
+READONLY_DATABASE = {
+    "ENGINE": "django.contrib.gis.db.backends.postgis",
+    "NAME": READONLY_DATABASE_NAME,  # noqa:
+    "USER": READONLY_DATABASE_USER,  # noqa
+    "PASSWORD": READONLY_DATABASE_PASSWORD,  # noqa
+    "HOST": READONLY_DATABASE_HOST,  # noqa
+    "PORT": READONLY_DATABASE_PORT,  # noqa
+}
 
 DATABASES = {
-    "default": DEFAULT_DATABASE,
+    DEFAULT_DATABASE_KEY: DEFAULT_DATABASE,
+    READONLY_DATABASE_KEY: READONLY_DATABASE,
 }
 DATABASES.update(
     {
@@ -179,6 +199,8 @@ DATABASES.update(
     if ENVIRONMENT in ["test", "development"]
     else {}
 )
+DATABASE_ROUTERS = ["config.routers.DatabaseRouter"]
+
 
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
@@ -354,6 +376,16 @@ THUMBNAIL_PREFIX = "afbeeldingen"
 THUMBNAIL_KLEIN = "128x128"
 THUMBNAIL_STANDAARD = "1480x1480"
 BESTANDEN_PREFIX = "bestanden"
+
+
+def show_debug_toolbar(request):
+    return DEBUG and os.getenv("SHOW_DEBUG_TOOLBAR") in TRUE_VALUES
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": show_debug_toolbar,
+    "INSERT_BEFORE": "</head>",
+}
 
 
 LOG_LEVEL = "DEBUG" if DEBUG else "INFO"
