@@ -37,4 +37,4 @@ def task_notificatie_voor_melding_veranderd(
         melding_url,
         notificatie_type,
     )
-    return f"Applicatie id: {applicatie_id}, melding_url={melding_url}, notificatie_type={notificatie_type}, status code={notificatie_response.status_code}"
+    return f"Applicatie id: {applicatie.naam}, melding_url={melding_url}, notificatie_type={notificatie_type}, status code={notificatie_response.status_code}"
