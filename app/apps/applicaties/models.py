@@ -110,7 +110,7 @@ class Applicatie(BasisModel):
                 valide_basis_urls__contains=[f"{url_o.scheme}://{url_o.netloc}"]
             ).first()
         if not applicatie:
-            raise cls.ApplicatieWerdNietGevondenFout(f"uri: {uri}")
+            logger.warning(f"Er is geen Applicatie gevonden bij deze url: url={uri}")
         return applicatie
 
     def encrypt_applicatie_gebruiker_wachtwoord(self, wachtwoord_decrypted):
