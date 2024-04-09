@@ -45,7 +45,6 @@ urlpatterns = [
     ),
     path("api/v1/gebruiker/", SetGebruikerAPIView.as_view(), name="set_gebruiker"),
     path("api-token-auth/", views.obtain_auth_token),
-    path("admin/", admin.site.urls),
     path("login/", login_required_view, name="login_required"),
     path("health/", include("health_check.urls")),
     path("db-schema/", include((schema_urls, "db-schema"))),
@@ -86,6 +85,10 @@ if settings.OIDC_ENABLED:
             name="admin_logout",
         ),
     ]
+
+urlpatterns += [
+    path("admin/", admin.site.urls),
+]
 
 if settings.DEBUG:
     # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
