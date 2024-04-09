@@ -110,7 +110,7 @@ class Applicatie(BasisModel):
                 valide_basis_urls__contains=[f"{url_o.scheme}://{url_o.netloc}"]
             ).first()
         if not applicatie:
-            raise cls.ApplicatieWerdNietGevondenFout(f"uri: {uri}")
+            logger.warning(f"Er is geen Applicatie gevonden bij deze url: url={uri}")
         return applicatie
 
     def encrypt_applicatie_gebruiker_wachtwoord(self, wachtwoord_decrypted):
@@ -119,7 +119,7 @@ class Applicatie(BasisModel):
         )
 
     def _get_timeout(self):
-        return (5, 10)
+        return (10, 20)
 
     def get_token_cache_key(self):
         return f"applicatie_{self.uuid}_token"

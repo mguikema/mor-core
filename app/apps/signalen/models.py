@@ -1,9 +1,13 @@
+import logging
+
 from apps.applicaties.models import Applicatie
 from apps.bijlagen.models import Bijlage
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from utils.fields import DictJSONField
 from utils.models import BasisModel
+
+logger = logging.getLogger(__name__)
 
 
 class Signaal(BasisModel):
@@ -58,7 +62,11 @@ class Signaal(BasisModel):
 
     def notificatie_melding_afgesloten(self):
         applicatie = Applicatie.vind_applicatie_obv_uri(self.signaal_url)
-        applicatie.notificatie_melding_afgesloten(self.signaal_url)
+        if applicatie:
+            return applicatie.notificatie_melding_afgesloten(self.signaal_url)
+        logger.warning(
+            f"De notificatie naar de applicatie waar de melding vandaan komt, kon niet worden verstuurd: url={self.signaal_url}"
+        )
 
     class Meta:
         verbose_name = "Signaal"
