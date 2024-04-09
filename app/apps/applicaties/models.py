@@ -119,7 +119,7 @@ class Applicatie(BasisModel):
         )
 
     def _get_timeout(self):
-        return (5, 10)
+        return (10, 20)
 
     def get_token_cache_key(self):
         return f"applicatie_{self.uuid}_token"
