@@ -1,6 +1,8 @@
 FROM python:3.10.10-slim-bullseye
 
 EXPOSE 8000
+# Expose uwsgi stats interface
+EXPOSE 9191
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
