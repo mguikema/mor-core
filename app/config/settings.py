@@ -217,9 +217,9 @@ CELERYBEAT_SCHEDULE = {
         "schedule": crontab(minute=5),
     },
 }
-worker_concurrency = 2
-worker_max_tasks_per_child = 20
-worker_max_memory_per_child = 200000
+CELERY_WORKER_CONCURRENCY = 2
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 20
+CELERY_WORKER_MAX_MEMORY_PER_CHILD = 200000
 
 if ENVIRONMENT in ["test", "development"]:
     DJANGO_TEST_USERNAME = os.getenv("DJANGO_TEST_USERNAME", "test")
