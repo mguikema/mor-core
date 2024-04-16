@@ -49,9 +49,13 @@ class MeldinggebeurtenisAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "uuid",
+        "gebeurtenis_type",
         "aangemaakt_op",
         "melding",
         "omschrijving_extern",
+        "taakopdracht",
+        "taakgebeurtenis",
+        "signaal",
     )
 
 
