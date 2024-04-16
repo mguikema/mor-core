@@ -1,3 +1,5 @@
+from collections import Counter
+
 from apps.locatie.models import Locatie
 from apps.meldingen.models import Melding
 from apps.taken.models import Taakopdracht
@@ -8,6 +10,7 @@ from django.db.models import (
     DurationField,
     ExpressionWrapper,
     F,
+    Max,
     OuterRef,
     Subquery,
     Value,
@@ -24,6 +27,12 @@ def duration_to_seconds(duration):
 
 
 class CustomCollector(object):
+    locatie_subquery = (
+        Locatie.objects.filter(melding=OuterRef("melding"))
+        .order_by("-gewicht", "-aangemaakt_op")
+        .distinct()
+    )
+
     def collect(self):
         # Meldingen metrics
         melding_metrics = self.collect_melding_metrics()
@@ -59,40 +68,32 @@ class CustomCollector(object):
             )
         return c
 
-    # Wijk toevoegen, via melding - locatie
     def collect_taak_metrics(self):
         c = CounterMetricFamily(
             "morcore_taken_total",
             "Taak aantallen",
             labels=["taaktype", "status", "wijk"],
         )
-        taken = (
-            Taakopdracht.objects.order_by("titel")
-            .annotate(
+
+        taken_with_locatie = (
+            Taakopdracht.objects.annotate(
                 highest_weight_wijk=Coalesce(
-                    Subquery(
-                        Locatie.objects.filter(
-                            melding=OuterRef("melding"),
-                        )
-                        .order_by("-gewicht")
-                        .values("wijknaam")[:1]
-                    ),
+                    Subquery(self.locatie_subquery.values("wijknaam")[:1]),
                     Value("Onbekend"),
                 ),
             )
             .values("titel", "status__naam", "highest_weight_wijk")
-            .annotate(count=Count("titel"))
-            .exclude(count=0)
+            .order_by("titel")
         )
-        for taak in taken:
-            c.add_metric(
-                (
-                    taak.get("titel"),
-                    taak.get("status__naam"),
-                    taak.get("highest_weight_wijk"),
-                ),
-                taak.get("count"),
-            )
+
+        taak_counts = Counter(
+            (taak["titel"], taak["status__naam"], taak["highest_weight_wijk"])
+            for taak in taken_with_locatie
+        )
+
+        for (taaktype, status, wijk), count in taak_counts.items():
+            c.add_metric((taaktype, status, wijk), count)
+
         return c
 
     def collect_taak_duur_metrics(self):
@@ -105,13 +106,7 @@ class CustomCollector(object):
             Taakopdracht.objects.order_by("titel")
             .annotate(
                 highest_weight_wijk=Coalesce(
-                    Subquery(
-                        Locatie.objects.filter(
-                            melding=OuterRef("melding"),
-                        )
-                        .order_by("-gewicht")
-                        .values("wijknaam")[:1]
-                    ),
+                    Subquery(self.locatie_subquery.values("wijknaam")[:1]),
                     Value("Onbekend"),
                 ),
             )
