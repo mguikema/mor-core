@@ -24,6 +24,12 @@ def duration_to_seconds(duration):
 
 
 class CustomCollector(object):
+    locatie_subquery = (
+        Locatie.objects.filter(melding=OuterRef("melding"))
+        .order_by("-gewicht", "-aangemaakt_op")
+        .distinct()
+    )
+
     def collect(self):
         # Meldingen metrics
         melding_metrics = self.collect_melding_metrics()
@@ -59,24 +65,18 @@ class CustomCollector(object):
             )
         return c
 
-    # Wijk toevoegen, via melding - locatie
     def collect_taak_metrics(self):
         c = CounterMetricFamily(
             "morcore_taken_total",
             "Taak aantallen",
             labels=["taaktype", "status", "wijk"],
         )
-        taken = (
+
+        taken_with_locatie = (
             Taakopdracht.objects.order_by("titel")
             .annotate(
                 highest_weight_wijk=Coalesce(
-                    Subquery(
-                        Locatie.objects.filter(
-                            melding=OuterRef("melding"),
-                        )
-                        .order_by("-gewicht")
-                        .values("wijknaam")[:1]
-                    ),
+                    Subquery(self.locatie_subquery.values("wijknaam")[:1]),
                     Value("Onbekend"),
                 ),
             )
@@ -84,7 +84,7 @@ class CustomCollector(object):
             .annotate(count=Count("titel"))
             .exclude(count=0)
         )
-        for taak in taken:
+        for taak in taken_with_locatie:
             c.add_metric(
                 (
                     taak.get("titel"),
@@ -105,13 +105,7 @@ class CustomCollector(object):
             Taakopdracht.objects.order_by("titel")
             .annotate(
                 highest_weight_wijk=Coalesce(
-                    Subquery(
-                        Locatie.objects.filter(
-                            melding=OuterRef("melding"),
-                        )
-                        .order_by("-gewicht")
-                        .values("wijknaam")[:1]
-                    ),
+                    Subquery(self.locatie_subquery.values("wijknaam")[:1]),
                     Value("Onbekend"),
                 ),
             )
