@@ -11,7 +11,13 @@ class TaakgebeurtenisAdmin(admin.ModelAdmin):
         "aangepast_op",
         "taakopdracht",
         "gebruiker",
+        "meldinggebeurtenissen_aantal",
     )
+
+    def meldinggebeurtenissen_aantal(self, obj):
+        return obj.meldinggebeurtenissen_voor_taakgebeurtenis.count()
+
+    meldinggebeurtenissen_aantal.short_description = "Meldinggebeurtenissen aantal"
 
 
 @admin.action(description="Zet taak afgesloten_op voor afgesloten meldingen")

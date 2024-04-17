@@ -156,7 +156,7 @@ class MeldingManager(models.Manager):
             )
 
     def status_aanpassen(self, serializer, melding, db="default", heropen=False):
-        from apps.meldingen.models import Melding
+        from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
 
         # Blocks the ability to reopen a melding so commented
@@ -232,9 +232,21 @@ class MeldingManager(models.Manager):
                         )
                     )
                 Taakopdracht.objects.bulk_update(
-                    locked_taakopdrachten, ["status", "resolutie"]
+                    locked_taakopdrachten, ["status", "resolutie", "afgesloten_op"]
                 )
-                Taakgebeurtenis.objects.bulk_create(taakgebeurtenissen)
+                aangemaakte_taakgebeurtenissen = Taakgebeurtenis.objects.bulk_create(
+                    taakgebeurtenissen
+                )
+                meldinggebeurtenissen = [
+                    Meldinggebeurtenis(
+                        gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING,
+                        taakgebeurtenis=taakgebeurtenis,
+                        taakopdracht=taakgebeurtenis.taakopdracht,
+                        melding=locked_melding,
+                    )
+                    for taakgebeurtenis in aangemaakte_taakgebeurtenissen
+                ]
+                Meldinggebeurtenis.objects.bulk_create(meldinggebeurtenissen)
 
                 locked_melding.afgesloten_op = timezone.now()
                 if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
@@ -299,6 +311,7 @@ class MeldingManager(models.Manager):
         from apps.status.models import Status
         from apps.taken.models import Taakgebeurtenis, Taakstatus
 
+        # TODO also prevent if melding status gepauzeerd
         if melding.afgesloten_op:
             raise MeldingManager.MeldingAfgeslotenFout(
                 "Voor een afgsloten melding kunnen taakopdrachten niet worden aangemaakt"
