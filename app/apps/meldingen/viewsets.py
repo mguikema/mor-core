@@ -1,13 +1,11 @@
 import logging
 
-from apps.applicaties.models import Applicatie
 from apps.meldingen.filtersets import (
     DjangoPreFilterBackend,
     MeldingFilter,
     MeldingPreFilter,
     RelatedOrderingFilter,
 )
-from apps.meldingen.managers import MeldingManager
 from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.meldingen.serializers import (
     MeldingDetailSerializer,
@@ -194,33 +192,6 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         with db(settings.READONLY_DATABASE_KEY):
             return super().retrieve(request, uuid)
 
-    def _catch_errors(self, func):
-        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        bericht = "Er ging iets mis"
-        try:
-            return func(), False
-        except MeldingManager.MeldingAfgeslotenFout as e:
-            status_code = status.HTTP_405_METHOD_NOT_ALLOWED
-            bericht = e
-        except MeldingManager.MeldingInGebruik as e:
-            status_code = status.HTTP_423_LOCKED
-            bericht = e
-        except MeldingManager.TaakAanmakenFout as e:
-            bericht = e
-        except Applicatie.ApplicatieWerdNietGevondenFout as e:
-            bericht = e
-        except Applicatie.AntwoordFout as e:
-            bericht = e
-        except Exception as e:
-            logger.error(e)
-        return (
-            Response(
-                data={"bericht": str(bericht)},
-                status=status_code,
-            ),
-            True,
-        )
-
     @extend_schema(
         description="Verander de status van een melding",
         request=MeldingGebeurtenisStatusSerializer,
@@ -355,16 +326,13 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             context={"request": request},
         )
         if serializer.is_valid():
-            result, errors = self._catch_errors(
-                lambda: Melding.acties.taakopdracht_aanmaken(
-                    serializer, melding, request
-                )
+            taakopdracht = Melding.acties.taakopdracht_aanmaken(
+                serializer, melding, request
             )
 
-            if errors:
-                return result
-
-            serializer = TaakopdrachtSerializer(result, context={"request": request})
+            serializer = TaakopdrachtSerializer(
+                taakopdracht, context={"request": request}
+            )
             return Response(serializer.data)
 
         return Response(
