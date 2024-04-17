@@ -39,6 +39,9 @@ class MeldingManager(models.Manager):
     class TaakStatusAanpassenFout(Exception):
         pass
 
+    class TaakAanmakenFout(Exception):
+        pass
+
     class MeldingAfgeslotenFout(Exception):
         pass
 
@@ -311,10 +314,9 @@ class MeldingManager(models.Manager):
         from apps.status.models import Status
         from apps.taken.models import Taakgebeurtenis, Taakstatus
 
-        # TODO also prevent if melding status gepauzeerd
-        if melding.afgesloten_op:
+        if melding.afgesloten_op or melding.status.is_gepauzeerd():
             raise MeldingManager.MeldingAfgeslotenFout(
-                "Voor een afgsloten melding kunnen taakopdrachten niet worden aangemaakt"
+                f"Voor een afgesloten of gepauzeerde melding kunnen geen taken worden aangemaakt. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
             )
 
         with transaction.atomic():
@@ -325,7 +327,9 @@ class MeldingManager(models.Manager):
                     .get(pk=melding.pk)
                 )
             except OperationalError:
-                raise MeldingManager.MeldingInGebruik
+                raise MeldingManager.MeldingInGebruik(
+                    f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
+                )
 
             taak_data = {}
             taak_data.update(serializer.validated_data)
@@ -334,8 +338,8 @@ class MeldingManager(models.Manager):
             )
 
             if not applicatie:
-                raise Exception(
-                    f"De applicatie kon niet worden gevonden op basis van dit taaktype: {taak_data.get('taaktype', '')}"
+                raise Applicatie.ApplicatieWerdNietGevondenFout(
+                    f"De applicatie voor dit taaktype kon niet worden gevonden: taaktype={taak_data.get('taaktype', '')}"
                 )
             gebruiker = serializer.validated_data.pop("gebruiker", None)
             taakopdracht = serializer.save(
@@ -384,8 +388,13 @@ class MeldingManager(models.Manager):
                 )
                 taakopdracht.save()
             else:
-                raise Exception(
-                    f"De taak kon niet worden aangemaakt in de applicatie: {taak_aanmaken_response.status_code}"
+                response_text = ""
+                try:
+                    response_text = f", antwoord: {taak_aanmaken_response.json()}"
+                except Exception:
+                    ...
+                raise MeldingManager.TaakAanmakenFout(
+                    f"De taak kon niet worden aangemaakt in {applicatie.naam}, fout code: {taak_aanmaken_response.status_code}{response_text}"
                 )
 
             melding_gebeurtenis = Meldinggebeurtenis(
