@@ -47,26 +47,42 @@ class CustomCollector(object):
             )
         return max_days_threshold_dict
 
+    def annotate_thresholds(self, queryset):
+        return queryset.annotate(
+            threshold=Case(
+                *[
+                    When(taaktype=tt, then=Value(threshold))
+                    for tt, threshold in self.taak_type_threshold_dict.items()
+                ],
+                default=Value(3),
+            )
+        )
+
+    def annotate_highest_weight_wijk(self, queryset):
+        return queryset.annotate(
+            highest_weight_wijk=Coalesce(
+                Subquery(self.locatie_subquery.values("wijknaam")[:1]),
+                Value("Onbekend"),
+            ),
+        )
+
     def collect(self):
-        max_days_threshold_dict = self.create_taaktype_threshold_dict()
+        self.taak_type_threshold_dict = self.create_taaktype_threshold_dict()
+        self.annotated_threshold_taken = self.annotate_thresholds(
+            Taakopdracht.objects.all()
+        )
 
         # Meldingen metrics
-        melding_metrics = self.collect_melding_metrics()
-        yield melding_metrics
+        yield self.collect_melding_metrics()
 
         # Taak total metrics
-        taak_total_metrics = self.collect_taak_metrics(max_days_threshold_dict)
-        yield taak_total_metrics
+        yield self.collect_taak_metrics()
 
-        # Taken langer dan 3 dagen openstaand metrics
-        taken_openstaand_3_dagen_metrics = self.collect_taken_over_threshold(
-            max_days_threshold_dict
-        )
-        yield taken_openstaand_3_dagen_metrics
+        # Taken langer dan taaktype threshold open
+        yield self.collect_taken_over_threshold_metrics()
 
         # Taak duur openstaand metrics
-        taak_duur_openstaand_metrics = self.collect_taak_duur_metrics()
-        yield taak_duur_openstaand_metrics
+        yield self.collect_taak_duur_metrics()
 
     def collect_melding_metrics(self):
         c = CounterMetricFamily(
@@ -90,7 +106,7 @@ class CustomCollector(object):
             )
         return c
 
-    def collect_taak_metrics(self, max_days_threshold_dict):
+    def collect_taak_metrics(self):
         c = CounterMetricFamily(
             "morcore_taken_total",
             "Taak aantallen",
@@ -102,23 +118,9 @@ class CustomCollector(object):
                 "threshold",
             ],
         )
-        # Annotate the threshold value for each task
+        # Annotate the threshold value for each taak
         taken_with_locatie = (
-            Taakopdracht.objects.annotate(
-                threshold=Case(
-                    *[
-                        When(taaktype=tt, then=Value(threshold))
-                        for tt, threshold in max_days_threshold_dict.items()
-                    ],
-                    default=Value(3),  # Default threshold
-                )
-            )
-            .annotate(
-                highest_weight_wijk=Coalesce(
-                    Subquery(self.locatie_subquery.values("wijknaam")[:1]),
-                    Value("Onbekend"),
-                )
-            )
+            self.annotate_highest_weight_wijk(self.annotated_threshold_taken)
             .annotate(
                 over_threshold=Count(
                     Case(
@@ -164,12 +166,7 @@ class CustomCollector(object):
             labels=["taaktype", "status", "wijk"],
         )
         taken = (
-            Taakopdracht.objects.annotate(
-                highest_weight_wijk=Coalesce(
-                    Subquery(self.locatie_subquery.values("wijknaam")[:1]),
-                    Value("Onbekend"),
-                ),
-            )
+            self.annotate_highest_weight_wijk(Taakopdracht.objects)
             .values(
                 "titel",
                 "status__naam",
@@ -209,38 +206,21 @@ class CustomCollector(object):
                 )
         return c
 
-    def collect_taken_over_threshold(self, max_days_threshold_dict):
+    def collect_taken_over_threshold_metrics(self):
         c = CounterMetricFamily(
             "morcore_taken_over_threshold",
             "Aantal taken langer open dan de threshold van het taaktype per wijk en taaktype",
             labels=["taaktype", "wijk", "threshold"],
         )
 
-        openstaande_taken = (
-            Taakopdracht.objects.annotate(
-                threshold=Case(
-                    *[
-                        When(taaktype=tt, then=Value(threshold))
-                        for tt, threshold in max_days_threshold_dict.items()
-                    ],
-                    default=Value(3),  # Default threshold
-                )
-            )
-            .filter(
-                afgesloten_op__isnull=True,
-                aangemaakt_op__lte=timezone.now()
-                - timezone.timedelta(days=1) * F("threshold"),
-            )
-            .exclude(status__naam="voltooid")
-        )
+        openstaande_taken = self.annotated_threshold_taken.filter(
+            afgesloten_op__isnull=True,
+            aangemaakt_op__lte=timezone.now()
+            - timezone.timedelta(days=1) * F("threshold"),
+        ).exclude(status__naam="voltooid")
 
         openstaande_taken_per_wijk_taaktype = (
-            openstaande_taken.annotate(
-                highest_weight_wijk=Coalesce(
-                    Subquery(self.locatie_subquery.values("wijknaam")[:1]),
-                    Value("Onbekend"),
-                ),
-            )
+            self.annotate_highest_weight_wijk(openstaande_taken)
             .values("titel", "highest_weight_wijk", "threshold")
             .order_by("titel")
             .annotate(count=Count("titel"))
