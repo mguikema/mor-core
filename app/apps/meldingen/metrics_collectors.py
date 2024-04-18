@@ -39,6 +39,10 @@ class CustomCollector(object):
         taak_total_metrics = self.collect_taak_metrics()
         yield taak_total_metrics
 
+        # Taken langer dan 3 dagen openstaand metrics
+        taken_openstaand_3_dagen_metrics = self.collect_taken_openstaand_3_dagen()
+        yield taken_openstaand_3_dagen_metrics
+
         # Taak duur openstaand metrics
         taak_duur_openstaand_metrics = self.collect_taak_duur_metrics()
         yield taak_duur_openstaand_metrics
@@ -50,8 +54,8 @@ class CustomCollector(object):
             labels=["onderwerp", "status"],
         )
         meldingen = (
-            Melding.objects.order_by("onderwerpen")
-            .values("onderwerpen__response_json__name", "status__naam")
+            Melding.objects.values("onderwerpen__response_json__name", "status__naam")
+            .order_by("onderwerpen")
             .annotate(count=Count("onderwerpen"))
             .exclude(count=0)
         )
@@ -73,16 +77,15 @@ class CustomCollector(object):
         )
 
         taken_with_locatie = (
-            Taakopdracht.objects.order_by("titel")
-            .annotate(
+            Taakopdracht.objects.annotate(
                 highest_weight_wijk=Coalesce(
                     Subquery(self.locatie_subquery.values("wijknaam")[:1]),
                     Value("Onbekend"),
                 ),
             )
             .values("titel", "status__naam", "highest_weight_wijk")
+            .order_by("titel")
             .annotate(count=Count("titel"))
-            .exclude(count=0)
         )
         for taak in taken_with_locatie:
             c.add_metric(
@@ -102,8 +105,7 @@ class CustomCollector(object):
             labels=["taaktype", "status", "wijk"],
         )
         taken = (
-            Taakopdracht.objects.order_by("titel")
-            .annotate(
+            Taakopdracht.objects.annotate(
                 highest_weight_wijk=Coalesce(
                     Subquery(self.locatie_subquery.values("wijknaam")[:1]),
                     Value("Onbekend"),
@@ -114,6 +116,7 @@ class CustomCollector(object):
                 "status__naam",
                 "highest_weight_wijk",
             )
+            .order_by("titel")
             .annotate(
                 avg_openstaand=Avg(
                     Case(
@@ -145,4 +148,39 @@ class CustomCollector(object):
                     ),
                     avg_openstaand_seconds,
                 )
+        return c
+
+    def collect_taken_openstaand_3_dagen(self):
+        c = CounterMetricFamily(
+            "morcore_taken_openstaand_3_dagen",
+            "Aantal taken langer openstaand dan 3 dagen per wijk en taaktype",
+            labels=["taaktype", "wijk"],
+        )
+
+        openstaande_taken = Taakopdracht.objects.filter(
+            afgesloten_op__isnull=True,
+            aangemaakt_op__lte=timezone.now() - timezone.timedelta(days=3),
+        ).exclude(status__naam="voltooid")
+
+        openstaande_taken_per_wijk_taaktype = (
+            openstaande_taken.annotate(
+                highest_weight_wijk=Coalesce(
+                    Subquery(self.locatie_subquery.values("wijknaam")[:1]),
+                    Value("Onbekend"),
+                ),
+            )
+            .values("titel", "highest_weight_wijk")
+            .order_by("titel")
+            .annotate(count=Count("titel"))
+        )
+
+        for taak in openstaande_taken_per_wijk_taaktype:
+            c.add_metric(
+                (
+                    taak.get("titel"),
+                    taak.get("highest_weight_wijk"),
+                ),
+                taak.get("count"),
+            )
+
         return c
