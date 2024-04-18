@@ -256,6 +256,15 @@ class Applicatie(BasisModel):
             )
         return []
 
+    def fetch_taaktype_data(self, url):
+        try:
+            response = self._do_request(url)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            logger.error(f"Error fetching taaktype data from {url}: {e}")
+            return None
+
     def taak_status_aanpassen(self, url, data):
         return self._do_request(url, method="patch", data=data)
 
