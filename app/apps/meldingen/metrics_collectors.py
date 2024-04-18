@@ -10,7 +10,6 @@ from django.db.models import (
     ExpressionWrapper,
     F,
     OuterRef,
-    Q,
     Subquery,
     Value,
     When,
@@ -26,12 +25,6 @@ def duration_to_seconds(duration):
 
 
 class CustomCollector(object):
-    locatie_subquery = (
-        Locatie.objects.filter(melding=OuterRef("melding"))
-        .order_by("-gewicht", "-aangemaakt_op")
-        .distinct()
-    )
-
     def create_taaktype_threshold_dict(self):
         max_days_threshold_dict = {}
         unique_taaktypes = (
@@ -61,17 +54,25 @@ class CustomCollector(object):
         )
 
     def annotate_highest_weight_wijk(self, queryset):
+        locatie_subquery = (
+            Locatie.objects.filter(melding=OuterRef("melding"))
+            .order_by("-gewicht", "-aangemaakt_op")
+            .distinct()
+        )
         return queryset.annotate(
             highest_weight_wijk=Coalesce(
-                Subquery(self.locatie_subquery.values("wijknaam")[:1]),
+                Subquery(locatie_subquery.values("wijknaam")[:1]),
                 Value("Onbekend"),
             ),
         )
 
     def collect(self):
         self.taak_type_threshold_dict = self.create_taaktype_threshold_dict()
-        self.annotated_threshold_taken = self.annotate_thresholds(
+        self.annotated_wijken_taken = self.annotate_highest_weight_wijk(
             Taakopdracht.objects.all()
+        )
+        self.annotated_threshold_taken = self.annotate_thresholds(
+            self.annotated_wijken_taken
         )
 
         # Meldingen metrics
@@ -124,26 +125,23 @@ class CustomCollector(object):
                 "wijk",
             ],
         )
-        # Annotate the threshold value for each taak
-        taken_with_locatie = (
-            self.annotate_highest_weight_wijk(Taakopdracht.objects)
-            .values(
-                "titel",
-                "status__naam",
-                "highest_weight_wijk",
+
+        total_taken = (
+            self.annotated_wijken_taken.values(
+                "titel", "status__naam", "highest_weight_wijk"
             )
             .order_by("titel")
-            .annotate(total_count=Count("titel"))
+            .annotate(count=Count("titel"))
         )
 
-        for taak in taken_with_locatie:
+        for taak in total_taken:
             c.add_metric(
                 (
                     taak["titel"],
                     taak["status__naam"],
                     taak["highest_weight_wijk"],
                 ),
-                taak["total_count"],
+                taak["count"],
             )
 
         return c
@@ -155,8 +153,7 @@ class CustomCollector(object):
             labels=["taaktype", "status", "wijk"],
         )
         taken = (
-            self.annotate_highest_weight_wijk(Taakopdracht.objects)
-            .values(
+            self.annotated_wijken_taken.values(
                 "titel",
                 "status__naam",
                 "highest_weight_wijk",
@@ -201,21 +198,18 @@ class CustomCollector(object):
             "Aantal taken langer open dan de threshold van het taaktype per wijk en taaktype",
             labels=["taaktype", "wijk"],
         )
-
-        openstaande_taken = self.annotated_threshold_taken.filter(
-            afgesloten_op__isnull=True,
-            aangemaakt_op__lte=timezone.now()
-            - timezone.timedelta(days=1) * F("threshold"),
-        ).exclude(status__naam="voltooid")
-
-        openstaande_taken_per_wijk_taaktype = (
-            self.annotate_highest_weight_wijk(openstaande_taken)
+        threshold_taken = (
+            self.annotated_threshold_taken.filter(
+                afgesloten_op__isnull=True,
+                aangemaakt_op__lte=timezone.now()
+                - timezone.timedelta(days=1) * F("threshold"),
+            )
             .values("titel", "highest_weight_wijk")
             .order_by("titel")
             .annotate(count=Count("titel"))
         )
 
-        for taak in openstaande_taken_per_wijk_taaktype:
+        for taak in threshold_taken:
             c.add_metric(
                 (
                     taak.get("titel"),
@@ -233,20 +227,18 @@ class CustomCollector(object):
             labels=["taaktype", "wijk"],
         )
 
-        openstaande_taken = self.annotated_threshold_taken.filter(
-            afgesloten_op__isnull=True,
-            aangemaakt_op__gt=timezone.now()
-            - timezone.timedelta(days=1) * F("threshold"),
-        ).exclude(status__naam="voltooid")
-
-        openstaande_taken_per_wijk_taaktype = (
-            self.annotate_highest_weight_wijk(openstaande_taken)
+        taken = (
+            self.annotated_threshold_taken.filter(
+                afgesloten_op__isnull=True,
+                aangemaakt_op__gt=timezone.now()
+                - timezone.timedelta(days=1) * F("threshold"),
+            )
             .values("titel", "highest_weight_wijk")
             .order_by("titel")
             .annotate(count=Count("titel"))
         )
 
-        for taak in openstaande_taken_per_wijk_taaktype:
+        for taak in taken:
             c.add_metric(
                 (
                     taak.get("titel"),
