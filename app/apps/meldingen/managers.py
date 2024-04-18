@@ -108,7 +108,9 @@ class MeldingManager(models.Manager):
                             .get(pk=melding.pk)
                         )
                     except OperationalError:
-                        raise MeldingManager.MeldingInGebruik
+                        raise MeldingManager.MeldingInGebruik(
+                            f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
+                        )
                     locked_melding.urgentie = signaal.urgentie
                     locked_melding.save()
 
@@ -133,7 +135,7 @@ class MeldingManager(models.Manager):
 
         if melding.afgesloten_op:
             raise MeldingManager.MeldingAfgeslotenFout(
-                "De urgentie van een afgesloten melding kan niet meer worden veranderd"
+                f"De urgentie van een afgesloten melding kan niet meer worden veranderd. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
             )
 
         with transaction.atomic():
@@ -144,7 +146,9 @@ class MeldingManager(models.Manager):
                     .get(pk=melding.pk)
                 )
             except OperationalError:
-                raise MeldingManager.MeldingInGebruik
+                raise MeldingManager.MeldingInGebruik(
+                    f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
+                )
 
             melding_gebeurtenis = serializer.save()
             vorige_urgentie = locked_melding.urgentie
@@ -176,7 +180,9 @@ class MeldingManager(models.Manager):
                     .get(pk=melding.pk)
                 )
             except OperationalError:
-                raise MeldingManager.MeldingInGebruik
+                raise MeldingManager.MeldingInGebruik(
+                    f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
+                )
 
             vorige_status = locked_melding.status
 
@@ -202,7 +208,9 @@ class MeldingManager(models.Manager):
                         )
                     )
                 except OperationalError:
-                    raise MeldingManager.TaakopdrachtInGebruik
+                    raise MeldingManager.TaakopdrachtInGebruik(
+                        "Eén van taken is op dit moment in gebruik, probeer het later nog eens."
+                    )
 
                 taak_urls = locked_taakopdrachten.values_list("taak_url", flat=True)
                 for taak_url in taak_urls:
@@ -218,7 +226,9 @@ class MeldingManager(models.Manager):
                         data=taak_status_aanpassen_data,
                     )
                     if response.status_code not in [200, 404]:
-                        raise MeldingManager.TaakStatusAanpassenFout
+                        raise MeldingManager.TaakStatusAanpassenFout(
+                            f"De taak status voor de taak met url '{taak_url}', kon niet worden aangepast. fout code: {response.status_code}"
+                        )
                 taakgebeurtenissen = []
                 for to in locked_taakopdrachten:
                     taakstatus = Taakstatus.objects.create(
@@ -275,7 +285,7 @@ class MeldingManager(models.Manager):
 
         if melding.afgesloten_op:
             raise MeldingManager.MeldingAfgeslotenFout(
-                "Voor een afgsloten melding kunnen gebeurtenissen niet worden aangemaakt"
+                f"Voor een afgsloten melding kunnen geen gebeurtenissen worden aangemaakt. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
             )
 
         with transaction.atomic():
@@ -286,7 +296,9 @@ class MeldingManager(models.Manager):
                     .get(pk=melding.pk)
                 )
             except OperationalError:
-                raise MeldingManager.MeldingInGebruik
+                raise MeldingManager.MeldingInGebruik(
+                    f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
+                )
 
             if locatie := serializer.validated_data.get("locatie"):
                 locatie["melding"] = melding
@@ -450,13 +462,20 @@ class MeldingManager(models.Manager):
                     .select_for_update(nowait=True)
                     .get(pk=taakopdracht.melding.pk)
                 )
+            except OperationalError:
+                raise MeldingManager.MeldingInGebruik(
+                    f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {taakopdracht.melding.id}, melding uuid: {taakopdracht.melding.uuid}"
+                )
+            try:
                 locked_taakopdracht = (
                     Taakopdracht.objects.using(db)
                     .select_for_update(nowait=True)
                     .get(pk=taakopdracht.pk)
                 )
             except OperationalError:
-                raise MeldingManager.MeldingInGebruik
+                raise MeldingManager.TaakopdrachtInGebruik(
+                    f"De taak is op dit moment in gebruik, probeer het later nog eens. melding nummer: {taakopdracht.id}, melding uuid: {taakopdracht.uuid}"
+                )
 
             resolutie = serializer.validated_data.pop("resolutie", None)
             uitvoerder = serializer.validated_data.pop("uitvoerder", None)
@@ -499,7 +518,7 @@ class MeldingManager(models.Manager):
             )
 
             if taak_status_aanpassen_response.status_code not in [200, 404]:
-                raise Exception(
+                raise MeldingManager.TaakStatusAanpassenFout(
                     f"De taakstatus kon niet worden aangepast: {locked_taakopdracht.taak_url}status-aanpassen/"
                 )
 

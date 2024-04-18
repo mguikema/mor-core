@@ -11,6 +11,8 @@ def api_exception_handler(exc, context):
         "MeldingAfgeslotenFout": [str(exc), status.HTTP_405_METHOD_NOT_ALLOWED],
         "MeldingInGebruik": [str(exc), status.HTTP_423_LOCKED],
         "TaakAanmakenFout": [str(exc), status.HTTP_500_INTERNAL_SERVER_ERROR],
+        "TaakStatusAanpassenFout": [str(exc), status.HTTP_500_INTERNAL_SERVER_ERROR],
+        "TaakopdrachtInGebruik": [str(exc), status.HTTP_423_LOCKED],
         "ApplicatieWerdNietGevondenFout": [
             str(exc),
             status.HTTP_500_INTERNAL_SERVER_ERROR,
