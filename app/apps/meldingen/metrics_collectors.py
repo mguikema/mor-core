@@ -54,8 +54,8 @@ class CustomCollector(object):
             labels=["onderwerp", "status"],
         )
         meldingen = (
-            Melding.objects.order_by("onderwerpen")
-            .values("onderwerpen__response_json__name", "status__naam")
+            Melding.objects.values("onderwerpen__response_json__name", "status__naam")
+            .order_by("onderwerpen")
             .annotate(count=Count("onderwerpen"))
             .exclude(count=0)
         )
@@ -77,16 +77,15 @@ class CustomCollector(object):
         )
 
         taken_with_locatie = (
-            Taakopdracht.objects.order_by("titel")
-            .annotate(
+            Taakopdracht.objects.annotate(
                 highest_weight_wijk=Coalesce(
                     Subquery(self.locatie_subquery.values("wijknaam")[:1]),
                     Value("Onbekend"),
                 ),
             )
             .values("titel", "status__naam", "highest_weight_wijk")
+            .order_by("titel")
             .annotate(count=Count("titel"))
-            .exclude(count=0)
         )
         for taak in taken_with_locatie:
             c.add_metric(
@@ -106,8 +105,7 @@ class CustomCollector(object):
             labels=["taaktype", "status", "wijk"],
         )
         taken = (
-            Taakopdracht.objects.order_by("titel")
-            .annotate(
+            Taakopdracht.objects.annotate(
                 highest_weight_wijk=Coalesce(
                     Subquery(self.locatie_subquery.values("wijknaam")[:1]),
                     Value("Onbekend"),
@@ -118,6 +116,7 @@ class CustomCollector(object):
                 "status__naam",
                 "highest_weight_wijk",
             )
+            .order_by("titel")
             .annotate(
                 avg_openstaand=Avg(
                     Case(
@@ -158,14 +157,10 @@ class CustomCollector(object):
             labels=["taaktype", "wijk"],
         )
 
-        openstaande_taken = (
-            Taakopdracht.objects.filter(
-                afgesloten_op__isnull=True,
-                aangemaakt_op__lte=timezone.now() - timezone.timedelta(days=3),
-            )
-            .exclude(status__naam="voltooid")
-            .order_by("titel")
-        )
+        openstaande_taken = Taakopdracht.objects.filter(
+            afgesloten_op__isnull=True,
+            aangemaakt_op__lte=timezone.now() - timezone.timedelta(days=3),
+        ).exclude(status__naam="voltooid")
 
         openstaande_taken_per_wijk_taaktype = (
             openstaande_taken.annotate(
@@ -175,6 +170,7 @@ class CustomCollector(object):
                 ),
             )
             .values("titel", "highest_weight_wijk")
+            .order_by("titel")
             .annotate(count=Count("titel"))
         )
 
