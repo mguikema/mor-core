@@ -12,6 +12,7 @@ def api_exception_handler(exc, context):
         "MeldingInGebruik": [str(exc), status.HTTP_423_LOCKED],
         "TaakAanmakenFout": [str(exc), status.HTTP_500_INTERNAL_SERVER_ERROR],
         "TaakStatusAanpassenFout": [str(exc), status.HTTP_500_INTERNAL_SERVER_ERROR],
+        "TaaktypesOphalenFout": [str(exc), status.HTTP_500_INTERNAL_SERVER_ERROR],
         "TaakopdrachtInGebruik": [str(exc), status.HTTP_423_LOCKED],
         "ApplicatieWerdNietGevondenFout": [
             str(exc),
