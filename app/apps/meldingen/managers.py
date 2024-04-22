@@ -7,7 +7,6 @@ from django.db import OperationalError, transaction
 from django.db.models import Max
 from django.dispatch import Signal as DjangoSignal
 from django.utils import timezone
-from rest_framework.reverse import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +45,15 @@ class MeldingManager(models.Manager):
         pass
 
     class TaakopdrachtAfgeslotenFout(Exception):
+        pass
+
+    class TaakopdrachtUrlOntbreekt(Exception):
+        pass
+
+    class TaakgebeurtenisOntbreekt(Exception):
+        pass
+
+    class TaakgebeurtenisFout(Exception):
         pass
 
     def signaal_aanmaken(self, serializer, db="default"):
@@ -379,36 +387,6 @@ class MeldingManager(models.Manager):
             )
             taakgebeurtenis_instance.save()
 
-            # verzamel taak aanmaken data voor taakapplicatie
-            taakapplicatie_data = serializer.__class__(
-                taakopdracht, context={"request": request}
-            ).data
-            taakapplicatie_data["melding"] = taakapplicatie_data.get("_links", {}).get(
-                "melding"
-            )
-            taakapplicatie_data["taakopdracht"] = reverse(
-                "v1:taakopdracht-detail",
-                kwargs={"uuid": taakopdracht.uuid},
-                request=request,
-            )
-            taakapplicatie_data["gebruiker"] = gebruiker
-            taak_aanmaken_response = applicatie.taak_aanmaken(taakapplicatie_data)
-
-            if taak_aanmaken_response.status_code == 201:
-                taakopdracht.taak_url = (
-                    taak_aanmaken_response.json().get("_links", {}).get("self")
-                )
-                taakopdracht.save()
-            else:
-                response_text = ""
-                try:
-                    response_text = f", antwoord: {taak_aanmaken_response.json()}"
-                except Exception:
-                    ...
-                raise MeldingManager.TaakAanmakenFout(
-                    f"De taak kon niet worden aangemaakt in {applicatie.naam}, fout code: {taak_aanmaken_response.status_code}{response_text}"
-                )
-
             melding_gebeurtenis = Meldinggebeurtenis(
                 melding=locked_melding,
                 gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_AANGEMAAKT,
@@ -436,8 +414,9 @@ class MeldingManager(models.Manager):
             transaction.on_commit(
                 lambda: taakopdracht_aangemaakt.send_robust(
                     sender=self.__class__,
-                    taakopdracht=taakopdracht,
                     melding=locked_melding,
+                    taakopdracht=taakopdracht,
+                    taakgebeurtenis=taakgebeurtenis_instance,
                 )
             )
 
@@ -494,33 +473,6 @@ class MeldingManager(models.Manager):
                 locked_taakopdracht.afgesloten_op = timezone.now()
                 if resolutie in [ro[0] for ro in Taakopdracht.ResolutieOpties.choices]:
                     locked_taakopdracht.resolutie = resolutie
-
-            taak_status_aanpassen_data = {
-                "taakstatus": {"naam": taakgebeurtenis.taakstatus.naam},
-                "bijlagen": [
-                    reverse(
-                        "v1:bijlage-detail",
-                        kwargs={"uuid": bijlage.uuid},
-                        request=request,
-                    )
-                    for bijlage in taakgebeurtenis.bijlagen.all()
-                ],
-                "resolutie": resolutie,
-                "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
-                "gebruiker": taakgebeurtenis.gebruiker,
-                "uitvoerder": uitvoerder,
-            }
-            taak_status_aanpassen_response = (
-                locked_taakopdracht.applicatie.taak_status_aanpassen(
-                    f"{locked_taakopdracht.taak_url}status-aanpassen/",
-                    data=taak_status_aanpassen_data,
-                )
-            )
-
-            if taak_status_aanpassen_response.status_code not in [200, 404]:
-                raise MeldingManager.TaakStatusAanpassenFout(
-                    f"De taakstatus kon niet worden aangepast: {locked_taakopdracht.taak_url}status-aanpassen/"
-                )
 
             melding_gebeurtenis = Meldinggebeurtenis(
                 melding=locked_melding,

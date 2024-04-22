@@ -7,8 +7,10 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
+from django.contrib.sites.models import Site
 from PIL import Image, UnidentifiedImageError
 from pillow_heif import register_heif_opener
+from rest_framework.reverse import reverse
 from sorl.thumbnail import get_thumbnail
 from utils.images import get_upload_path
 from utils.models import BasisModel
@@ -93,6 +95,15 @@ class Bijlage(BasisModel):
             raise Bijlage.BestandPadFout(
                 f"aanmaken_afbeelding_versies: bestand path bestaat niet, bijlage id: {self.pk}"
             )
+
+    def get_absolute_url(self):
+        domain = Site.objects.get_current().domain
+        url_basis = f"{settings.PROTOCOL}://{domain}{settings.PORT}"
+        pad = reverse(
+            "v1:bijlage-detail",
+            kwargs={"uuid": self.uuid},
+        )
+        return f"{url_basis}{pad}"
 
     class Meta:
         verbose_name = "Bijlage"

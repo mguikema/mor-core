@@ -5,7 +5,6 @@ import sys
 from os.path import join
 
 import requests
-from celery.schedules import crontab
 
 logger = logging.getLogger(__name__)
 
@@ -210,13 +209,8 @@ CELERY_BROKER_URL = "redis://redis:6379/0"
 BROKER_URL = CELERY_BROKER_URL
 CELERY_TASK_TRACK_STARTED = True
 CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_EXTENDED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERYBEAT_SCHEDULE = {
-    "queue_every_five_mins": {
-        "task": "apps.health.tasks.query_every_five_mins",
-        "schedule": crontab(minute=5),
-    },
-}
 CELERY_WORKER_CONCURRENCY = 2
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 20
 CELERY_WORKER_MAX_MEMORY_PER_CHILD = 200000

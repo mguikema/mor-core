@@ -127,18 +127,18 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
     class Meta:
         model = Taakopdracht
         fields = (
-            "_links",
-            "id",
-            "uuid",
             "taaktype",
             "titel",
             "bericht",
             "additionele_informatie",
+            "gebruiker",
+            "_links",
+            "id",
+            "uuid",
             "status",
             "resolutie",
             "melding",
             "taakgebeurtenissen_voor_taakopdracht",
-            "gebruiker",
             "taak_url",
         )
         read_only_fields = (
