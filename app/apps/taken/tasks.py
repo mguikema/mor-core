@@ -50,7 +50,7 @@ def fix_taakopdracht_issues(self, taakopdracht_id):
         .order_by("-aangemaakt_op")
         .first()
     )
-    # Fix missing afgesloten_op voor geannulleerde taken
+    # Issue: Fix missing afgesloten_op voor geannuleerde taken
     if not taakopdracht.afgesloten_op and taakopdracht.resolutie == "geannuleerd":
         taakopdracht.afgesloten_op = taakgebeurtenis.aangemaakt_op
         taakopdracht.save()
@@ -113,7 +113,7 @@ def fix_taakopdracht_issues(self, taakopdracht_id):
                 "taak_aanmaken_response.status_code": taak_aanmaken_response.status_code,
                 "taak_aanmaken_response.text": taak_aanmaken_response.text,
             }
-    # Issue: taakopdracht has voltooid in mor-core but not in fixer
+    # Issue: Taakopdracht has voltooid in mor-core but not in fixer
     elif (
         taak_data
         and not isinstance(taak_data, str)
