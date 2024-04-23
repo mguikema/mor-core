@@ -40,7 +40,7 @@ class TitelFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         titels = Taakopdracht.objects.values_list("titel", flat=True).distinct()
-        return ((titel, titel) for titel in set(titels))
+        return ((titel, titel) for titel in sorted(set(titels)))
 
     def queryset(self, request, queryset):
         if self.value():

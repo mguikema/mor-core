@@ -1,4 +1,5 @@
 from apps.taken.models import Taakgebeurtenis, Taakopdracht
+from apps.taken.tasks import fix_taakopdracht_issues
 from django.contrib import admin
 
 from .admin_filters import (
@@ -29,6 +30,15 @@ def action_set_taak_afgesloten_op_for_melding_afgesloten(modeladmin, request, qu
             taakopdracht.save()
 
 
+@admin.action(description="Fix problemen met taakopdrachten")
+def action_fix_taakopdracht_issues(self, request, queryset):
+    for taakopdracht in queryset.all():
+        fix_taakopdracht_issues.delay(taakopdracht.id)
+    self.message_user(
+        request, f"Updating fixer taak for {len(queryset.all())} taakopdrachten!"
+    )
+
+
 class TaakopdrachtAdmin(admin.ModelAdmin):
     list_editable = ("taaktype", "taak_url")
     list_display = (
@@ -45,8 +55,16 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "pretty_status",
         "resolutie",
     )
-    actions = (action_set_taak_afgesloten_op_for_melding_afgesloten,)
-    list_filter = (StatusFilter, ResolutieFilter, TitelFilter, AfgeslotenOpFilter)
+    actions = (
+        action_set_taak_afgesloten_op_for_melding_afgesloten,
+        action_fix_taakopdracht_issues,
+    )
+    list_filter = (
+        StatusFilter,
+        ResolutieFilter,
+        AfgeslotenOpFilter,
+        TitelFilter,
+    )
     search_fields = [
         "melding__id",
     ]
