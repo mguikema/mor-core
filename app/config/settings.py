@@ -261,6 +261,14 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+MBC_APPLICATIE_URL = os.getenv(
+    "MBC_APPLICATIE_URL", "https://serviceformulier.benc.forzamor.nl"
+)
+FIXER_APPLICATIE_URL = os.getenv("FIXER_APPLICATIE_URL", "https://fixer.forzamor.nl")
+TAAKTYPE_APPLICATIE_URL = os.getenv(
+    "TAAKTYPE_APPLICATIE_URL", "https://fixer.forzamor.nl"
+)
+
 # Django security settings
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_REFERRER_POLICY = "strict-origin"

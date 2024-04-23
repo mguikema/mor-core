@@ -8,6 +8,13 @@ from django.utils.safestring import mark_safe
 from django_celery_results.admin import TaskResultAdmin
 from django_celery_results.models import TaskResult
 
+from .admin_filters import (
+    AfgeslotenOpFilter,
+    ResolutieFilter,
+    StatusFilter,
+    TitelFilter,
+)
+
 
 class TaakgebeurtenisAdmin(admin.ModelAdmin):
     list_display = (
@@ -44,15 +51,20 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "titel",
         "aangepast_op",
         "afgesloten_op",
-        "melding__afgesloten_op",
-        "afhandeltijd",
         "pretty_afhandeltijd",
         "melding",
-        "status",
+        "melding__afgesloten_op",
+        "pretty_status",
         "resolutie",
     )
     actions = (action_set_taak_afgesloten_op_for_melding_afgesloten,)
+    list_filter = (StatusFilter, ResolutieFilter, TitelFilter, AfgeslotenOpFilter)
+    search_fields = [
+        "melding__id",
+    ]
     readonly_fields = (
+        "uuid",
+        "afhandeltijd",
         "pretty_afhandeltijd",
         "aangemaakt_op",
         "aangepast_op",
@@ -63,6 +75,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "uuid",
                     "titel",
                     "melding",
                     "applicatie",
@@ -83,7 +96,6 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
                     "aangepast_op",
                     "afgesloten_op",
                     "pretty_afhandeltijd",
-                    "afhandeltijd",
                 )
             },
         ),
@@ -94,6 +106,15 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
             return obj.melding.afgesloten_op
         else:
             return "-"
+
+    def pretty_status(self, obj):
+        if obj.status:
+            return obj.status.naam
+        else:
+            return "-"
+
+    pretty_status.short_description = "Status"
+    pretty_status.admin_order_field = "status__naam"
 
     def pretty_afhandeltijd(self, obj):
         if obj.afhandeltijd:
