@@ -38,10 +38,10 @@ class CustomCollector(object):
 
     def create_taaktype_threshold_list(self):
         taak_type_threshold_list = []
-        taakapplicatie = Applicatie.vind_applicatie_obv_uri(
+        taaktype_applicatie = Applicatie.vind_applicatie_obv_uri(
             settings.TAAKTYPE_APPLICATIE_URL
         )
-        taaktype_data = taakapplicatie.taaktypes_halen()
+        taaktype_data = taaktype_applicatie.taaktypes_halen()
         for taaktype in taaktype_data:
             taak_type_threshold_list.append(
                 {
