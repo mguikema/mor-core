@@ -41,7 +41,9 @@ class CustomCollector(object):
         taaktype_applicatie = Applicatie.vind_applicatie_obv_uri(
             settings.TAAKTYPE_APPLICATIE_URL
         )
-        taaktype_data = taaktype_applicatie.taaktypes_halen()
+        taaktype_data = taaktype_applicatie.taaktypes_halen(
+            cache_timeout=900
+        )  # Cache invalidates every 15 minutes
         for taaktype in taaktype_data:
             taak_type_threshold_list.append(
                 {
