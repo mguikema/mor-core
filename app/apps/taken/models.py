@@ -1,7 +1,10 @@
 from apps.bijlagen.models import Bijlage
+from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
+from django.contrib.sites.models import Site
 from rest_framework.exceptions import APIException
+from rest_framework.reverse import reverse
 from utils.fields import DictJSONField
 from utils.models import BasisModel
 
@@ -196,3 +199,12 @@ class Taakopdracht(BasisModel):
             self.afhandeltijd = None
         self.full_clean()
         return super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        domain = Site.objects.get_current().domain
+        url_basis = f"{settings.PROTOCOL}://{domain}{settings.PORT}"
+        pad = reverse(
+            "v1:taakopdracht-detail",
+            kwargs={"uuid": self.uuid},
+        )
+        return f"{url_basis}{pad}"

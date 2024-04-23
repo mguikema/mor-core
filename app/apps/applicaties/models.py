@@ -202,14 +202,20 @@ class Applicatie(BasisModel):
                 try:
                     response: Response = action(**action_params)
                 except Exception as e:
-                    raise Applicatie.AntwoordFout(f"error: {e}")
+                    logger.error(f"error: {e}")
+                    raise Applicatie.AntwoordFout(
+                        f"Er is iets mis gegaan met de verbinding tussen MOR-Core en {self.naam}"
+                    )
                 if int(response.status_code) == 200:
                     cache.set(cache_key, response, cache_timeout)
         else:
             try:
                 response: Response = action(**action_params)
             except Exception as e:
-                raise Applicatie.AntwoordFout(f"error: {e}")
+                logger.error(f"error: {e}")
+                raise Applicatie.AntwoordFout(
+                    f"Er is iets mis gegaan met de verbinding tussen MOR-Core en {self.naam}"
+                )
         if raw_response:
             return response
         return response.json()
@@ -239,21 +245,21 @@ class Applicatie(BasisModel):
                 method="get",
                 cache_timeout=cache_timeout,
             )
+            if taaktypes_response.status_code == 200:
+                return taaktypes_response.json().get("results", [])
             if taaktypes_response.status_code == 404:
-                logger.error(
-                    f"url: {self.basis_url}, taaktypes voor applicatie '{self.naam}' konden niet worden opgehaald: status_code={taaktypes_response.status_code}"
-                )
-                return []
-            if taaktypes_response.status_code != 200:
-                logger.error(
-                    f"url: {self.basis_url}, taaktypes voor applicatie '{self.naam}' konden niet worden opgehaald: status_code={taaktypes_response.status_code}, text={taaktypes_response.text}"
-                )
-                return []
-            return taaktypes_response.json().get("results", [])
+                error = f"De taaktypes voor {self.naam} konden niet worden opgehaald: fout code={taaktypes_response.status_code}"
+            elif taaktypes_response.status_code != 200:
+                try:
+                    error = f"De taaktypes voor {self.naam} konden niet worden opgehaald: fout code={taaktypes_response.status_code}, antwoord={taaktypes_response.json().get('detail', taaktypes_response.json())}"
+                except Exception:
+                    error = f"De taaktypes voor {self.naam} konden niet worden opgehaald: fout code={taaktypes_response.status_code}"
+                logger.error(error)
+                raise Applicatie.TaaktypesOphalenFout(error)
+
         else:
-            logger.error(
-                f"taaktypes voor applicatie '{self.naam}' konden niet worden opgehaald: basis_url ontbreekt"
-            )
+            error = f"taaktypes voor applicatie '{self.naam}' konden niet worden opgehaald: basis_url ontbreekt"
+        logger.error(error)
         return []
 
     def fetch_taaktype_data(self, url):
