@@ -2,6 +2,7 @@ from apps.applicaties.models import Applicatie
 from apps.locatie.models import Locatie
 from apps.meldingen.models import Melding
 from apps.taken.models import Taakopdracht
+from django.conf import settings
 from django.db.models import (
     Avg,
     Case,
@@ -10,6 +11,7 @@ from django.db.models import (
     ExpressionWrapper,
     F,
     OuterRef,
+    Q,
     Subquery,
     Value,
     When,
@@ -25,29 +27,42 @@ def duration_to_seconds(duration):
 
 
 class CustomCollector(object):
-    def create_taaktype_threshold_dict(self):
-        max_days_threshold_dict = {}
-        unique_taaktypes = (
-            Taakopdracht.objects.values_list("taaktype", flat=True)
-            .distinct()
-            .order_by("taaktype")
+    def __init__(self):
+        self.taak_type_threshold_list = self.create_taaktype_threshold_list()
+        self.annotated_wijken_taken = self.annotate_highest_weight_wijk(
+            Taakopdracht.objects.all()
         )
-        for taaktype_url in unique_taaktypes:
-            taakapplicatie = Applicatie.vind_applicatie_obv_uri(taaktype_url)
-            taaktype_data = taakapplicatie.fetch_taaktype_data(taaktype_url)
-            if taaktype_data:
-                max_days_threshold_dict[taaktype_url] = {
-                    "threshold": taaktype_data.get("threshold", 3),
-                    "titel": taaktype_data.get("omschrijving", ""),
+        self.annotated_threshold_taken = self.annotate_thresholds(
+            self.annotated_wijken_taken
+        )
+
+    def create_taaktype_threshold_list(self):
+        taak_type_threshold_list = []
+        taaktype_applicatie = Applicatie.vind_applicatie_obv_uri(
+            settings.TAAKTYPE_APPLICATIE_URL
+        )
+        taaktype_data = taaktype_applicatie.taaktypes_halen(
+            cache_timeout=900
+        )  # Cache invalidates every 15 minutes
+        for taaktype in taaktype_data:
+            taak_type_threshold_list.append(
+                {
+                    "taaktype_url": taaktype["_links"].get("self", ""),
+                    "threshold": taaktype.get("threshold", 3),
+                    "titel": taaktype.get("omschrijving", ""),
                 }
-        return max_days_threshold_dict
+            )
+        return taak_type_threshold_list
 
     def annotate_thresholds(self, queryset):
         return queryset.annotate(
             threshold=Case(
                 *[
-                    When(taaktype=taaktype_url, then=Value(taaktype.get("threshold")))
-                    for taaktype_url, taaktype in self.taak_type_threshold_dict.items()
+                    When(
+                        taaktype=taaktype.get("taaktype_url", ""),
+                        then=Value(taaktype.get("threshold", 3)),
+                    )
+                    for taaktype in self.taak_type_threshold_list
                 ],
                 default=Value(3),
             )
@@ -67,14 +82,6 @@ class CustomCollector(object):
         )
 
     def collect(self):
-        self.taak_type_threshold_dict = self.create_taaktype_threshold_dict()
-        self.annotated_wijken_taken = self.annotate_highest_weight_wijk(
-            Taakopdracht.objects.all()
-        )
-        self.annotated_threshold_taken = self.annotate_thresholds(
-            self.annotated_wijken_taken
-        )
-
         # Meldingen metrics
         yield self.collect_melding_metrics()
 
@@ -200,6 +207,7 @@ class CustomCollector(object):
         )
         threshold_taken = (
             self.annotated_threshold_taken.filter(
+                ~Q(status__naam="voltooid"),
                 afgesloten_op__isnull=True,
                 aangemaakt_op__lte=timezone.now()
                 - timezone.timedelta(days=1) * F("threshold"),
@@ -229,6 +237,7 @@ class CustomCollector(object):
 
         taken = (
             self.annotated_threshold_taken.filter(
+                ~Q(status__naam="voltooid"),
                 afgesloten_op__isnull=True,
                 aangemaakt_op__gt=timezone.now()
                 - timezone.timedelta(days=1) * F("threshold"),
@@ -256,9 +265,11 @@ class CustomCollector(object):
             labels=["taaktype", "taaktype_url"],
         )
 
-        for taaktype_url, taaktype in self.taak_type_threshold_dict.items():
-            c.add_metric(
-                (taaktype.get("titel"), taaktype_url), taaktype.get("threshold")
-            )
+        for taaktype in self.taak_type_threshold_list:
+            taaktype_url = taaktype.get("taaktype_url", "")
+            threshold = taaktype.get("threshold", 3)
+            titel = taaktype.get("titel", "")
+
+            c.add_metric((titel, taaktype_url), threshold)
 
         return c

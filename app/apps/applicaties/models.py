@@ -237,13 +237,13 @@ class Applicatie(BasisModel):
     def taak_verwijderen(self, url):
         return self._do_request(url, method="delete")
 
-    def taaktypes_halen(self):
+    def taaktypes_halen(self, cache_timeout=60):
         if self.basis_url:
             taaktypes_response = self._do_request(
                 "/api/v1/taaktype/",
                 params={"limit": 100},
                 method="get",
-                cache_timeout=60,
+                cache_timeout=cache_timeout,
             )
             if taaktypes_response.status_code == 200:
                 return taaktypes_response.json().get("results", [])
