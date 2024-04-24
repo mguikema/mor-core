@@ -32,6 +32,9 @@ class MeldingManager(models.Manager):
     class TaakopdrachtInGebruik(Exception):
         pass
 
+    class TaakgebeurtenisInGebruik(Exception):
+        pass
+
     class TaakVerwijderenFout(Exception):
         pass
 
@@ -220,23 +223,6 @@ class MeldingManager(models.Manager):
                         "Eén van taken is op dit moment in gebruik, probeer het later nog eens."
                     )
 
-                taak_urls = locked_taakopdrachten.values_list("taak_url", flat=True)
-                for taak_url in taak_urls:
-                    taakapplicatie = Applicatie.vind_applicatie_obv_uri(taak_url)
-                    taak_status_aanpassen_data = {
-                        "taakstatus": {"naam": "voltooid"},
-                        "resolutie": "geannuleerd",
-                        "bijlagen": [],
-                        "gebruiker": melding_gebeurtenis.gebruiker,
-                    }
-                    response = taakapplicatie.taak_status_aanpassen(
-                        f"{taak_url}status-aanpassen/",
-                        data=taak_status_aanpassen_data,
-                    )
-                    if response.status_code not in [200, 404]:
-                        raise MeldingManager.TaakStatusAanpassenFout(
-                            f"De taak status voor de taak met url '{taak_url}', kon niet worden aangepast. fout code: {response.status_code}"
-                        )
                 taakgebeurtenissen = []
                 for to in locked_taakopdrachten:
                     taakstatus = Taakstatus.objects.create(

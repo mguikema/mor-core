@@ -13,6 +13,7 @@ from apps.meldingen.managers import (
 )
 from apps.meldingen.tasks import task_notificatie_voor_signaal_melding_afgesloten
 from apps.status.models import Status
+from apps.taken.models import Taakopdracht
 from apps.taken.tasks import task_taak_aanmaken, task_taak_status_aanpassen
 from django.dispatch import receiver
 
@@ -50,6 +51,22 @@ def urgentie_aangepast_handler(sender, melding, vorige_urgentie, *args, **kwargs
 @receiver(afgesloten, dispatch_uid="melding_afgesloten")
 def afgesloten_handler(sender, melding, *args, **kwargs):
     Applicatie.melding_veranderd_notificatie(melding.get_absolute_url(), "afgesloten")
+
+    taakopdrachten = Taakopdracht.objects.filter(
+        melding=melding,
+    )
+    for taakopdracht in taakopdrachten:
+        taakgebeurtenis = taakopdracht.taakgebeurtenissen_voor_taakopdracht.filter(
+            taakstatus__naam="voltooid",
+        ).first()
+        if taakgebeurtenis:
+            taakopdracht_status_aangepast.send_robust(
+                sender=sender.__class__,
+                melding=melding,
+                taakopdracht=taakopdracht,
+                taakgebeurtenis=taakgebeurtenis,
+            )
+
     for signaal in melding.signalen_voor_melding.all():
         task_notificatie_voor_signaal_melding_afgesloten.delay(signaal.pk)
 
@@ -70,7 +87,6 @@ def taakopdracht_aangemaakt_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
     task_taak_aanmaken.delay(
-        taakopdracht_id=taakopdracht.id,
         taakgebeurtenis_id=taakgebeurtenis.id,
     )
 
@@ -80,7 +96,6 @@ def taakopdracht_status_aangepast_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
     params = dict(
-        taakopdracht_id=taakopdracht.id,
         taakgebeurtenis_id=taakgebeurtenis.id,
     )
     try:
