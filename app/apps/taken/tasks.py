@@ -3,7 +3,8 @@ from apps.taken.models import Taakopdracht
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.db import OperationalError
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import OperationalError, transaction
 
 logger = get_task_logger(__name__)
 
@@ -25,12 +26,14 @@ class BaseTaskWithRetry(celery.Task):
 
 def get_taak_data(taakopdracht):
     if taakopdracht.applicatie:
-        taak_response = taakopdracht.applicatie._do_request(taakopdracht.taak_url)
+        taak_response = taakopdracht.applicatie._do_request(
+            taakopdracht.taak_url if taakopdracht.taak_url else "/ditgaatmis"
+        )
         if taak_response.status_code == 200:
             return taak_response.json()
         if taak_response.status_code == 404:
             logger.warning(
-                f"Fix taakopdracht issues, Fixer taak not found for taakopdracht id: {taakopdracht.id}, taak_url: {taakopdracht.taak_url}, status code: {taak_response.status_code}, response_text={taak_response.text}"
+                f"Fix taakopdracht issues, Fixer taak not found for taakopdracht id: {taakopdracht.id}, taak_url: {taakopdracht.taak_url}, status code: {taak_response.status_code}"
             )
             return "404 Fixer taak not found"
         logger.error(
@@ -50,12 +53,25 @@ def task_fix_taakopdracht_issues(self, taakopdracht_id):
         .first()
     )
     # Issue: Fix missing afgesloten_op voor geannuleerde taken
-    # @TODO possibly change more
     if not taakopdracht.afgesloten_op and taakopdracht.resolutie == "geannuleerd":
         taakopdracht.afgesloten_op = taakgebeurtenis.aangemaakt_op
         taakopdracht.save()
         logger.warning(
             f"Taakopdracht: {taakopdracht_id} now has a afgesloten_op: {taakopdracht.afgesloten_op} ."
+        )
+    # Issue: Fix missing afhandeltijd voor voltooide taken
+    if (
+        not taakopdracht.afhandeltijd
+        and taakopdracht.afgesloten_op
+        and taakopdracht.aangemaakt_op
+        and taakopdracht.resolutie == "geannuleerd"
+    ):
+        taakopdracht.afhandeltijd = (
+            taakopdracht.afgesloten_op - taakopdracht.aangemaakt_op
+        )
+        taakopdracht.save()
+        logger.warning(
+            f"Taakopdracht: {taakopdracht_id} now has a afhandeltijd: {taakopdracht.afgesloten_op} ."
         )
     # Issue: FixeR taak for taakopdracht was never created
     taak_data = get_taak_data(taakopdracht)
@@ -64,6 +80,9 @@ def task_fix_taakopdracht_issues(self, taakopdracht_id):
         and taak_data == "404 Fixer taak not found"
         and taakopdracht.applicatie
     ):
+        logger.warning(
+            f"Creating new taak for taakopdracht met id: {taakopdracht_id}, taakgebeurtenis met id: {taakgebeurtenis.id}"
+        )
         task_taak_aanmaken.delay(
             taakgebeurtenis_id=taakgebeurtenis.id, check_taak_url=False
         )
@@ -75,7 +94,12 @@ def task_fix_taakopdracht_issues(self, taakopdracht_id):
         and taakopdracht.status.naam != taak_data.get("taakstatus").get("naam")
         and taakopdracht.applicatie
     ):
-        task_taak_status_aanpassen.delay(taakgebeurtenis_id=taakgebeurtenis.id)
+        logger.warning(
+            f"Updating taak status for taakopdracht met id: {taakopdracht_id}, taakgebeurtenis met id: {taakgebeurtenis.id} en FixeR taak met id: {taak_data.get('id')}"
+        )
+        task_taak_status_aanpassen.delay(
+            taakgebeurtenis_id=taakgebeurtenis.id, check_taak_url=False
+        )
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
@@ -85,10 +109,13 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
     from apps.taken.models import Taakgebeurtenis
 
     try:
-        taakgebeurtenis = (
-            Taakgebeurtenis.objects.using(settings.DEFAULT_DATABASE_KEY)
-            .select_for_update(nowait=True)
-            .get(id=taakgebeurtenis_id)
+        with transaction.atomic(using=settings.DEFAULT_DATABASE_KEY):
+            taakgebeurtenis = Taakgebeurtenis.objects.select_for_update(
+                nowait=True
+            ).get(id=taakgebeurtenis_id)
+    except ObjectDoesNotExist:
+        raise MeldingManager.TaakgebeurtenisNietGevonden(
+            f"Taakgebeurtenis met id {taakgebeurtenis_id} bestaat niet."
         )
     except OperationalError:
         raise MeldingManager.TaakgebeurtenisInGebruik(
@@ -96,10 +123,13 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
         )
 
     try:
-        taakopdracht = (
-            Taakgebeurtenis.objects.using(settings.DEFAULT_DATABASE_KEY)
-            .select_for_update(nowait=True)
-            .get(id=taakgebeurtenis.taakopdracht.id)
+        with transaction.atomic(using=settings.DEFAULT_DATABASE_KEY):
+            taakopdracht = Taakopdracht.objects.select_for_update(nowait=True).get(
+                id=taakgebeurtenis.taakopdracht.id
+            )
+    except ObjectDoesNotExist:
+        raise MeldingManager.TaakopdrachtNietGevonden(
+            f"Taakopdracht met id {taakgebeurtenis.taakopdracht.id} bestaat niet."
         )
     except OperationalError:
         raise MeldingManager.TaakopdrachtInGebruik(
@@ -161,17 +191,16 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def task_taak_status_aanpassen(self, taakgebeurtenis_id):
+def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
     from apps.applicaties.models import Applicatie
     from apps.meldingen.managers import MeldingManager
     from apps.taken.models import Taakgebeurtenis
 
     try:
-        taakgebeurtenis = (
-            Taakgebeurtenis.objects.using(settings.DEFAULT_DATABASE_KEY)
-            .select_for_update(nowait=True)
-            .get(id=taakgebeurtenis_id)
-        )
+        with transaction.atomic(using=settings.DEFAULT_DATABASE_KEY):
+            taakgebeurtenis = Taakgebeurtenis.objects.select_for_update(
+                nowait=True
+            ).get(id=taakgebeurtenis_id)
     except OperationalError:
         raise MeldingManager.TaakgebeurtenisInGebruik(
             "De taakgebeurtenis is op dit moment in gebruik, probeer het later nog eens."
@@ -184,7 +213,7 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id):
             f"Taak is nog niet aangemaakt bij {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
         )
 
-    if taakgebeurtenis.additionele_informatie.get("taak_url"):
+    if taakgebeurtenis.additionele_informatie.get("taak_url"):  # and check_taak_url ???
         logger.error(
             f"Deze status is al aangepast in {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
         )
@@ -195,7 +224,7 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id):
         taakopdracht.taakgebeurtenissen_voor_taakopdracht.order_by(
             "-aangemaakt_op"
         ).filter(
-            additionele_informatie__taak_url__isnull=True,
+            additionele_informatie__taak_url__isnull=True if check_taak_url else False,
             aangemaakt_op__gte=taakgebeurtenis.aangemaakt_op,
         )
     )
