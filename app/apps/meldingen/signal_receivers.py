@@ -53,15 +53,19 @@ def afgesloten_handler(sender, melding, *args, **kwargs):
     Applicatie.melding_veranderd_notificatie(melding.get_absolute_url(), "afgesloten")
 
     taakopdrachten = Taakopdracht.objects.filter(
-        melding=melding.pk,
-        resolutie__isnull=True,
+        melding=melding,
     )
     for taakopdracht in taakopdrachten:
         taakgebeurtenis = taakopdracht.taakgebeurtenissen_voor_taakopdracht.filter(
             taakstatus__naam="voltooid",
         ).first()
         if taakgebeurtenis:
-            task_taak_status_aanpassen.delay(taakgebeurtenis)
+            taakopdracht_status_aangepast.send_robust(
+                sender=sender.__class__,
+                melding=melding,
+                taakopdracht=taakopdracht,
+                taakgebeurtenis=taakgebeurtenis,
+            )
 
     for signaal in melding.signalen_voor_melding.all():
         task_notificatie_voor_signaal_melding_afgesloten.delay(signaal.pk)
