@@ -8,7 +8,6 @@ logger = get_task_logger(__name__)
 
 DEFAULT_RETRY_DELAY = 2
 MAX_RETRIES = 6
-LOCK_EXPIRE = 5
 RETRY_BACKOFF_MAX = 60 * 30
 RETRY_BACKOFF = 120
 
