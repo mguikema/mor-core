@@ -260,11 +260,6 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-APPLICATIE_BASIS_URL = os.getenv("APPLICATIE_BASIS_URL", "https://mor-core.forzamor.nl")
-MBC_APPLICATIE_URL = os.getenv(
-    "MBC_APPLICATIE_URL", "https://serviceformulier.benc.forzamor.nl"
-)
-FIXER_APPLICATIE_URL = os.getenv("FIXER_APPLICATIE_URL", "https://fixer.forzamor.nl")
 TAAKTYPE_APPLICATIE_URL = os.getenv(
     "TAAKTYPE_APPLICATIE_URL", "https://fixer.forzamor.nl"
 )

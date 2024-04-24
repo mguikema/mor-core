@@ -32,6 +32,9 @@ class MeldingManager(models.Manager):
     class TaakopdrachtInGebruik(Exception):
         pass
 
+    class TaakgebeurtenisInGebruik(Exception):
+        pass
+
     class TaakVerwijderenFout(Exception):
         pass
 
