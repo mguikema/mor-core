@@ -1,11 +1,9 @@
 import celery
 from apps.taken.models import Taakopdracht
-from apps.taken.serializers import TaakopdrachtSerializer
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import OperationalError
-from rest_framework.reverse import reverse
 
 logger = get_task_logger(__name__)
 
@@ -52,6 +50,7 @@ def task_fix_taakopdracht_issues(self, taakopdracht_id):
         .first()
     )
     # Issue: Fix missing afgesloten_op voor geannuleerde taken
+    # @TODO possibly change more
     if not taakopdracht.afgesloten_op and taakopdracht.resolutie == "geannuleerd":
         taakopdracht.afgesloten_op = taakgebeurtenis.aangemaakt_op
         taakopdracht.save()
@@ -65,55 +64,9 @@ def task_fix_taakopdracht_issues(self, taakopdracht_id):
         and taak_data == "404 Fixer taak not found"
         and taakopdracht.applicatie
     ):
-        serializer = TaakopdrachtSerializer(instance=taakopdracht)
-        basis_url = settings.APPLICATIE_BASIS_URL
-        taakapplicatie_data = {
-            "_links": {
-                "self": basis_url + serializer.data["_links"]["self"],
-                "applicatie": basis_url + serializer.data["_links"]["applicatie"],
-                "melding": basis_url + serializer.data["_links"]["melding"],
-            },
-            "taaktype": serializer.data["taaktype"],
-            "titel": serializer.data["titel"],
-            "bericht": serializer.data["bericht"],
-            "additionele_informatie": serializer.data["additionele_informatie"],
-            "status": serializer.data["status"],
-            "resolutie": serializer.data["resolutie"],
-            "gebruiker": taakgebeurtenis.gebruiker,
-            "taakopdracht": basis_url
-            + reverse(
-                "v1:taakopdracht-detail",
-                kwargs={"uuid": taakopdracht.uuid},
-            ),
-        }
-        taakapplicatie_data["melding"] = taakapplicatie_data.get("_links", {}).get(
-            "melding"
+        task_taak_aanmaken.delay(
+            taakgebeurtenis_id=taakgebeurtenis.id, check_taak_url=False
         )
-
-        taak_aanmaken_response = taakopdracht.applicatie.taak_aanmaken(
-            taakapplicatie_data
-        )
-
-        if taak_aanmaken_response.status_code == 201:
-            taak_aanmaken_data = taak_aanmaken_response.json()
-            taakopdracht.taak_url = taak_aanmaken_data.get("_links", {}).get("self")
-            taakopdracht.save()
-            logger.warning(
-                f"Taak in FixeR aangemaakt successfully for Mor-Core taakopdracht.id: {taakopdracht_id} and FixeR taak.id: {taak_aanmaken_data.get('id')}."
-            )
-            return {
-                "taakopdracht.id": taakopdracht_id,
-                "taak.id": taak_aanmaken_data.get("id"),
-            }
-        else:
-            logger.error(
-                f"Fix taakopdracht issues, taak_aanmaken_response: status_code={taak_aanmaken_response.status_code}, taakopdracht.id={taakopdracht_id}, taak.id={taak_data.get('id')}, aanmaak_data={taakapplicatie_data}, error text: {taak_aanmaken_response.text}"
-            )
-            return {
-                "taakopdracht.id": taakopdracht_id,
-                "taak_aanmaken_response.status_code": taak_aanmaken_response.status_code,
-                "taak_aanmaken_response.text": taak_aanmaken_response.text,
-            }
     # Issue: Taakopdracht has voltooid in mor-core but not in fixer
     elif (
         taak_data
@@ -122,41 +75,11 @@ def task_fix_taakopdracht_issues(self, taakopdracht_id):
         and taakopdracht.status.naam != taak_data.get("taakstatus").get("naam")
         and taakopdracht.applicatie
     ):
-        taak_status_aanpassen_data = {
-            "taakstatus": {"naam": taakgebeurtenis.taakstatus.naam},
-            "resolutie": taakopdracht.resolutie,
-            "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
-            "gebruiker": taakgebeurtenis.gebruiker,
-            "bijlagen": [],
-            # "uitvoerder": uitvoerder,
-        }
-        taak_status_aanpassen_response = taakopdracht.applicatie.taak_status_aanpassen(
-            f"{taakopdracht.taak_url}status-aanpassen/",
-            data=taak_status_aanpassen_data,
-        )
-        if taak_status_aanpassen_response.status_code != 200:
-            logger.error(
-                f"Fix taakopdracht issues, taak_status_aanpassen_response: status_code={taak_status_aanpassen_response.status_code}, taakopdracht.id={taakopdracht_id}, taak.id={taak_data.get('id')}, update_data={taak_status_aanpassen_data}, error text: {taak_status_aanpassen_response.text}"
-            )
-            return {
-                "taakopdracht.id": taakopdracht_id,
-                "taak.id": taak_data.get("id"),
-                "taak_status_aanpassen_response.status_code": taak_status_aanpassen_response.status_code,
-                "taak_status_aanpassen_response.text": taak_status_aanpassen_response.text,
-            }
-
-        else:
-            logger.warning(
-                f"Taak in FixeR updated successfully for Mor-Core taakopdracht.id: {taakopdracht_id} and FixeR taak.id: {taak_data.get('id')}."
-            )
-            return {
-                "taakopdracht.id": taakopdracht_id,
-                "taak.id": taak_data.get("id"),
-            }
+        task_taak_status_aanpassen.delay(taakgebeurtenis_id=taakgebeurtenis.id)
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def task_taak_aanmaken(self, taakgebeurtenis_id):
+def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
     from apps.applicaties.models import Applicatie
     from apps.meldingen.managers import MeldingManager
     from apps.taken.models import Taakgebeurtenis
@@ -183,7 +106,7 @@ def task_taak_aanmaken(self, taakgebeurtenis_id):
             "De taakopdracht is op dit moment in gebruik, probeer het later nog eens."
         )
 
-    if taakopdracht.taak_url:
+    if taakopdracht.taak_url and check_taak_url:
         return f"Taak is al aangemaakt bij {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
 
     eerste_taakgebeurtenis = taakopdracht.taakgebeurtenissen_voor_taakopdracht.order_by(
@@ -211,11 +134,15 @@ def task_taak_aanmaken(self, taakgebeurtenis_id):
             response_text = f", antwoord: {taak_aanmaken_response.json()}"
         except Exception:
             ...
+        logger.error(
+            f"De taak kon niet worden aangemaakt in {taakopdracht.applicatie.naam} o.b.v. taakopdracht met id {taakopdracht.id}, fout code: {taak_aanmaken_response.status_code}{response_text}"
+        )
         raise Exception(
-            f"De taak kon niet worden aangemaakt in {taakopdracht.applicatie.naam}, fout code: {taak_aanmaken_response.status_code}{response_text}"
+            f"De taak kon niet worden aangemaakt in {taakopdracht.applicatie.naam} o.b.v. taakopdracht met id {taakopdracht.id}, fout code: {taak_aanmaken_response.status_code}{response_text}"
         )
 
-    taakopdracht.taak_url = taak_aanmaken_response.json().get("_links", {}).get("self")
+    taak_aanmaken_data = taak_aanmaken_response.json()
+    taakopdracht.taak_url = taak_aanmaken_data.get("_links", {}).get("self")
     taakopdracht.save()
     additionele_informatie = {}
     additionele_informatie.update(taakgebeurtenis.additionele_informatie)
@@ -226,8 +153,11 @@ def task_taak_aanmaken(self, taakgebeurtenis_id):
     Applicatie.melding_veranderd_notificatie(
         taakopdracht.melding.get_absolute_url(), "taakopdracht_aangemaakt"
     )
+    logger.warning(
+        f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
+    )
 
-    return f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id}"
+    return f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
@@ -272,6 +202,9 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id):
     eerstvolgende_taakgebeurtenis = eerstvolgende_taakgebeurtenissen.first()
 
     if eerstvolgende_taakgebeurtenis != taakgebeurtenis:
+        logger.error(
+            f"Deze status aanpassing moeten wachten tot andere statussen doorgegeven zijn: taakopdracht id: {taakopdracht.id}"
+        )
         raise MeldingManager.TaakgebeurtenisFout(
             f"Deze status aanpassing moeten wachten tot andere statussen doorgegeven zijn: taakopdracht id: {taakopdracht.id}"
         )
@@ -292,10 +225,14 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id):
     )
 
     if taak_status_aanpassen_response.status_code not in [200, 404]:
+        logger.error(
+            f"De taakstatus kon niet worden aangepast: {taakopdracht.taak_url}status-aanpassen/ o.b.v. taakopdracht met id: {taakopdracht.id}"
+        )
         raise MeldingManager.TaakStatusAanpassenFout(
             f"De taakstatus kon niet worden aangepast: {taakopdracht.taak_url}status-aanpassen/"
         )
 
+    taak_status_aanpassen_data = taak_status_aanpassen_response.json()
     additionele_informatie = {}
     additionele_informatie.update(taakgebeurtenis.additionele_informatie)
     additionele_informatie.update({"taak_url": taakopdracht.taak_url})
@@ -305,5 +242,7 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id):
     Applicatie.melding_veranderd_notificatie(
         taakopdracht.melding.get_absolute_url(), "taakopdracht_status_aangepast"
     )
-
-    return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id}"
+    logger.warning(
+        f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
+    )
+    return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."

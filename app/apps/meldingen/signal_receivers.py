@@ -83,7 +83,6 @@ def taakopdracht_aangemaakt_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
     task_taak_aanmaken.delay(
-        taakopdracht_id=taakopdracht.id,
         taakgebeurtenis_id=taakgebeurtenis.id,
     )
 
@@ -93,7 +92,6 @@ def taakopdracht_status_aangepast_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
     params = dict(
-        taakopdracht_id=taakopdracht.id,
         taakgebeurtenis_id=taakgebeurtenis.id,
     )
     try:
