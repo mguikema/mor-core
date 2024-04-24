@@ -1,6 +1,8 @@
 import celery
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from django.conf import settings
+from django.db import OperationalError
 
 logger = get_task_logger(__name__)
 
@@ -20,23 +22,42 @@ class BaseTaskWithRetry(celery.Task):
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def task_taak_aanmaken(self, taakopdracht_id, taakgebeurtenis_id):
+def task_taak_aanmaken(self, taakgebeurtenis_id):
     from apps.applicaties.models import Applicatie
     from apps.meldingen.managers import MeldingManager
-    from apps.taken.models import Taakgebeurtenis, Taakopdracht
+    from apps.taken.models import Taakgebeurtenis
 
-    taakopdracht = Taakopdracht.objects.get(id=taakopdracht_id)
-    taakgebeurtenis = Taakgebeurtenis.objects.get(id=taakgebeurtenis_id)
+    try:
+        taakgebeurtenis = (
+            Taakgebeurtenis.objects.using(settings.DEFAULT_DATABASE_KEY)
+            .select_for_update(nowait=True)
+            .get(id=taakgebeurtenis_id)
+        )
+    except OperationalError:
+        raise MeldingManager.TaakgebeurtenisInGebruik(
+            "De taakgebeurtenis is op dit moment in gebruik, probeer het later nog eens."
+        )
+
+    try:
+        taakopdracht = (
+            Taakgebeurtenis.objects.using(settings.DEFAULT_DATABASE_KEY)
+            .select_for_update(nowait=True)
+            .get(id=taakgebeurtenis.taakopdracht.id)
+        )
+    except OperationalError:
+        raise MeldingManager.TaakopdrachtInGebruik(
+            "De taakopdracht is op dit moment in gebruik, probeer het later nog eens."
+        )
 
     if taakopdracht.taak_url:
-        return f"Taak is al aangemaakt bij {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht_id}"
+        return f"Taak is al aangemaakt bij {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
 
     eerste_taakgebeurtenis = taakopdracht.taakgebeurtenissen_voor_taakopdracht.order_by(
         "aangemaakt_op"
     ).first()
     if eerste_taakgebeurtenis != taakgebeurtenis:
         raise MeldingManager.TaakgebeurtenisOntbreekt(
-            f"De eerste taakgebeurtenis moet de huidige zijn. taakopdracht_id: {taakopdracht_id}"
+            f"De eerste taakgebeurtenis moet de huidige zijn. taakopdracht_id: {taakopdracht.id}"
         )
 
     taakapplicatie_data = {
@@ -72,26 +93,36 @@ def task_taak_aanmaken(self, taakopdracht_id, taakgebeurtenis_id):
         taakopdracht.melding.get_absolute_url(), "taakopdracht_aangemaakt"
     )
 
-    return f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht_id}"
+    return f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id}"
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def task_taak_status_aanpassen(self, taakopdracht_id, taakgebeurtenis_id):
+def task_taak_status_aanpassen(self, taakgebeurtenis_id):
     from apps.applicaties.models import Applicatie
     from apps.meldingen.managers import MeldingManager
-    from apps.taken.models import Taakgebeurtenis, Taakopdracht
+    from apps.taken.models import Taakgebeurtenis
 
-    taakopdracht = Taakopdracht.objects.get(id=taakopdracht_id)
-    taakgebeurtenis = Taakgebeurtenis.objects.get(id=taakgebeurtenis_id)
+    try:
+        taakgebeurtenis = (
+            Taakgebeurtenis.objects.using(settings.DEFAULT_DATABASE_KEY)
+            .select_for_update(nowait=True)
+            .get(id=taakgebeurtenis_id)
+        )
+    except OperationalError:
+        raise MeldingManager.TaakgebeurtenisInGebruik(
+            "De taakgebeurtenis is op dit moment in gebruik, probeer het later nog eens."
+        )
+
+    taakopdracht = taakgebeurtenis.taakopdracht
 
     if not taakopdracht.taak_url:
         raise MeldingManager.TaakopdrachtUrlOntbreekt(
-            f"Taak is nog niet aangemaakt bij {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht_id}"
+            f"Taak is nog niet aangemaakt bij {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
         )
 
     if taakgebeurtenis.additionele_informatie.get("taak_url"):
         logger.error(
-            f"Deze status is al aangepast in {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht_id}"
+            f"Deze status is al aangepast in {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
         )
 
     taakopdracht.taakgebeurtenissen_voor_taakopdracht.all().order_by("aangemaakt_op")
@@ -141,4 +172,4 @@ def task_taak_status_aanpassen(self, taakopdracht_id, taakgebeurtenis_id):
         taakopdracht.melding.get_absolute_url(), "taakopdracht_status_aangepast"
     )
 
-    return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht_id}"
+    return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id}"
