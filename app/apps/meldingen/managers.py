@@ -35,6 +35,12 @@ class MeldingManager(models.Manager):
     class TaakgebeurtenisInGebruik(Exception):
         pass
 
+    class TaakgebeurtenisNietGevonden(Exception):
+        pass
+
+    class TaakopdrachtNietGevonden(Exception):
+        pass
+
     class TaakVerwijderenFout(Exception):
         pass
 
@@ -231,6 +237,10 @@ class MeldingManager(models.Manager):
                     to.status = taakstatus
                     to.resolutie = "geannuleerd"
                     to.afgesloten_op = timezone.now()
+                    if to.afgesloten_op and to.aangemaakt_op:
+                        to.afhandeltijd = to.afgesloten_op - to.aangemaakt_op
+                    else:
+                        to.afhandeltijd = None
                     taakgebeurtenissen.append(
                         Taakgebeurtenis(
                             taakopdracht=to,
@@ -239,7 +249,8 @@ class MeldingManager(models.Manager):
                         )
                     )
                 Taakopdracht.objects.bulk_update(
-                    locked_taakopdrachten, ["status", "resolutie", "afgesloten_op"]
+                    locked_taakopdrachten,
+                    ["status", "resolutie", "afgesloten_op", "afhandeltijd"],
                 )
                 aangemaakte_taakgebeurtenissen = Taakgebeurtenis.objects.bulk_create(
                     taakgebeurtenissen

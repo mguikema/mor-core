@@ -47,7 +47,6 @@ MELDING_VERANDERD_NOTIFICATIE_URL = os.getenv(
     "MELDING_VERANDERD_NOTIFICATIE_URL", "/api/v1/melding/"
 )
 
-APPLICATIE_BASIS_URL = os.getenv("APPLICATIE_BASIS_URL")
 ALLOW_UNAUTHORIZED_MEDIA_ACCESS = (
     os.getenv("ALLOW_UNAUTHORIZED_MEDIA_ACCESS", False) in TRUE_VALUES
 )
@@ -261,10 +260,6 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-MBC_APPLICATIE_URL = os.getenv(
-    "MBC_APPLICATIE_URL", "https://serviceformulier.benc.forzamor.nl"
-)
-FIXER_APPLICATIE_URL = os.getenv("FIXER_APPLICATIE_URL", "https://fixer.forzamor.nl")
 TAAKTYPE_APPLICATIE_URL = os.getenv(
     "TAAKTYPE_APPLICATIE_URL", "https://fixer.forzamor.nl"
 )
@@ -427,7 +422,7 @@ LOGGING = {
         },
         "celery": {
             "handlers": ["console", "file"],
-            "level": "INFO",
+            "level": "WARNING",
         },
     },
 }
