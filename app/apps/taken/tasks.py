@@ -70,7 +70,7 @@ def task_fix_taakopdracht_issues(self, taakopdracht_id):
         )
         taakopdracht.save()
         logger.warning(
-            f"Taakopdracht: {taakopdracht_id} now has a afhandeltijd: {taakopdracht.afgesloten_op} ."
+            f"Taakopdracht: {taakopdracht_id} now has a afhandeltijd: {taakopdracht.afhandeltijd} ."
         )
     # Issue: FixeR taak for taakopdracht was never created
     taak_data = get_taak_data(taakopdracht)
@@ -190,11 +190,10 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
         Applicatie.melding_veranderd_notificatie(
             taakopdracht.melding.get_absolute_url(), "taakopdracht_aangemaakt"
         )
-        logger.warning(
-            f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
-        )
-
-        return f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
+    logger.warning(
+        f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
+    )
+    return f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
@@ -291,8 +290,7 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
         Applicatie.melding_veranderd_notificatie(
             taakopdracht.melding.get_absolute_url(), "taakopdracht_status_aangepast"
         )
-        logger.warning(
-            f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
-        )
-
-        return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
+    logger.warning(
+        f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
+    )
+    return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
