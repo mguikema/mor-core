@@ -250,12 +250,12 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
                     aangemaakt_op__gte=taakgebeurtenis.aangemaakt_op,
                 )
             )
-        eerstvolgende_taakgebeurtenis = eerstvolgende_taakgebeurtenissen.first()
+        eerstvolgende_taakgebeurtenissen.first()
 
-        if eerstvolgende_taakgebeurtenis != taakgebeurtenis:
-            raise MeldingManager.TaakgebeurtenisFout(
-                f"Deze status aanpassing moeten wachten tot andere statussen doorgegeven zijn: taakopdracht id: {taakopdracht.id}"
-            )
+        # if eerstvolgende_taakgebeurtenis != taakgebeurtenis:
+        #     raise MeldingManager.TaakgebeurtenisFout(
+        #         f"Deze status aanpassing moeten wachten tot andere statussen doorgegeven zijn: taakopdracht id: {taakopdracht.id}"
+        #     )
 
         taak_status_aanpassen_data = {
             "taakstatus": {"naam": taakgebeurtenis.taakstatus.naam},
