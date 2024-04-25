@@ -233,29 +233,6 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
         taakopdracht.taakgebeurtenissen_voor_taakopdracht.all().order_by(
             "aangemaakt_op"
         )
-        if check_taak_url:
-            eerstvolgende_taakgebeurtenissen = (
-                taakopdracht.taakgebeurtenissen_voor_taakopdracht.order_by(
-                    "-aangemaakt_op"
-                ).filter(
-                    additionele_informatie__taak_url__isnull=(True),
-                    aangemaakt_op__gte=taakgebeurtenis.aangemaakt_op,
-                )
-            )
-        else:
-            eerstvolgende_taakgebeurtenissen = (
-                taakopdracht.taakgebeurtenissen_voor_taakopdracht.order_by(
-                    "-aangemaakt_op"
-                ).filter(
-                    aangemaakt_op__gte=taakgebeurtenis.aangemaakt_op,
-                )
-            )
-        eerstvolgende_taakgebeurtenissen.first()
-
-        # if eerstvolgende_taakgebeurtenis != taakgebeurtenis:
-        #     raise MeldingManager.TaakgebeurtenisFout(
-        #         f"Deze status aanpassing moeten wachten tot andere statussen doorgegeven zijn: taakopdracht id: {taakopdracht.id}"
-        #     )
 
         taak_status_aanpassen_data = {
             "taakstatus": {"naam": taakgebeurtenis.taakstatus.naam},
@@ -290,7 +267,4 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
         Applicatie.melding_veranderd_notificatie(
             taakopdracht.melding.get_absolute_url(), "taakopdracht_status_aangepast"
         )
-    logger.warning(
-        f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
-    )
     return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
