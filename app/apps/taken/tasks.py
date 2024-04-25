@@ -234,17 +234,23 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
         taakopdracht.taakgebeurtenissen_voor_taakopdracht.all().order_by(
             "aangemaakt_op"
         )
-
-        eerstvolgende_taakgebeurtenissen = (
-            taakopdracht.taakgebeurtenissen_voor_taakopdracht.order_by(
-                "-aangemaakt_op"
-            ).filter(
-                additionele_informatie__taak_url__isnull=(
-                    True if check_taak_url else False
-                ),
-                aangemaakt_op__gte=taakgebeurtenis.aangemaakt_op,
+        if check_taak_url:
+            eerstvolgende_taakgebeurtenissen = (
+                taakopdracht.taakgebeurtenissen_voor_taakopdracht.order_by(
+                    "-aangemaakt_op"
+                ).filter(
+                    additionele_informatie__taak_url__isnull=(True),
+                    aangemaakt_op__gte=taakgebeurtenis.aangemaakt_op,
+                )
             )
-        )
+        else:
+            eerstvolgende_taakgebeurtenissen = (
+                taakopdracht.taakgebeurtenissen_voor_taakopdracht.order_by(
+                    "-aangemaakt_op"
+                ).filter(
+                    aangemaakt_op__gte=taakgebeurtenis.aangemaakt_op,
+                )
+            )
         eerstvolgende_taakgebeurtenis = eerstvolgende_taakgebeurtenissen.first()
 
         if eerstvolgende_taakgebeurtenis != taakgebeurtenis:
