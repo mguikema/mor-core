@@ -1,3 +1,5 @@
+import logging
+
 from apps.applicaties.models import Applicatie
 from apps.bijlagen.tasks import task_aanmaken_afbeelding_versies
 from apps.meldingen.managers import (
@@ -11,7 +13,11 @@ from apps.meldingen.managers import (
 )
 from apps.meldingen.tasks import task_notificatie_voor_signaal_melding_afgesloten
 from apps.status.models import Status
+from apps.taken.models import Taakopdracht
+from apps.taken.tasks import task_taak_aanmaken, task_taak_status_aanpassen
 from django.dispatch import receiver
+
+logger = logging.getLogger(__name__)
 
 
 @receiver(signaal_aangemaakt, dispatch_uid="melding_signaal_aangemaakt")
@@ -45,6 +51,22 @@ def urgentie_aangepast_handler(sender, melding, vorige_urgentie, *args, **kwargs
 @receiver(afgesloten, dispatch_uid="melding_afgesloten")
 def afgesloten_handler(sender, melding, *args, **kwargs):
     Applicatie.melding_veranderd_notificatie(melding.get_absolute_url(), "afgesloten")
+
+    taakopdrachten = Taakopdracht.objects.filter(
+        melding=melding,
+    )
+    for taakopdracht in taakopdrachten:
+        taakgebeurtenis = taakopdracht.taakgebeurtenissen_voor_taakopdracht.filter(
+            taakstatus__naam="voltooid",
+        ).first()
+        if taakgebeurtenis:
+            taakopdracht_status_aangepast.send_robust(
+                sender=sender.__class__,
+                melding=melding,
+                taakopdracht=taakopdracht,
+                taakgebeurtenis=taakgebeurtenis,
+            )
+
     for signaal in melding.signalen_voor_melding.all():
         task_notificatie_voor_signaal_melding_afgesloten.delay(signaal.pk)
 
@@ -61,9 +83,11 @@ def gebeurtenis_toegevoegd_handler(
 
 
 @receiver(taakopdracht_aangemaakt, dispatch_uid="taakopdracht_aangemaakt")
-def taakopdracht_aangemaakt_handler(sender, taakopdracht, melding, *args, **kwargs):
-    Applicatie.melding_veranderd_notificatie(
-        melding.get_absolute_url(), "taakopdracht_aangemaakt"
+def taakopdracht_aangemaakt_handler(
+    sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
+):
+    task_taak_aanmaken.delay(
+        taakgebeurtenis_id=taakgebeurtenis.id,
     )
 
 
@@ -71,8 +95,16 @@ def taakopdracht_aangemaakt_handler(sender, taakopdracht, melding, *args, **kwar
 def taakopdracht_status_aangepast_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
-    Applicatie.melding_veranderd_notificatie(
-        melding.get_absolute_url(), "taakopdracht_status_aangepast"
+    params = dict(
+        taakgebeurtenis_id=taakgebeurtenis.id,
     )
+    try:
+        task_taak_status_aanpassen(**params)
+    except Exception as e:
+        logger.error(
+            f"Er is geprobeerd om de taak status direct aantepassen, maar dit is niet gelukt doordat er een fout optrad, we proberen het alsnog met achtergrond task: fout{e}"
+        )
+        task_taak_status_aanpassen.delay(**params)
+
     for bijlage in taakgebeurtenis.bijlagen.all():
         task_aanmaken_afbeelding_versies.delay(bijlage.pk)

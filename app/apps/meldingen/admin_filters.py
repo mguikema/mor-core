@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from .models import Taakopdracht
+from .models import Melding
 
 
 class StatusFilter(admin.SimpleListFilter):
@@ -9,9 +9,7 @@ class StatusFilter(admin.SimpleListFilter):
     parameter_name = "status"
 
     def lookups(self, request, model_admin):
-        status_namen = Taakopdracht.objects.values_list(
-            "status__naam", flat=True
-        ).distinct()
+        status_namen = Melding.objects.values_list("status__naam", flat=True).distinct()
         return ((status_naam, status_naam) for status_naam in set(status_namen))
 
     def queryset(self, request, queryset):
@@ -25,26 +23,11 @@ class ResolutieFilter(admin.SimpleListFilter):
     parameter_name = "resolutie"
 
     def lookups(self, request, model_admin):
-        return Taakopdracht.ResolutieOpties.choices
+        return Melding.ResolutieOpties.choices
 
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(resolutie=self.value())
-        else:
-            return queryset
-
-
-class TitelFilter(admin.SimpleListFilter):
-    title = _("Titel")
-    parameter_name = "titel"
-
-    def lookups(self, request, model_admin):
-        titels = Taakopdracht.objects.values_list("titel", flat=True).distinct()
-        return ((titel, titel) for titel in sorted(set(titels)))
-
-    def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(titel=self.value())
         else:
             return queryset
 
@@ -64,5 +47,22 @@ class AfgeslotenOpFilter(admin.SimpleListFilter):
             return queryset.exclude(afgesloten_op__isnull=True)
         elif self.value() == "nee":
             return queryset.filter(afgesloten_op__isnull=True)
+        else:
+            return queryset
+
+
+class OnderwerpenFilter(admin.SimpleListFilter):
+    title = _("Onderwerp")
+    parameter_name = "onderwerp"
+
+    def lookups(self, request, model_admin):
+        onderwerpen = Melding.objects.values_list(
+            "onderwerpen__response_json__name", flat=True
+        ).distinct()
+        return ((onderwerp, onderwerp) for onderwerp in sorted(set(onderwerpen)))
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(onderwerpen__response_json__name=self.value())
         else:
             return queryset

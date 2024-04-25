@@ -1,3 +1,9 @@
+from apps.meldingen.admin_filters import (
+    AfgeslotenOpFilter,
+    OnderwerpenFilter,
+    ResolutieFilter,
+    StatusFilter,
+)
 from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.meldingen.tasks import task_notificatie_voor_signaal_melding_afgesloten
 from apps.status.models import Status
@@ -27,6 +33,56 @@ class MeldingAdmin(admin.ModelAdmin):
         "aangepast_op",
         "afgesloten_op",
     )
+    list_filter = (
+        StatusFilter,
+        ResolutieFilter,
+        AfgeslotenOpFilter,
+        OnderwerpenFilter,
+    )
+    search_fields = [
+        "id",
+    ]
+    readonly_fields = (
+        "uuid",
+        "aangemaakt_op",
+        "aangepast_op",
+        "afgesloten_op",
+        "origineel_aangemaakt",
+    )
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "uuid",
+                    "urgentie",
+                    "status",
+                    "resolutie",
+                    "onderwerpen",
+                )
+            },
+        ),
+        (
+            "Tijden",
+            {
+                "fields": (
+                    "aangemaakt_op",
+                    "origineel_aangemaakt",
+                    "aangepast_op",
+                    "afgesloten_op",
+                )
+            },
+        ),
+        (
+            "Meta info",
+            {
+                "fields": (
+                    "meta",
+                    "meta_uitgebreid",
+                )
+            },
+        ),
+    )
 
     actions = (action_notificatie_voor_signaal_melding_afgesloten,)
 
@@ -49,9 +105,13 @@ class MeldinggebeurtenisAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "uuid",
+        "gebeurtenis_type",
         "aangemaakt_op",
         "melding",
         "omschrijving_extern",
+        "taakopdracht",
+        "taakgebeurtenis",
+        "signaal",
     )
 
 

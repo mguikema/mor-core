@@ -34,6 +34,9 @@ class Status(BasisModel):
     def __str__(self) -> str:
         return f"{self.naam}({self.pk})"
 
+    def is_gepauzeerd(self):
+        return self.naam in [self.NaamOpties.WACHTEN_MELDER, self.NaamOpties.PAUZE]
+
     def volgende_statussen(self):
         naam_opties = [no[0] for no in Status.NaamOpties.choices]
         if self.naam not in naam_opties:

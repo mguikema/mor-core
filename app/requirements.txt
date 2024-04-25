@@ -41,11 +41,11 @@ djangorestframework-simplejwt==4.8.0
 python-box[all]~=7.0
 sorl-thumbnail==12.8.0
 django-rename-app==0.1.6
-celery==5.2.6
-django-celery-beat==2.2.1
-django-celery-results==2.4.0
+celery==5.4.0
+django-celery-beat==2.5.0
+django-celery-results==2.5.1
 redis==4.5.5
-django_redis
+django_redis==5.4.0
 python-magic==0.4.27
 cryptography==41.0.1
 mozilla-django-oidc==3.0.0
@@ -60,5 +60,5 @@ Faker==8.13.2
 requests_mock
 
 # monitoring
-django-prometheus
-prometheus-client
+django-prometheus==2.3.1
+prometheus-client==0.20.0
