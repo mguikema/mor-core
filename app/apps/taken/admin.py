@@ -78,6 +78,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         TitelFilter,
     )
     search_fields = [
+        "id",
         "melding__id",
     ]
     readonly_fields = (
