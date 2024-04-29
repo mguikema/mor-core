@@ -241,7 +241,7 @@ class Applicatie(BasisModel):
         if self.basis_url:
             taaktypes_response = self._do_request(
                 "/api/v1/taaktype/",
-                params={"limit": 100},
+                params={"limit": 200},
                 method="get",
                 cache_timeout=cache_timeout,
             )
