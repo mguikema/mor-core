@@ -49,6 +49,7 @@ RUN groupadd -r $APP_USER \
     libmagic1 \
     libcairo2 \
     libpango1.0-0 \
+    libpq-dev \
     gcc \
     graphviz \
     graphviz-dev \
