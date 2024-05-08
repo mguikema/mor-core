@@ -7,7 +7,7 @@ from apps.meldingen.tests.factories import (
     OnderwerpAliasFactory,
     StatusFactory,
 )
-from apps.status.models import Status
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.test import TransactionTestCase
 
@@ -47,7 +47,7 @@ class MeldingTransactionTest(TransactionTestCase):
             Melding.acties.status_aanpassen(self.serializer, melding, self.DB1)
         with transaction.atomic(using=self.DB2):
             melding = Melding.objects.using(self.DB2).get(id=self.melding.id)
-            with self.assertRaises(Status.StatusVeranderingNietToegestaan):
+            with self.assertRaises(ValidationError):
                 Melding.acties.status_aanpassen(self.serializer, melding, self.DB1)
 
     def test_dubbele_status_verandering_parallel(self):
