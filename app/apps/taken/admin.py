@@ -2,8 +2,12 @@ import ast
 import importlib
 import json
 
-from apps.taken.models import Taakgebeurtenis, Taakopdracht
-from apps.taken.tasks import task_fix_taakopdracht_issues
+from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
+from apps.taken.tasks import (
+    task_fix_taakopdracht_issues,
+    task_taak_aanmaken,
+    task_taak_status_aanpassen,
+)
 from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
 from django_celery_results.admin import TaskResultAdmin
@@ -13,8 +17,20 @@ from .admin_filters import (
     AfgeslotenOpFilter,
     ResolutieFilter,
     StatusFilter,
+    SyncedFilter,
+    TaakStatusFilter,
+    TaakUrlFilter,
     TitelFilter,
 )
+
+
+@admin.action(description="Update fixer taak status")
+def action_update_fixer_taak_status(modeladmin, request, queryset):
+    for taakgebeurtenis in queryset.all():
+        if taakgebeurtenis.taakstatus.naam == Taakstatus.NaamOpties.VOLTOOID:
+            task_taak_status_aanpassen.delay(taakgebeurtenis.id)
+        if taakgebeurtenis.taakstatus.naam == Taakstatus.NaamOpties.NIEUW:
+            task_taak_aanmaken.delay(taakgebeurtenis.id)
 
 
 class TaakgebeurtenisAdmin(admin.ModelAdmin):
@@ -28,15 +44,27 @@ class TaakgebeurtenisAdmin(admin.ModelAdmin):
         "gebruiker",
         "meldinggebeurtenissen_aantal",
         "melding_uuid",
+        "synced",
     )
     raw_id_fields = (
         "taakstatus",
         "taakopdracht",
     )
     search_fields = ("taakopdracht__melding__uuid",)
+    date_hierarchy = "aangemaakt_op"
+    actions = (action_update_fixer_taak_status,)
 
     def melding_uuid(self, obj):
         return obj.taakopdracht.melding.uuid
+
+    list_filter = (
+        TaakUrlFilter,
+        SyncedFilter,
+        TaakStatusFilter,
+    )
+
+    def synced(self, obj):
+        return obj.additionele_informatie.get("taak_url")
 
     def meldinggebeurtenissen_aantal(self, obj):
         return obj.meldinggebeurtenissen_voor_taakgebeurtenis.count()
@@ -47,7 +75,7 @@ class TaakgebeurtenisAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         return qs.select_related(
             "taakstatus",
-            "taakopdracht",
+            "taakopdracht__melding",
         ).prefetch_related(
             "meldinggebeurtenissen_voor_taakgebeurtenis",
         )
@@ -210,6 +238,13 @@ retry_celery_task_admin_action.short_description = "Retry Task"
 
 
 class CustomTaskResultAdmin(TaskResultAdmin):
+    list_filter = (
+        "status",
+        "date_created",
+        "date_done",
+        "periodic_task_name",
+        "task_name",
+    )
     actions = [
         retry_celery_task_admin_action,
     ]

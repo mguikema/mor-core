@@ -95,16 +95,9 @@ def taakopdracht_aangemaakt_handler(
 def taakopdracht_status_aangepast_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
-    params = dict(
+    task_taak_status_aanpassen.delay(
         taakgebeurtenis_id=taakgebeurtenis.id,
     )
-    try:
-        task_taak_status_aanpassen(**params)
-    except Exception as e:
-        logger.error(
-            f"Er is geprobeerd om de taak status direct aantepassen, maar dit is niet gelukt doordat er een fout optrad, we proberen het alsnog met achtergrond task: fout{e}"
-        )
-        task_taak_status_aanpassen.delay(**params)
 
     for bijlage in taakgebeurtenis.bijlagen.all():
         task_aanmaken_afbeelding_versies.delay(bijlage.pk)
