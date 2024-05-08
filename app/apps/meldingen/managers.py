@@ -183,12 +183,6 @@ class MeldingManager(models.Manager):
         from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
 
-        # Blocks the ability to reopen a melding so commented
-        # if melding.afgesloten_op:
-        #     raise MeldingManager.MeldingAfgeslotenFout(
-        #         "De status van een afgesloten melding kan niet meer worden veranderd"
-        #     )
-
         with transaction.atomic():
             try:
                 locked_melding = (
@@ -206,21 +200,15 @@ class MeldingManager(models.Manager):
             resolutie = serializer.validated_data.pop("resolutie", None)
             melding_gebeurtenis = serializer.save()
 
+            locked_melding.afgesloten_op = None
             locked_melding.status = melding_gebeurtenis.status
 
-            # TODO: hoe willen we checken dat de melding afgehandeld wordt
-            # Sluiten van melding en bijbehorende open taken. Zet afgesloten_op.
-            # When reopening "openstaand" is the only volgende status.
-            if (
-                len(locked_melding.status.volgende_statussen()) == 1
-                and locked_melding.status.volgende_statussen()[0] == "openstaand"
-            ) or not locked_melding.status.volgende_statussen():
+            if locked_melding.status.is_afgesloten():
                 try:
                     locked_taakopdrachten = (
-                        Taakopdracht.objects.using(db)
+                        locked_melding.taakopdrachten_voor_melding.all()
                         .select_for_update(nowait=True)
                         .filter(
-                            melding=locked_melding.pk,
                             resolutie__isnull=True,
                         )
                     )
@@ -228,14 +216,13 @@ class MeldingManager(models.Manager):
                     raise MeldingManager.TaakopdrachtInGebruik(
                         "Eén van taken is op dit moment in gebruik, probeer het later nog eens."
                     )
-
                 taakgebeurtenissen = []
                 for to in locked_taakopdrachten:
                     taakstatus = Taakstatus.objects.create(
-                        naam="voltooid", taakopdracht=to
+                        naam=Taakstatus.NaamOpties.VOLTOOID, taakopdracht=to
                     )
                     to.status = taakstatus
-                    to.resolutie = "geannuleerd"
+                    to.resolutie = Taakopdracht.ResolutieOpties.GEANNULEERD
                     to.afgesloten_op = timezone.now()
                     if to.afgesloten_op and to.aangemaakt_op:
                         to.afhandeltijd = to.afgesloten_op - to.aangemaakt_op
@@ -267,13 +254,9 @@ class MeldingManager(models.Manager):
                 Meldinggebeurtenis.objects.bulk_create(meldinggebeurtenissen)
 
                 locked_melding.afgesloten_op = timezone.now()
-                if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
-                    locked_melding.resolutie = resolutie
-            # When reopening melding set afgesloten op to None
-            if heropen:
-                locked_melding.afgesloten_op = None
-                if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
-                    locked_melding.resolutie = resolutie
+
+            if resolutie in [ro[0] for ro in Melding.ResolutieOpties.choices]:
+                locked_melding.resolutie = resolutie
             locked_melding.save()
 
             transaction.on_commit(

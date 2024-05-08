@@ -222,7 +222,6 @@ class BijlageRecentSerializer(BijlageSerializer):
         )
 
     def to_representation(self, instance):
-        print("to_representation")
         representation = super().to_representation(
             instance.order_by("-aangemaakt_op").first()
         )
@@ -305,11 +304,6 @@ class MeldingDetailSerializer(MeldingSerializer):
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageSerializer(many=True, required=False)
     status = StatusSerializer()
-    volgende_statussen = serializers.ListField(
-        source="status.volgende_statussen",
-        child=serializers.CharField(),
-        read_only=True,
-    )
     meldinggebeurtenissen = MeldinggebeurtenisSerializer(
         source="meldinggebeurtenissen_voor_melding", many=True, read_only=True
     )
@@ -335,11 +329,9 @@ class MeldingDetailSerializer(MeldingSerializer):
             "locaties_voor_melding",
             "status",
             "resolutie",
-            "volgende_statussen",
             "meldinggebeurtenissen",
             "taakopdrachten_voor_melding",
             "signalen_voor_melding",
-            # "laatste_meldinggebeurtenis",
         )
         read_only_fields = (
             "_links",
@@ -361,5 +353,4 @@ class MeldingDetailSerializer(MeldingSerializer):
             "meldinggebeurtenissen",
             "taakopdrachten_voor_melding",
             "signalen_voor_melding",
-            # "laatste_meldinggebeurtenis",
         )

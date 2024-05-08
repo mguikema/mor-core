@@ -161,6 +161,31 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         ),
     )
 
+    def get_queryset(self):
+        if self.action == "retrieve":
+            return (
+                Melding.objects.select_related(
+                    "status",
+                )
+                .prefetch_related(
+                    "bijlagen",
+                    "signalen_voor_melding__bijlagen",
+                    "meldinggebeurtenissen_voor_melding__bijlagen",
+                    "meldinggebeurtenissen_voor_melding__status",
+                    "meldinggebeurtenissen_voor_melding__locatie",
+                    "meldinggebeurtenissen_voor_melding__taakgebeurtenis__taakopdracht",
+                    "meldinggebeurtenissen_voor_melding__taakgebeurtenis__bijlagen",
+                    "meldinggebeurtenissen_voor_melding__taakgebeurtenis__taakstatus",
+                    "taakopdrachten_voor_melding__applicatie",
+                    "taakopdrachten_voor_melding__status",
+                    "taakopdrachten_voor_melding__taakgebeurtenissen_voor_taakopdracht__bijlagen",
+                    "taakopdrachten_voor_melding__taakgebeurtenissen_voor_taakopdracht__taakstatus",
+                    "locaties_voor_melding",
+                )
+                .all()
+            )
+        return super().get_queryset()
+
     def get_prefiltered_queryset(self):
         assert self.prefiltered_queryset is not None, (
             "'%s' should either include a `queryset` attribute, "
@@ -215,6 +240,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             serializer = MeldingDetailSerializer(
                 self.get_object(), context={"request": request}
             )
+
             return Response(serializer.data)
         return Response(
             data=serializer.errors,
