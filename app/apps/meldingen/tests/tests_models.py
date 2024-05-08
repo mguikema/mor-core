@@ -7,9 +7,9 @@ from apps.meldingen.tests.factories import (
     OnderwerpAliasFactory,
     StatusFactory,
 )
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.test import TransactionTestCase
+from rest_framework.exceptions import ValidationError
 
 
 class MeldingTransactionTest(TransactionTestCase):
