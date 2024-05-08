@@ -56,9 +56,13 @@ class OnderwerpenFilter(admin.SimpleListFilter):
     parameter_name = "onderwerp"
 
     def lookups(self, request, model_admin):
-        onderwerpen = Melding.objects.values_list(
-            "onderwerpen__response_json__name", flat=True
-        ).distinct()
+        onderwerpen = [
+            str(onderwerp)
+            for onderwerp in Melding.objects.values_list(
+                "onderwerpen__response_json__name", flat=True
+            ).distinct()
+            if onderwerp
+        ]
         return ((onderwerp, onderwerp) for onderwerp in sorted(set(onderwerpen)))
 
     def queryset(self, request, queryset):

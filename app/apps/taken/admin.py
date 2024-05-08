@@ -27,12 +27,30 @@ class TaakgebeurtenisAdmin(admin.ModelAdmin):
         "taakopdracht",
         "gebruiker",
         "meldinggebeurtenissen_aantal",
+        "melding_uuid",
     )
+    raw_id_fields = (
+        "taakstatus",
+        "taakopdracht",
+    )
+    search_fields = ("taakopdracht__melding__uuid",)
+
+    def melding_uuid(self, obj):
+        return obj.taakopdracht.melding.uuid
 
     def meldinggebeurtenissen_aantal(self, obj):
         return obj.meldinggebeurtenissen_voor_taakgebeurtenis.count()
 
     meldinggebeurtenissen_aantal.short_description = "Meldinggebeurtenissen aantal"
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            "taakstatus",
+            "taakopdracht",
+        ).prefetch_related(
+            "meldinggebeurtenissen_voor_taakgebeurtenis",
+        )
 
 
 @admin.action(description="Zet taak afgesloten_op voor afgesloten meldingen")
@@ -59,10 +77,10 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "taak_url",
         "uuid",
         "titel",
+        "melding",
         "aangepast_op",
         "afgesloten_op",
         "pretty_afhandeltijd",
-        "melding",
         "melding__afgesloten_op",
         "pretty_status",
         "resolutie",
@@ -80,6 +98,10 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
     search_fields = [
         "id",
         "melding__id",
+    ]
+    raw_id_fields = [
+        "melding",
+        "status",
     ]
     readonly_fields = (
         "uuid",
@@ -147,6 +169,13 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
             return "-"
 
     pretty_afhandeltijd.short_description = "Afhandeltijd"
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            "melding",
+            "status",
+        )
 
 
 def retry_celery_task_admin_action(modeladmin, request, queryset):
