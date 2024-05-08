@@ -226,9 +226,9 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
             )
 
         if taakgebeurtenis.additionele_informatie.get("taak_url"):
-            logger.error(
-                f"Deze status is al aangepast in {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
-            )
+            error = f"Deze status is al aangepast in {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
+            logger.error(error)
+            return error
 
         taakopdracht.taakgebeurtenissen_voor_taakopdracht.all().order_by(
             "aangemaakt_op"
@@ -267,4 +267,7 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
         Applicatie.melding_veranderd_notificatie(
             taakopdracht.melding.get_absolute_url(), "taakopdracht_status_aangepast"
         )
-    return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
+
+    resultaat = f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
+    logger.info(resultaat)
+    return resultaat
