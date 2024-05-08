@@ -34,7 +34,7 @@ def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kw
     Applicatie.melding_veranderd_notificatie(
         melding.get_absolute_url(), "status_aangepast"
     )
-    if melding.afgesloten_op and melding.status.naam == Status.NaamOpties.AFGEHANDELD:
+    if melding.afgesloten_op and melding.status.is_afgesloten():
         afgesloten.send_robust(
             sender=sender,
             melding=melding,
@@ -66,9 +66,9 @@ def afgesloten_handler(sender, melding, *args, **kwargs):
                 taakopdracht=taakopdracht,
                 taakgebeurtenis=taakgebeurtenis,
             )
-
-    for signaal in melding.signalen_voor_melding.all():
-        task_notificatie_voor_signaal_melding_afgesloten.delay(signaal.pk)
+    if melding.status.naam == Status.NaamOpties.AFGEHANDELD:
+        for signaal in melding.signalen_voor_melding.all():
+            task_notificatie_voor_signaal_melding_afgesloten.delay(signaal.pk)
 
 
 @receiver(gebeurtenis_toegevoegd, dispatch_uid="melding_gebeurtenis_toegevoegd")
