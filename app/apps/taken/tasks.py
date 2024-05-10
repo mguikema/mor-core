@@ -97,13 +97,12 @@ def task_fix_taakopdracht_issues(self, taakopdracht_id):
             f"Updating taak status for taakopdracht met id: {taakopdracht_id}, taakgebeurtenis met id: {taakgebeurtenis.id} en FixeR taak met id: {taak_data.get('id')}"
         )
         task_taak_status_aanpassen.delay(
-            taakgebeurtenis_id=taakgebeurtenis.id, check_taak_url=False
+            taakgebeurtenis_id=taakgebeurtenis.id, voorkom_dubbele_sync=False
         )
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
 def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
-    from apps.applicaties.models import Applicatie
     from apps.meldingen.managers import MeldingManager
     from apps.taken.models import Taakgebeurtenis, Taakopdracht
 
@@ -187,9 +186,9 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
         taakgebeurtenis.additionele_informatie = additionele_informatie
         taakgebeurtenis.save()
 
-        Applicatie.melding_veranderd_notificatie(
-            taakopdracht.melding.get_absolute_url(), "taakopdracht_aangemaakt"
-        )
+        # Applicatie.melding_veranderd_notificatie(
+        #     taakopdracht.melding.get_absolute_url(), "taakopdracht_aangemaakt"
+        # )
     logger.warning(
         f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
     )
@@ -197,8 +196,7 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
-    from apps.applicaties.models import Applicatie
+def task_taak_status_aanpassen(self, taakgebeurtenis_id, voorkom_dubbele_sync=True):
     from apps.meldingen.managers import MeldingManager
     from apps.taken.models import Taakgebeurtenis
 
@@ -220,7 +218,7 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
 
         taakopdracht = taakgebeurtenis.taakopdracht
 
-        if not taakopdracht.taak_url and check_taak_url:
+        if not taakopdracht.taak_url:
             raise MeldingManager.TaakopdrachtUrlOntbreekt(
                 f"Taak is nog niet aangemaakt bij {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
             )
@@ -228,11 +226,8 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
         if taakgebeurtenis.additionele_informatie.get("taak_url"):
             error = f"Deze status is al aangepast in {taakopdracht.applicatie.naam}: taakopdracht_id: {taakopdracht.id}"
             logger.error(error)
-            return error
-
-        taakopdracht.taakgebeurtenissen_voor_taakopdracht.all().order_by(
-            "aangemaakt_op"
-        )
+            if voorkom_dubbele_sync:
+                return error
 
         taak_status_aanpassen_data = {
             "taakstatus": {"naam": taakgebeurtenis.taakstatus.naam},
@@ -264,10 +259,6 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, check_taak_url=True):
         taakgebeurtenis.additionele_informatie = additionele_informatie
         taakgebeurtenis.save()
 
-        Applicatie.melding_veranderd_notificatie(
-            taakopdracht.melding.get_absolute_url(), "taakopdracht_status_aangepast"
-        )
-
     resultaat = f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
-    logger.info(resultaat)
+    logger.warning(resultaat)
     return resultaat

@@ -31,13 +31,14 @@ def signaal_aangemaakt_handler(sender, melding, signaal, *args, **kwargs):
 
 @receiver(status_aangepast, dispatch_uid="melding_status_aangepast")
 def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kwargs):
-    Applicatie.melding_veranderd_notificatie(
-        melding.get_absolute_url(), "status_aangepast"
-    )
     if melding.afgesloten_op and melding.status.is_afgesloten():
         afgesloten.send_robust(
             sender=sender,
             melding=melding,
+        )
+    else:
+        Applicatie.melding_veranderd_notificatie(
+            melding.get_absolute_url(), "status_aangepast"
         )
 
 
@@ -50,8 +51,6 @@ def urgentie_aangepast_handler(sender, melding, vorige_urgentie, *args, **kwargs
 
 @receiver(afgesloten, dispatch_uid="melding_afgesloten")
 def afgesloten_handler(sender, melding, *args, **kwargs):
-    Applicatie.melding_veranderd_notificatie(melding.get_absolute_url(), "afgesloten")
-
     taakopdrachten = Taakopdracht.objects.filter(
         melding=melding,
     )
