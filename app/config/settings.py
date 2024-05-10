@@ -422,7 +422,7 @@ LOGGING = {
         },
         "celery": {
             "handlers": ["console", "file"],
-            "level": "WARNING",
+            "level": "WARNING" if not DEBUG else "DEBUG",
         },
     },
 }
