@@ -27,6 +27,24 @@ def task_notificatie_voor_signaal_melding_afgesloten(self, signaal_id):
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
+def task_notificaties_voor_melding_veranderd(*args, **kwargs):
+    from apps.applicaties.models import Applicatie
+
+    melding_url = kwargs.get("melding_url")
+    notificatie_type = kwargs.get("notificatie_type")
+    if not melding_url or not notificatie_type:
+        return "melding_url en notificatie_type zijn verplicht"
+
+    for applicatie in Applicatie.objects.all():
+        task_notificatie_voor_melding_veranderd.delay(
+            applicatie.id,
+            melding_url,
+            notificatie_type,
+        )
+    return f"Applicaties aantal: {Applicatie.objects.all().count()}, melding_url={melding_url}, notificatie_type={notificatie_type}"
+
+
+@shared_task(bind=True, base=BaseTaskWithRetry)
 def task_notificatie_voor_melding_veranderd(
     self, applicatie_id, melding_url, notificatie_type
 ):
