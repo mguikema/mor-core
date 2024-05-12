@@ -186,9 +186,6 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
         taakgebeurtenis.additionele_informatie = additionele_informatie
         taakgebeurtenis.save()
 
-        # Applicatie.melding_veranderd_notificatie(
-        #     taakopdracht.melding.get_absolute_url(), "taakopdracht_aangemaakt"
-        # )
     logger.warning(
         f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
     )
