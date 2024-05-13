@@ -29,5 +29,17 @@ class SignaalAdmin(admin.ModelAdmin):
     # Register the admin action
     actions = [convert_to_aanvullende_vragen]
 
+    raw_id_fields = (
+        "melding",
+        "melder",
+    )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            "melding",
+            "melder",
+        )
+
 
 admin.site.register(Signaal, SignaalAdmin)

@@ -22,5 +22,11 @@ class BijlageAdmin(admin.ModelAdmin):
     )
     actions = (action_aanmaken_afbeelding_versies,)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.prefetch_related(
+            "content_object",
+        )
+
 
 admin.site.register(Bijlage, BijlageAdmin)

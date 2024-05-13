@@ -15,6 +15,7 @@ class LocatieAdmin(admin.ModelAdmin):
         "aangemaakt_op",
         "begraafplaats",
         "melding",
+        "signaal",
         "huisnummer",
         "straatnaam",
         "geometrie",
@@ -24,6 +25,18 @@ class LocatieAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.GeometryField: {"widget": Textarea(attrs={"rows": 2})}
     }
+    raw_id_fields = (
+        "melding",
+        "signaal",
+        "gebruiker",
+    )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            "melding",
+            "signaal",
+        )
 
 
 class AdresAdmin(admin.ModelAdmin):
