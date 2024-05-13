@@ -2,6 +2,7 @@ from apps.aliassen.viewsets import OnderwerpAliasViewSet
 from apps.applicaties.viewsets import TaakapplicatieViewSet
 from apps.authenticatie.views import GetGebruikerAPIView, SetGebruikerAPIView
 from apps.bijlagen.viewsets import BijlageViewSet
+from apps.health.views import healthz
 from apps.meldingen.views import (
     login_required_view,
     prometheus_django_metrics,
@@ -47,6 +48,7 @@ urlpatterns = [
     path("api-token-auth/", views.obtain_auth_token),
     path("login/", login_required_view, name="login_required"),
     path("health/", include("health_check.urls")),
+    path("healthz/", healthz, name="healthz"),
     path("db-schema/", include((schema_urls, "db-schema"))),
     path("plate/", include("django_spaghetti.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
