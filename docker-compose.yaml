@@ -32,6 +32,11 @@ services:
       - mor_bridge_network
     command: ["bash", "/app/deploy/docker-entrypoint.development.sh"]
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1024M
 
   database:
     image: postgis/postgis:11-3.3
