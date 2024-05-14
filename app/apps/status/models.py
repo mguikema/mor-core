@@ -37,11 +37,10 @@ class Status(BasisModel):
     def is_gepauzeerd(self):
         return self.naam in [self.NaamOpties.WACHTEN_MELDER, self.NaamOpties.PAUZE]
 
-    def volgende_statussen(self):
-        naam_opties = [no[0] for no in Status.NaamOpties.choices]
-        if self.naam not in naam_opties:
-            return naam_opties
+    def is_afgesloten(self):
+        return self.naam in [self.NaamOpties.GEANNULEERD, self.NaamOpties.AFGEHANDELD]
 
+    def volgende_statussen(self):
         match self.naam:
             case Status.NaamOpties.OPENSTAAND:
                 return [

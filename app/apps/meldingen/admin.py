@@ -41,6 +41,7 @@ class MeldingAdmin(admin.ModelAdmin):
     )
     search_fields = [
         "id",
+        "uuid",
     ]
     readonly_fields = (
         "uuid",
@@ -49,6 +50,7 @@ class MeldingAdmin(admin.ModelAdmin):
         "afgesloten_op",
         "origineel_aangemaakt",
     )
+    raw_id_fields = ("status",)
     fieldsets = (
         (
             None,
@@ -113,6 +115,22 @@ class MeldinggebeurtenisAdmin(admin.ModelAdmin):
         "taakgebeurtenis",
         "signaal",
     )
+    raw_id_fields = (
+        "melding",
+        "taakopdracht",
+        "taakgebeurtenis",
+        "signaal",
+        "locatie",
+    )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related(
+            "signaal",
+            "melding",
+            "taakopdracht",
+            "taakgebeurtenis",
+        )
 
 
 admin.site.register(Meldinggebeurtenis, MeldinggebeurtenisAdmin)

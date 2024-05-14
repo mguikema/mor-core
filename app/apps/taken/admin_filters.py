@@ -4,6 +4,58 @@ from django.utils.translation import gettext_lazy as _
 from .models import Taakopdracht
 
 
+class TaakUrlFilter(admin.SimpleListFilter):
+    title = _("Taak url")
+    parameter_name = "taak_url"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("true", "taak url aanwezig"),
+            ("false", "taak url niet aanwezig"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(
+                taakopdracht__taak_url__isnull=(self.value() == "false"),
+            )
+        return queryset
+
+
+class SyncedFilter(admin.SimpleListFilter):
+    title = _("Synced met FixeR")
+    parameter_name = "synced"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("true", "synced"),
+            ("false", "niet gesynced"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(
+                additionele_informatie__taak_url__isnull=(self.value() == "false"),
+            )
+        return queryset
+
+
+class TaakStatusFilter(admin.SimpleListFilter):
+    title = _("Status")
+    parameter_name = "status"
+
+    def lookups(self, request, model_admin):
+        status_namen = Taakopdracht.objects.values_list(
+            "status__naam", flat=True
+        ).distinct()
+        return ((status_naam, status_naam) for status_naam in set(status_namen))
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(taakstatus__naam=self.value())
+        return queryset
+
+
 class StatusFilter(admin.SimpleListFilter):
     title = _("Status")
     parameter_name = "status"

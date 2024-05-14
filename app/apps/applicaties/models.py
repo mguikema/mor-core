@@ -2,7 +2,6 @@ import logging
 from urllib.parse import urlencode, urlparse
 
 import requests
-from apps.meldingen.tasks import task_notificatie_voor_melding_veranderd
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -89,15 +88,6 @@ class Applicatie(BasisModel):
 
     class AntwoordFout(Exception):
         ...
-
-    @classmethod
-    def melding_veranderd_notificatie(cls, melding_url, notificatie_type):
-        for applicatie in cls.objects.all():
-            task_notificatie_voor_melding_veranderd.delay(
-                applicatie.id,
-                melding_url,
-                notificatie_type,
-            )
 
     @classmethod
     def vind_applicatie_obv_uri(cls, uri):

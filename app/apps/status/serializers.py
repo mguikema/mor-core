@@ -1,4 +1,5 @@
 from apps.status.models import Status
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 
@@ -18,7 +19,7 @@ class StatusSerializer(serializers.ModelSerializer):
             and melding.status
             and not melding.status.status_verandering_toegestaan(nieuwe_status_naam)
         ):
-            raise Status.StatusVeranderingNietToegestaan(
+            raise ValidationError(
                 f"Vorige status: {melding.status.naam} -> Nieuwe status: {nieuwe_status_naam}"
             )
         return attrs

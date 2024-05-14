@@ -13,9 +13,9 @@ class TaakstatusSerializer(serializers.ModelSerializer):
         model = Taakstatus
         fields = (
             "naam",
+            "aangemaakt_op",
             "taakopdracht",
         )
-        # read_only_fields = ("taakopdracht",)
 
 
 class TaakgebeurtenisLinksSerializer(serializers.Serializer):
