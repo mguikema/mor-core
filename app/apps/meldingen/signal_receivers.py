@@ -98,6 +98,10 @@ def gebeurtenis_toegevoegd_handler(
 def taakopdracht_aangemaakt_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
+    task_notificaties_voor_melding_veranderd.delay(
+        melding_url=melding.get_absolute_url(),
+        notificatie_type="taakopdracht_aangemaakt",
+    )
     task_taak_aanmaken.delay(
         taakgebeurtenis_id=taakgebeurtenis.id,
     )
