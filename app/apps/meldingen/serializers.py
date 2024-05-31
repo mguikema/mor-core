@@ -243,10 +243,12 @@ class MeldingSerializer(serializers.ModelSerializer):
     )
 
     def get_meldinggebeurtenissen_voor_melding(self, instance):
-        songs = instance.meldinggebeurtenissen_voor_melding.all().order_by(
-            "-aangemaakt_op"
+        meldinggebeurtenissen = (
+            instance.meldinggebeurtenissen_voor_melding.all().order_by("-aangemaakt_op")
         )
-        return MeldinggebeurtenisMeldingLijstSerializer(songs, many=True).data
+        return MeldinggebeurtenisMeldingLijstSerializer(
+            meldinggebeurtenissen, many=True
+        ).data
 
     class Meta:
         model = Melding
