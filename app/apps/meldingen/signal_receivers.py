@@ -1,6 +1,6 @@
 import logging
 
-from apps.bijlagen.tasks import task_aanmaken_afbeelding_versies
+from apps.bijlagen.tasks import task_aanmaken_afbeelding_versies, task_verwijder_bestand
 from apps.meldingen.managers import (
     afgesloten,
     gebeurtenis_toegevoegd,
@@ -9,6 +9,7 @@ from apps.meldingen.managers import (
     taakopdracht_aangemaakt,
     taakopdracht_status_aangepast,
     urgentie_aangepast,
+    verwijderd,
 )
 from apps.meldingen.tasks import (
     task_notificatie_voor_signaal_melding_afgesloten,
@@ -92,6 +93,24 @@ def gebeurtenis_toegevoegd_handler(
         notificatie_type="gebeurtenis_toegevoegd",
     )
     chord(bijlages_aanmaken, notificaties_voor_melding_veranderd)()
+
+
+@receiver(verwijderd, dispatch_uid="melding_verwijderd")
+def melding_verwijderd_handler(
+    sender, melding_url, bijlage_paden, samenvatting, *args, **kwargs
+):
+    logger.info(
+        f"Melding verwijderd: melding_url={melding_url}, samenvatting={samenvatting}"
+    )
+    for pad in bijlage_paden:
+        task_verwijder_bestand.delay(
+            melding_url=melding_url,
+            pad=pad,
+        )
+    task_notificaties_voor_melding_veranderd.delay(
+        melding_url=melding_url,
+        notificatie_type="melding_verwijderd",
+    )
 
 
 @receiver(taakopdracht_aangemaakt, dispatch_uid="taakopdracht_aangemaakt")

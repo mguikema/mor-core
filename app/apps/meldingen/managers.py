@@ -14,6 +14,7 @@ signaal_aangemaakt = DjangoSignal()
 status_aangepast = DjangoSignal()
 urgentie_aangepast = DjangoSignal()
 afgesloten = DjangoSignal()
+verwijderd = DjangoSignal()
 gebeurtenis_toegevoegd = DjangoSignal()
 taakopdracht_aangemaakt = DjangoSignal()
 taakopdracht_status_aangepast = DjangoSignal()
@@ -308,6 +309,46 @@ class MeldingManager(models.Manager):
                     meldinggebeurtenis=meldinggebeurtenis,
                 )
             )
+
+    def melding_verwijderen(self, melding, db="default"):
+        from apps.bijlagen.models import Bijlage
+        from apps.meldingen.models import Melding
+        from django.contrib.admin.utils import NestedObjects
+
+        with transaction.atomic():
+            try:
+                locked_melding = (
+                    Melding.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=melding.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.MeldingInGebruik(
+                    f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {melding.id}, melding uuid: {melding.uuid}"
+                )
+            melding_url = locked_melding.get_absolute_url()
+
+            collector = NestedObjects(using=db)
+            collector.collect([locked_melding])
+            alle_bestands_paden = [
+                pad
+                for model, instance in collector.data.items()
+                if model == Bijlage
+                for i in list(instance)
+                for pad in i.bijlage_paded()
+            ]
+            samenvatting = locked_melding.delete()
+
+            transaction.on_commit(
+                lambda: verwijderd.send_robust(
+                    sender=self.__class__,
+                    melding_url=melding_url,
+                    bijlage_paden=alle_bestands_paden,
+                    samenvatting=samenvatting,
+                )
+            )
+
+        return True
 
     def taakopdracht_aanmaken(self, serializer, melding, request, db="default"):
         from apps.meldingen.models import Melding, Meldinggebeurtenis

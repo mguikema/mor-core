@@ -10,6 +10,12 @@ from apps.status.models import Status
 from django.contrib import admin
 
 
+@admin.action(description="Melding met alle relaties verwijderen")
+def action_melding_met_alle_relaties_verwijderen(modeladmin, request, queryset):
+    for melding in queryset.all():
+        Melding.acties.melding_verwijderen(melding)
+
+
 @admin.action(description="Signalen afsluiten voor melding")
 def action_notificatie_voor_signaal_melding_afgesloten(modeladmin, request, queryset):
     for melding in queryset.all():
@@ -86,7 +92,10 @@ class MeldingAdmin(admin.ModelAdmin):
         ),
     )
 
-    actions = (action_notificatie_voor_signaal_melding_afgesloten,)
+    actions = (
+        action_notificatie_voor_signaal_melding_afgesloten,
+        action_melding_met_alle_relaties_verwijderen,
+    )
 
     def status_naam(self, obj):
         try:
