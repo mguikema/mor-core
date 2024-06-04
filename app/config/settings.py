@@ -261,7 +261,7 @@ SPECTACULAR_SETTINGS = {
 }
 
 TAAKTYPE_APPLICATIE_URL = os.getenv(
-    "TAAKTYPE_APPLICATIE_URL", "https://fixer.forzamor.nl"
+    "TAAKTYPE_APPLICATIE_URL", "https://taakr.forzamor.nl"
 )
 
 # Django security settings

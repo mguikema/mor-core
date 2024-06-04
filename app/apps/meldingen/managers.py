@@ -374,17 +374,23 @@ class MeldingManager(models.Manager):
 
             taak_data = {}
             taak_data.update(serializer.validated_data)
-            applicatie = Applicatie.vind_applicatie_obv_uri(
+            # taakr_taaktype_url = Applicatie.vind_applicatie_obv_uri(
+            #     taak_data.get("taakr_taaktype_url", "")  # requires implementation
+            # )
+
+            taakapplicatie_taaktype_url = Applicatie.vind_applicatie_obv_uri(
                 taak_data.get("taaktype", "")
             )
 
-            if not applicatie:
+            if not taakapplicatie_taaktype_url:
                 raise Applicatie.ApplicatieWerdNietGevondenFout(
                     f"De applicatie voor dit taaktype kon niet worden gevonden: taaktype={taak_data.get('taaktype', '')}"
                 )
             gebruiker = serializer.validated_data.pop("gebruiker", None)
+            # We might want to include the taaktypeapplicatie taaktype url as well.
+            print(f"taakapplicatie_taaktype_url: {taakapplicatie_taaktype_url}")
             taakopdracht = serializer.save(
-                applicatie=applicatie,
+                applicatie=taakapplicatie_taaktype_url,
                 melding=melding,
             )
             taakstatus_instance = Taakstatus(
