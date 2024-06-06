@@ -124,11 +124,13 @@ class Taakopdracht(BasisModel):
         related_name="taakopdrachten_voor_melding",
         on_delete=models.CASCADE,
     )
+    # This is the taakapplicatie (FixeR/ExternR)
     applicatie = models.ForeignKey(
         to="applicaties.Applicatie",
         related_name="taakopdrachten_voor_applicatie",
         on_delete=models.CASCADE,
     )
+    # We may want to include the taaktypeapplicatie (TaakR)
     taaktype = models.CharField(
         max_length=200,
     )
