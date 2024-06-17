@@ -1,6 +1,9 @@
+from datetime import datetime, timedelta
+
 from apps.applicaties.models import Applicatie
 from apps.locatie.models import Locatie
 from apps.meldingen.models import Melding
+from apps.status.models import Status
 from apps.taken.models import Taakopdracht
 from django.conf import settings
 from django.db.models import (
@@ -28,13 +31,14 @@ def duration_to_seconds(duration):
 
 class CustomCollector(object):
     def __init__(self):
-        self.taak_type_threshold_list = self.create_taaktype_threshold_list()
+        ...
+        # self.taak_type_threshold_list = self.create_taaktype_threshold_list()
         self.annotated_wijken_taken = self.annotate_highest_weight_wijk(
             Taakopdracht.objects.all()
         )
-        self.annotated_threshold_taken = self.annotate_thresholds(
-            self.annotated_wijken_taken
-        )
+        # self.annotated_threshold_taken = self.annotate_thresholds(
+        #     self.annotated_wijken_taken
+        # )
 
     def create_taaktype_threshold_list(self):
         taak_type_threshold_list = []
@@ -82,6 +86,9 @@ class CustomCollector(object):
         )
 
     def collect(self):
+        # Melding status metrics
+        yield self.collect_melding_status_duur_openstaand_metrics()
+
         # Meldingen metrics
         yield self.collect_melding_metrics()
 
@@ -89,34 +96,129 @@ class CustomCollector(object):
         yield self.collect_taak_metrics()
 
         # Taaktype threshold
-        yield self.collect_taaktype_threshold_metrics()
+        # yield self.collect_taaktype_threshold_metrics()
 
         # Taken langer dan taaktype threshold open
-        yield self.collect_taken_over_threshold_metrics()
+        # yield self.collect_taken_over_threshold_metrics()
 
         # Taken minder langer dan taaktype threshold open
-        yield self.collect_taken_onder_threshold_metrics()
+        # yield self.collect_taken_onder_threshold_metrics()
 
         # Taak duur openstaand metrics
-        yield self.collect_taak_duur_metrics()
+        # yield self.collect_taak_duur_metrics()
+
+    def collect_melding_status_duur_openstaand_metrics(self):
+        c = CounterMetricFamily(
+            "melding_status_verandering_duur",
+            "Toont de laatste status namen(status_eind) over het afgelopen uur. Met het voorlaatste status naam(status_begin) voor de bijbehoorde melding. De Count waarde is het verschil in seconden tussen status_eind en status_begin",
+            labels=[
+                "melding",
+                "status_eind_aangemaakt_op",
+                "status_eind",
+                "status_begin",
+                "onderwerp",
+                "wijk",
+            ],
+        )
+        now = datetime.now() - timedelta(hours=4)
+
+        sub_all_statussen = Status.objects.filter(
+            melding=OuterRef("melding"), aangemaakt_op__lt=OuterRef("aangemaakt_op")
+        ).order_by("melding")
+
+        sub = sub_all_statussen.values_list("melding", flat=True)
+
+        sub_aangemaakt_op = sub_all_statussen.order_by("-aangemaakt_op").values_list(
+            "aangemaakt_op", flat=True
+        )[:1]
+        sub_naam = sub_all_statussen.order_by("-aangemaakt_op").values_list(
+            "naam", flat=True
+        )[:1]
+        sub_id = sub_all_statussen.order_by("-aangemaakt_op").values_list(
+            "id", flat=True
+        )[:1]
+        sum_statussen_for_meldingen = sub.annotate(
+            statussen_for_melding_sum=Count("melding")
+        ).values("statussen_for_melding_sum")
+
+        statussen = (
+            Status.objects.annotate(
+                onderwerpen_count=Count("melding__onderwerpen"),
+                locaties_count=Count("melding__locaties_voor_melding"),
+            )
+            .exclude(
+                onderwerpen_count=0,
+                locaties_count=0,
+            )
+            .filter(
+                aangemaakt_op__gte=now,
+            )
+            .annotate(status_count=Subquery(sum_statussen_for_meldingen))
+            .filter(status_count__isnull=False)
+            .order_by("-aangemaakt_op")
+            .annotate(
+                status_begin_naam=Subquery(sub_naam),
+                status_begin_id=Subquery(sub_id),
+                status_begin_aangemaakt_op=Subquery(sub_aangemaakt_op),
+                duur=ExpressionWrapper(
+                    F("aangemaakt_op") - Subquery(sub_aangemaakt_op),
+                    output_field=DurationField(),
+                ),
+            )
+        )
+        for status in statussen:
+            c.add_metric(
+                (
+                    str(status.melding.id),
+                    str(status.aangemaakt_op.timestamp()),
+                    status.naam,
+                    status.status_begin_naam,
+                    str(
+                        status.melding.onderwerpen.all()
+                        .first()
+                        .response_json.get("name")
+                    ),
+                    status.melding.locaties_voor_melding.order_by("gewicht")
+                    .first()
+                    .wijknaam,
+                ),
+                status.duur.seconds,
+            )
+        return c
 
     def collect_melding_metrics(self):
         c = CounterMetricFamily(
             "morcore_meldingen_total",
             "Melding aantallen",
-            labels=["onderwerp", "status"],
+            labels=[
+                "onderwerp",
+                "wijk",
+                "status",
+            ],
         )
+
+        locaties = Locatie.objects.filter(melding=OuterRef("pk")).order_by("-gewicht")
         meldingen = (
-            Melding.objects.values("onderwerpen__response_json__name", "status__naam")
-            .order_by("onderwerpen")
-            .annotate(count=Count("onderwerpen"))
-            .exclude(count=0)
+            Melding.objects.filter(onderwerpen__response_json__name__isnull=False)
+            .annotate(
+                wijknaam=Coalesce(
+                    Subquery(locaties.values("wijknaam")[:1]),
+                    Value("Onbekend"),
+                )
+            )
+            .values("onderwerpen__response_json__name", "status__naam", "wijknaam")
+            .annotate(count=Count("onderwerpen__response_json__name"))
+            .values(
+                "count", "onderwerpen__response_json__name", "status__naam", "wijknaam"
+            )
         )
+
         for m in meldingen:
             c.add_metric(
                 [
-                    m.get("onderwerpen__response_json__name"),
-                    m.get("status__naam"),
+                    str(m.get("onderwerpen__response_json__name", "Onbekend")),
+                    str(m.get("wijknaam", "Onbekend")),
+                    str(m.get("status__naam")),
                 ],
                 m.get("count"),
             )
