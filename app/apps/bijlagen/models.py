@@ -62,6 +62,15 @@ class Bijlage(BasisModel):
 
         return new_file_name
 
+    def bijlage_paded(self):
+        paden = []
+        for f in ["bestand", "afbeelding", "afbeelding_verkleind"]:
+            field = getattr(self, f)
+            if field:
+                if os.path.isfile(field.path):
+                    paden.append(field.path)
+        return paden
+
     def aanmaken_afbeelding_versies(self):
         mt = mimetypes.guess_type(self.bestand.path, strict=True)
         if exists(self.bestand.path):

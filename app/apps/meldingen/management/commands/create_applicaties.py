@@ -52,6 +52,7 @@ class Command(BaseCommand):
                     app = Applicatie.objects.create(
                         naam=app_name,
                         basis_url=app_url,
+                        valide_basis_urls=[app_url],
                         gebruiker=app_user,
                         applicatie_gebruiker_naam=f"{os.environ.get(f'{app_name.upper()}_USER_USERNAME')}@forzamor.nl",
                         applicatie_gebruiker_wachtwoord=encrypt_gebruiker_wachtwoord(
