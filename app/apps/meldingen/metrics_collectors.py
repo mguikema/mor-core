@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from apps.applicaties.models import Applicatie
 from apps.locatie.models import Locatie
 from apps.meldingen.models import Melding
+from apps.services.pdok import PDOKService
+from apps.signalen.models import Signaal
 from apps.status.models import Status
 from apps.taken.models import Taakopdracht
 from django.conf import settings
@@ -22,6 +24,7 @@ from django.db.models import (
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from prometheus_client.core import CounterMetricFamily
+from shapely.wkt import loads
 
 
 def duration_to_seconds(duration):
@@ -92,6 +95,9 @@ class CustomCollector(object):
         # Meldingen metrics
         yield self.collect_melding_metrics()
 
+        # Signalen metrics
+        yield self.collect_signalen_metrics()
+
         # Taak total metrics
         yield self.collect_taak_metrics()
 
@@ -107,6 +113,55 @@ class CustomCollector(object):
         # Taak duur openstaand metrics
         # yield self.collect_taak_duur_metrics()
 
+    def collect_signalen_metrics(self):
+        c = CounterMetricFamily(
+            "signalen",
+            "Signalen aantalen gevarieerd op onderwerp en wijk",
+            labels=[
+                "onderwerp",
+                "wijk",
+                "lat",
+                "lon",
+            ],
+        )
+
+        wijken = PDOKService().get_wijken_middels_gemeentecode(
+            gemeentecode=settings.WIJKEN_EN_BUURTEN_GEMEENTECODE
+        )
+        wijken_gps_lookup = {
+            wijk.get("wijknaam"): wijk.get("centroide_ll") for wijk in wijken
+        }
+        locaties = Locatie.objects.filter(melding=OuterRef("pk")).order_by("-gewicht")
+        signalen = (
+            Signaal.objects.filter(onderwerpen__response_json__name__isnull=False)
+            .annotate(
+                wijknaam=Coalesce(
+                    Subquery(locaties.values("wijknaam")[:1]),
+                    Value("Onbekend"),
+                )
+            )
+            .values("onderwerpen__response_json__name", "wijknaam")
+            .annotate(count=Count("onderwerpen__response_json__name"))
+            .values("count", "onderwerpen__response_json__name", "wijknaam")
+        )
+        for m in signalen:
+            wijknaam = str(m.get("wijknaam", "Onbekend"))
+            gps = (
+                loads(wijken_gps_lookup.get(wijknaam))
+                if wijken_gps_lookup.get(wijknaam)
+                else ""
+            )
+            c.add_metric(
+                [
+                    str(m.get("onderwerpen__response_json__name", "Onbekend")),
+                    wijknaam,
+                    str(gps.coords[0][1]) if gps else "",
+                    str(gps.coords[0][0]) if gps else "",
+                ],
+                m.get("count"),
+            )
+        return c
+
     def collect_melding_status_duur_openstaand_metrics(self):
         c = CounterMetricFamily(
             "melding_status_verandering_duur",
@@ -120,7 +175,7 @@ class CustomCollector(object):
                 "wijk",
             ],
         )
-        now = datetime.now() - timedelta(hours=4)
+        now = datetime.now() - timedelta(hours=1)
 
         sub_all_statussen = Status.objects.filter(
             melding=OuterRef("melding"), aangemaakt_op__lt=OuterRef("aangemaakt_op")
@@ -167,6 +222,9 @@ class CustomCollector(object):
             )
         )
         for status in statussen:
+            first_location = status.melding.locaties_voor_melding.order_by(
+                "gewicht"
+            ).first()
             c.add_metric(
                 (
                     str(status.melding.id),
@@ -178,9 +236,7 @@ class CustomCollector(object):
                         .first()
                         .response_json.get("name")
                     ),
-                    status.melding.locaties_voor_melding.order_by("gewicht")
-                    .first()
-                    .wijknaam,
+                    first_location.wijknaam if first_location.wijknaam else "",
                 ),
                 status.duur.seconds,
             )
