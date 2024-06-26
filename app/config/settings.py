@@ -357,6 +357,8 @@ CACHES = {
     }
 }
 
+WIJKEN_EN_BUURTEN_GEMEENTECODE = "0599"
+
 
 # Sessions are managed by django-session-timeout-joinup
 # Django session settings
