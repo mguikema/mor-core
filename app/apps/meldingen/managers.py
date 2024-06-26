@@ -404,7 +404,7 @@ class MeldingManager(models.Manager):
             bericht = (
                 serializer.validated_data.get("bericht")
                 if serializer.validated_data.get("bericht")
-                else "Taak aangemaakt"
+                else ""
             )
             taakgebeurtenis_instance = Taakgebeurtenis(
                 taakopdracht=taakopdracht,
