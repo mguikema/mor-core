@@ -115,7 +115,11 @@ class MeldingAdmin(admin.ModelAdmin):
     def locatie(self, obj):
         try:
             return ", ".join(
-                list(obj.locaties_voor_melding.values_list("wijknaam", flat=True))
+                list(
+                    obj.locaties_voor_melding.order_by("-gewicht").values_list(
+                        "wijknaam", flat=True
+                    )
+                )
             )
         except Exception:
             return "- leeg -"
