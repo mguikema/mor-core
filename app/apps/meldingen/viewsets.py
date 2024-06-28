@@ -8,6 +8,7 @@ from apps.meldingen.filtersets import (
 )
 from apps.meldingen.models import Melding, Meldinggebeurtenis
 from apps.meldingen.serializers import (
+    MeldingAantallenSerializer,
     MeldingDetailSerializer,
     MeldinggebeurtenisSerializer,
     MeldingGebeurtenisStatusSerializer,
@@ -408,3 +409,22 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
                 {"error": "An internal server error occurred!"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @extend_schema(
+        description="Melding aantallen per wijk en onderwerp",
+        responses={status.HTTP_200_OK: MeldingAantallenSerializer(many=True)},
+        parameters=None,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="aantallen",
+        serializer_class=MeldingAantallenSerializer,
+    )
+    def aantallen(self, request):
+        serializer = MeldingAantallenSerializer(
+            Melding.objects.get_aantallen(),
+            context={"request": request},
+            many=True,
+        )
+        return Response(serializer.data)

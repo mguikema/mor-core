@@ -4,8 +4,8 @@ from apps.meldingen.models import Melding
 from apps.signalen.filtersets import RelatedOrderingFilter, SignaalFilter
 from apps.signalen.models import Signaal
 from apps.signalen.serializers import (
+    SignaalAantallenSerializer,
     SignaalListSerializer,
-    SignaalPublicSerializer,
     SignaalSerializer,
 )
 from django_filters import rest_framework as filters
@@ -73,18 +73,18 @@ class SignaalViewSet(
         )
 
     @extend_schema(
-        description="Signaal aantallen per buurt/wijk en onderwerp",
-        responses={status.HTTP_200_OK: SignaalPublicSerializer(many=True)},
+        description="Signaal aantallen per wijk en onderwerp",
+        responses={status.HTTP_200_OK: SignaalAantallenSerializer(many=True)},
         parameters=None,
     )
     @action(
         detail=False,
         methods=["get"],
         url_path="aantallen",
-        serializer_class=SignaalPublicSerializer,
+        serializer_class=SignaalAantallenSerializer,
     )
     def aantallen(self, request):
-        serializer = SignaalPublicSerializer(
+        serializer = SignaalAantallenSerializer(
             Signaal.objects.get_aantallen(),
             context={"request": request},
             many=True,

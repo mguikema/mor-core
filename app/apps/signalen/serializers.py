@@ -143,7 +143,7 @@ class SignaalListSerializer(WritableNestedModelSerializer):
         )
 
 
-class SignaalPublicSerializer(serializers.Serializer):
+class SignaalAantallenSerializer(serializers.Serializer):
     def to_representation(self, instance):
         wijken = PDOKService().get_wijken_middels_gemeentecode(
             gemeentecode=settings.WIJKEN_EN_BUURTEN_GEMEENTECODE
