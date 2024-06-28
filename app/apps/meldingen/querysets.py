@@ -22,17 +22,16 @@ logger = logging.getLogger(__name__)
 
 class MeldingQuerySet(QuerySet):
     def get_aantallen(self):
+        from apps.aliassen.models import OnderwerpAlias
         from apps.locatie.models import Locatie
 
         locaties = Locatie.objects.filter(pk=OuterRef("pk")).order_by("-gewicht")
+        onderwerpen = OnderwerpAlias.objects.filter(pk=OuterRef("pk"))
+
         meldingen = (
-            self
-            # .values(
-            #     onderwerp=F("onderwerpen__response_json__name"),
-            # )
-            .annotate(
+            self.annotate(
                 onderwerp=Coalesce(
-                    F("onderwerpen__response_json__name"),
+                    Subquery(onderwerpen.values("response_json__name")[:1]),
                     Value("Onbekend", output_field=models.JSONField()),
                     output_field=models.JSONField(),
                 )
