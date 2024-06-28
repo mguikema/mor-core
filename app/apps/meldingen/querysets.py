@@ -15,7 +15,7 @@ from django.db.models import (
     Value,
     When,
 )
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, Concat
 
 logger = logging.getLogger(__name__)
 
@@ -25,28 +25,34 @@ class MeldingQuerySet(QuerySet):
         from apps.aliassen.models import OnderwerpAlias
         from apps.locatie.models import Locatie
 
-        locaties = Locatie.objects.filter(pk=OuterRef("pk")).order_by("-gewicht")
-        onderwerpen = OnderwerpAlias.objects.filter(pk=OuterRef("pk"))
+        locaties = Locatie.objects.filter(melding=OuterRef("pk")).order_by("-gewicht")
+        onderwerpen = OnderwerpAlias.objects.filter(
+            meldingen_voor_onderwerpen=OuterRef("pk")
+        )
 
+        meldingen = self.annotate(
+            onderwerp=Coalesce(
+                Subquery(onderwerpen.values("response_json__name")[:1]),
+                Value("Onbekend", output_field=models.JSONField()),
+            )
+        ).annotate(
+            wijk=Coalesce(
+                Subquery(locaties.values("wijknaam")[:1]),
+                Value("Onbekend"),
+            )
+        )
+        meldingen = meldingen.annotate(
+            onderwerp_wijk=Concat(
+                "onderwerp", Value("-"), "wijk", output_field=models.CharField()
+            )
+        )
         meldingen = (
-            self.annotate(
-                onderwerp=Coalesce(
-                    Subquery(onderwerpen.values("response_json__name")[:1]),
-                    Value("Onbekend", output_field=models.JSONField()),
-                    output_field=models.JSONField(),
-                )
-            )
-            .annotate(
-                wijk=Coalesce(
-                    Subquery(locaties.values("wijknaam")[:1]),
-                    Value("Onbekend"),
-                )
-            )
-            .values("onderwerp", "wijk")
-            .annotate(count=Count("onderwerp"))
+            meldingen.values("onderwerp_wijk", "onderwerp", "wijk")
+            .order_by("onderwerp_wijk")
+            .annotate(count=Count("onderwerp_wijk"))
             .values("count", "onderwerp", "wijk")
         )
-        logger.info(f"all meldingen: {self.count()}")
+        logger.info(f"all meldingen count: {self.count()}")
         meldingen_count = [m.get("count") for m in meldingen]
         logger.info(f"meldingen count sum: {sum(meldingen_count)}")
         return meldingen
