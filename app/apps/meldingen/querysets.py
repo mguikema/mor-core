@@ -46,7 +46,7 @@ class MeldingQuerySet(QuerySet):
             .annotate(count=Count("onderwerp"))
             .values("count", "onderwerp", "wijk")
         )
-        logger.info(f"all meldingen: {self.count()}")
+        logger.info(f"all meldingen count: {self.count()}")
         meldingen_count = [m.get("count") for m in meldingen]
         logger.info(f"meldingen count sum: {sum(meldingen_count)}")
         return meldingen
