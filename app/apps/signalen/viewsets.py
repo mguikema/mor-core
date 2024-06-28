@@ -80,11 +80,10 @@ class SignaalViewSet(
     @action(
         detail=False,
         methods=["get"],
-        url_path="signaal-aantallen",
+        url_path="aantallen",
         serializer_class=SignaalPublicSerializer,
-        permission_classes=(),
     )
-    def signaal_aantallen(self, request):
+    def aantallen(self, request):
         serializer = SignaalPublicSerializer(
             Signaal.objects.get_aantallen(),
             context={"request": request},
