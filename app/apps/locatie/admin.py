@@ -15,6 +15,8 @@ class LocatieAdmin(admin.ModelAdmin):
         "aangemaakt_op",
         "begraafplaats",
         "melding",
+        "wijknaam",
+        "gewicht",
         "signaal",
         "huisnummer",
         "straatnaam",
