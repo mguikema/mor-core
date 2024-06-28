@@ -19,7 +19,7 @@ class SignaalQuerySet(QuerySet):
     def get_aantallen(self):
         from apps.locatie.models import Locatie
 
-        locaties = Locatie.objects.filter(signaal=OuterRef("pk")).order_by("-gewicht")
+        locaties = Locatie.objects.filter(pk=OuterRef("pk")).order_by("-gewicht")
         signalen = (
             self.values(
                 onderwerp=F("onderwerpen__response_json__name"),
