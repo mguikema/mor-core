@@ -159,6 +159,7 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
             "melding": taakopdracht.melding.get_absolute_url(),
             "gebruiker": taakgebeurtenis.gebruiker,
             "additionele_informatie": taakopdracht.additionele_informatie,
+            "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
         }
         taak_aanmaken_response = taakopdracht.applicatie.taak_aanmaken(
             taakapplicatie_data
