@@ -34,6 +34,7 @@ class MeldingAdmin(admin.ModelAdmin):
         "urgentie",
         "status_naam",
         "onderwerp_naam",
+        "locatie",
         "origineel_aangemaakt",
         "aangemaakt_op",
         "aangepast_op",
@@ -107,6 +108,18 @@ class MeldingAdmin(admin.ModelAdmin):
         try:
             return ", ".join(
                 list(obj.onderwerpen.values_list("response_json__name", flat=True))
+            )
+        except Exception:
+            return "- leeg -"
+
+    def locatie(self, obj):
+        try:
+            return ", ".join(
+                list(
+                    obj.locaties_voor_melding.order_by("-gewicht").values_list(
+                        "wijknaam", flat=True
+                    )
+                )
             )
         except Exception:
             return "- leeg -"

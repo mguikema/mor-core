@@ -2,6 +2,7 @@ import logging
 
 from apps.applicaties.models import Applicatie
 from apps.bijlagen.models import Bijlage
+from apps.signalen.querysets import SignaalQuerySet
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from utils.fields import DictJSONField
@@ -47,6 +48,8 @@ class Signaal(BasisModel):
         related_name="signalen_voor_onderwerpen",
         blank=True,
     )
+
+    objects = SignaalQuerySet.as_manager()
 
     @property
     def get_graven(self):
