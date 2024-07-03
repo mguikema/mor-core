@@ -60,7 +60,7 @@ class SignaalViewSet(
         )
         if serializer.is_valid():
             signaal = Melding.acties.signaal_aanmaken(serializer)
-            serializer = self.serializer_class(signaal)
+            serializer = self.serializer_class(signaal, context={"request": request})
             return Response(
                 serializer.data,
                 status=status.HTTP_201_CREATED,
