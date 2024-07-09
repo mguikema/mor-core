@@ -179,6 +179,8 @@ class SignaalSerializer(WritableNestedModelSerializer):
             for loc in locaties
             if validated_data.get(loc[0])
         }
+        for loc in locaties:
+            validated_data.pop(loc[0], None)
         signaal = super().create(validated_data)
 
         for location in locaties:
