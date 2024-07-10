@@ -423,7 +423,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     )
     def aantallen(self, request):
         serializer = MeldingAantallenSerializer(
-            Melding.objects.get_aantallen(),
+            self.filter_queryset(self.get_queryset()).get_aantallen(),
             context={"request": request},
             many=True,
         )
