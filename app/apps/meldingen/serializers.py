@@ -187,7 +187,10 @@ class TaakgebeurtenisMeldingLijstSerializer(TaakgebeurtenisSerializer):
 
     class Meta:
         model = Taakgebeurtenis
-        fields = ("bijlagen",)
+        fields = (
+            "bijlagen",
+            "resolutie",
+        )
 
 
 class TaakopdrachtMeldingLijstSerializer(serializers.ModelSerializer):
@@ -200,7 +203,6 @@ class TaakopdrachtMeldingLijstSerializer(serializers.ModelSerializer):
         model = Taakopdracht
         fields = (
             "titel",
-            "resolutie",
             "status",
             "taakgebeurtenissen_voor_taakopdracht",
         )

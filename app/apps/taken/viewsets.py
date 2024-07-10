@@ -61,3 +61,33 @@ class TaakopdrachtViewSet(viewsets.ReadOnlyModelViewSet):
             data=serializer.errors,
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+    @extend_schema(
+        description="Verander resolutie van een ExternR taak naar niet_opgelost",
+        request=TaakgebeurtenisStatusSerializer,
+        responses={status.HTTP_200_OK: TaakopdrachtSerializer},
+        parameters=None,
+    )
+    @action(detail=True, methods=["patch"], url_path="externr-status-aanpassen")
+    def externr_status_aanpassen(self, request, uuid):
+        taakopdracht = self.get_object()
+        data = {}
+        data.update(request.data)
+        data["taakstatus"]["taakopdracht"] = taakopdracht.id
+        serializer = TaakgebeurtenisStatusSerializer(
+            data=data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            Melding.acties.externr_taakopdracht_status_aanpassen(
+                serializer, taakopdracht, request=request
+            )
+
+            serializer = TaakopdrachtSerializer(
+                self.get_object(), context={"request": request}
+            )
+            return Response(serializer.data)
+        return Response(
+            data=serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
