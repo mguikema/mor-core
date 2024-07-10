@@ -29,8 +29,11 @@ class MeldingQuerySet(QuerySet):
         onderwerpen = OnderwerpAlias.objects.filter(
             meldingen_voor_onderwerpen=OuterRef("pk")
         )
+        meldingen = self.all()
 
-        meldingen = self.annotate(
+        logger.info(f"filtered meldingen count: {meldingen.count()}")
+
+        meldingen = meldingen.annotate(
             onderwerp=Coalesce(
                 Subquery(onderwerpen.values("response_json__name")[:1]),
                 Value("Onbekend", output_field=models.JSONField()),
@@ -52,7 +55,6 @@ class MeldingQuerySet(QuerySet):
             .annotate(count=Count("onderwerp_wijk"))
             .values("count", "onderwerp", "wijk")
         )
-        logger.info(f"all meldingen count: {self.count()}")
         meldingen_count = [m.get("count") for m in meldingen]
         logger.info(f"meldingen count sum: {sum(meldingen_count)}")
         return meldingen
