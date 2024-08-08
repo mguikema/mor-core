@@ -8,6 +8,18 @@ from rest_framework import filters as rest_filters
 
 class SignaalFilter(filters.FilterSet):
     signaal_url = filters.CharFilter(field_name="signaal_url")
+    origineel_aangemaakt_gte = filters.DateTimeFilter(
+        field_name="origineel_aangemaakt", lookup_expr="gte"
+    )
+    origineel_aangemaakt_gt = filters.DateTimeFilter(
+        field_name="origineel_aangemaakt", lookup_expr="gt"
+    )
+    origineel_aangemaakt_lte = filters.DateTimeFilter(
+        field_name="origineel_aangemaakt", lookup_expr="lte"
+    )
+    origineel_aangemaakt_lt = filters.DateTimeFilter(
+        field_name="origineel_aangemaakt", lookup_expr="lt"
+    )
     melding__origineel_aangemaakt_gte = filters.DateTimeFilter(
         field_name="melding__origineel_aangemaakt", lookup_expr="gte"
     )
