@@ -46,7 +46,7 @@ class SignaalQuerySet(QuerySet):
         from apps.aliassen.models import OnderwerpAlias
         from apps.locatie.models import Locatie
 
-        locaties = Locatie.objects.filter(melding=OuterRef("pk")).order_by("-gewicht")
+        locaties = Locatie.objects.filter(signaal=OuterRef("pk")).order_by("-gewicht")
         onderwerpen = OnderwerpAlias.objects.filter(
             signalen_voor_onderwerpen=OuterRef("pk")
         )
