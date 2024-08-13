@@ -35,3 +35,6 @@ class StatusVeranderingSerializer(serializers.Serializer):
             "duur_seconden_gemiddeld",
             "aantal",
         )
+
+    def to_representation(self, instance):
+        return instance
