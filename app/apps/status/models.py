@@ -1,3 +1,4 @@
+from apps.status.querysets import StatusQuerySet
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from utils.models import BasisModel
@@ -23,6 +24,8 @@ class Status(BasisModel):
         related_name="statussen_voor_melding",
         on_delete=models.CASCADE,
     )
+
+    objects = StatusQuerySet.as_manager()
 
     class Meta:
         ordering = ("-aangemaakt_op",)
