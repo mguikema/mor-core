@@ -68,7 +68,7 @@ class StatusQuerySet(QuerySet):
 
         # add previous status naam
         statussen = statussen.annotate(
-            eind_status=Subquery(sub_naam), begin_status=F("naam")
+            begin_status=Subquery(sub_naam), eind_status=F("naam")
         )
 
         # add unique combined value for averages later
