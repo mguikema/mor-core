@@ -128,6 +128,12 @@ class Taakopdracht(BasisModel):
     Zo worden taakopdrachten aan taken gelinked.
     """
 
+    class ResolutieOpties(models.TextChoices):
+        OPGELOST = "opgelost", "Opgelost"
+        NIET_OPGELOST = "niet_opgelost", "Niet opgelost"
+        GEANNULEERD = "geannuleerd", "Geannuleerd"
+        NIET_GEVONDEN = "niet_gevonden", "Niets aangetroffen"
+
     afgesloten_op = models.DateTimeField(null=True, blank=True)
     afhandeltijd = models.DurationField(null=True, blank=True)
     melding = models.ForeignKey(
@@ -157,6 +163,12 @@ class Taakopdracht(BasisModel):
         to="taken.Taakstatus",
         related_name="taakopdrachten_voor_taakstatus",
         on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    resolutie = models.CharField(
+        max_length=50,
+        choices=ResolutieOpties.choices,
         blank=True,
         null=True,
     )

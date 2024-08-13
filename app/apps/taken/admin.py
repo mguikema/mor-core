@@ -120,7 +120,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "pretty_afhandeltijd",
         "melding__afgesloten_op",
         "pretty_status",
-        "get_resolutie",
+        "resolutie",
     )
     actions = (
         action_set_taak_afgesloten_op_for_melding_afgesloten,
@@ -147,7 +147,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "aangemaakt_op",
         "aangepast_op",
         "afgesloten_op",
-        "get_resolutie",
+        "resolutie",
     )
     fieldsets = (
         (
@@ -160,7 +160,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
                     "applicatie",
                     "taaktype",
                     "status",
-                    "get_resolutie",
+                    "resolutie",
                     "bericht",
                     "additionele_informatie",
                     "taak_url",
@@ -194,19 +194,6 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
 
     pretty_status.short_description = "Status"
     pretty_status.admin_order_field = "status__naam"
-
-    def get_resolutie(self, obj):
-        taakgebeurtenis = (
-            obj.taakgebeurtenissen_voor_taakopdracht.filter(
-                taakstatus__naam__in=["voltooid", "voltooid_met_feedback"]
-            )
-            .order_by("-id")
-            .first()
-        )
-        return taakgebeurtenis.resolutie if taakgebeurtenis else "-"
-
-    get_resolutie.short_description = "Resolutie"
-    get_resolutie.admin_order_field = "taakgebeurtenissen_voor_taakopdracht__resolutie"
 
     def pretty_afhandeltijd(self, obj):
         if obj.afhandeltijd:

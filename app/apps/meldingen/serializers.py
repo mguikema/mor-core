@@ -202,6 +202,7 @@ class TaakopdrachtMeldingLijstSerializer(serializers.ModelSerializer):
         model = Taakopdracht
         fields = (
             "titel",
+            "resolutie",
             "status",
             "taakgebeurtenissen_voor_taakopdracht",
         )

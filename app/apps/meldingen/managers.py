@@ -223,6 +223,7 @@ class MeldingManager(models.Manager):
                         naam=Taakstatus.NaamOpties.VOLTOOID, taakopdracht=to
                     )
                     to.status = taakstatus
+                    to.resolutie = Taakopdracht.ResolutieOpties.GEANNULEERD
                     to.afgesloten_op = timezone.now()
                     if to.afgesloten_op and to.aangemaakt_op:
                         to.afhandeltijd = to.afgesloten_op - to.aangemaakt_op
@@ -238,11 +239,7 @@ class MeldingManager(models.Manager):
                     )
                 Taakopdracht.objects.bulk_update(
                     locked_taakopdrachten,
-                    [
-                        "status",
-                        "afgesloten_op",
-                        "afhandeltijd",
-                    ],  # Removed resolutie here
+                    ["status", "resolutie", "afgesloten_op", "afhandeltijd"],
                 )
                 aangemaakte_taakgebeurtenissen = Taakgebeurtenis.objects.bulk_create(
                     taakgebeurtenissen
@@ -462,7 +459,7 @@ class MeldingManager(models.Manager):
     ):
         from apps.meldingen.models import Melding, Meldinggebeurtenis
         from apps.status.models import Status
-        from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
+        from apps.taken.models import Taakopdracht, Taakstatus
 
         if taakopdracht.afgesloten_op and not externr_niet_opgelost:
             raise MeldingManager.TaakopdrachtAfgeslotenFout(
@@ -509,9 +506,8 @@ class MeldingManager(models.Manager):
                 or not locked_taakopdracht.status.volgende_statussen()
             ):
                 locked_taakopdracht.afgesloten_op = timezone.now()
-                if resolutie in [
-                    ro[0] for ro in Taakgebeurtenis.ResolutieOpties.choices
-                ]:
+                if resolutie in [ro[0] for ro in Taakopdracht.ResolutieOpties.choices]:
+                    locked_taakopdracht.resolutie = resolutie
                     taakgebeurtenis.resolutie = resolutie
                     taakgebeurtenis.save()
 

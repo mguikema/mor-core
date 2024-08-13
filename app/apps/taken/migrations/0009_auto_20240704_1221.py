@@ -52,8 +52,4 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.RunPython(move_resolutie_to_taakgebeurtenis),
-        migrations.RemoveField(
-            model_name="taakopdracht",
-            name="resolutie",
-        ),
     ]

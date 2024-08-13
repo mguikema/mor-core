@@ -72,6 +72,7 @@ class TaakgebeurtenisSerializer(serializers.ModelSerializer):
 class TaakgebeurtenisStatusSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     taakstatus = TaakstatusSerializer(required=True)
+    resolutie = serializers.CharField(required=False, allow_null=True)
     uitvoerder = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
@@ -137,6 +138,7 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
             "id",
             "uuid",
             "status",
+            "resolutie",
             "melding",
             "taakgebeurtenissen_voor_taakopdracht",
             "taak_url",
@@ -146,6 +148,7 @@ class TaakopdrachtSerializer(serializers.ModelSerializer):
             "id",
             "uuid",
             "status",
+            "resolutie",
             "melding",
             "taakgebeurtenissen_voor_taakopdracht",
             "taak_url",
