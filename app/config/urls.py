@@ -10,6 +10,7 @@ from apps.meldingen.views import (
 )
 from apps.meldingen.viewsets import MeldinggebeurtenisViewSet, MeldingViewSet
 from apps.signalen.viewsets import SignaalViewSet
+from apps.status.viewsets import StatusViewSet
 from apps.taken.viewsets import TaakgebeurtenisViewSet, TaakopdrachtViewSet
 from django.conf import settings
 from django.contrib import admin
@@ -36,6 +37,7 @@ router.register(r"taakapplicatie", TaakapplicatieViewSet, basename="taakapplicat
 router.register(r"taakopdracht", TaakopdrachtViewSet, basename="taakopdracht")
 router.register(r"taakgebeurtenis", TaakgebeurtenisViewSet, basename="taakgebeurtenis")
 router.register(r"bijlage", BijlageViewSet, basename="bijlage")
+router.register(r"status", StatusViewSet, basename="status")
 
 urlpatterns = [
     path("api/v1/", include((router.urls, "app"), namespace="v1")),

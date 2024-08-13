@@ -23,3 +23,15 @@ class StatusSerializer(serializers.ModelSerializer):
                 f"Vorige status: {melding.status.naam} -> Nieuwe status: {nieuwe_status_naam}"
             )
         return attrs
+
+
+class StatusVeranderingSerializer(serializers.Serializer):
+    class Meta:
+        fields = (
+            "wijk",
+            "onderwerp",
+            "begin_status",
+            "eind_status",
+            "duur_seconden_gemiddeld",
+            "aantal",
+        )

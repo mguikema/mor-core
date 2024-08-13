@@ -11,6 +11,7 @@ class StatusAdmin(admin.ModelAdmin):
         "melding",
     )
     raw_id_fields = ("melding",)
+    search_fields = ("melding__id",)
 
 
 admin.site.register(Status, StatusAdmin)
