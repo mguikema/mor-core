@@ -25,6 +25,18 @@ class StatusSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class StatusLijstSerializer(serializers.ModelSerializer):
+    melding__uuid = serializers.UUIDField(source="melding.uuid")
+
+    class Meta:
+        model = Status
+        fields = (
+            "naam",
+            "melding__uuid",
+            "aangemaakt_op",
+        )
+
+
 class StatusVeranderingSerializer(serializers.Serializer):
     class Meta:
         fields = (
