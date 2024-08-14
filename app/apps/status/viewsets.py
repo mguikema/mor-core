@@ -1,8 +1,8 @@
 import logging
 
-from apps.status.filtersets import StatusFilter
+from apps.status.filtersets import RelatedOrderingFilter, StatusFilter
 from apps.status.models import Status
-from apps.status.serializers import StatusSerializer, StatusVeranderingSerializer
+from apps.status.serializers import StatusLijstSerializer, StatusVeranderingSerializer
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status, viewsets
@@ -19,9 +19,12 @@ class StatusViewSet(
     lookup_field = "uuid"
     queryset = Status.objects.all()
 
-    serializer_class = StatusSerializer
-
-    filter_backends = (filters.DjangoFilterBackend,)
+    serializer_class = StatusLijstSerializer
+    filter_backends = (
+        filters.DjangoFilterBackend,
+        RelatedOrderingFilter,
+    )
+    ordering_fields = "__all_related__"
     filterset_class = StatusFilter
 
     @extend_schema(
@@ -34,7 +37,6 @@ class StatusViewSet(
         methods=["get"],
         url_path="veranderingen",
         serializer_class=StatusVeranderingSerializer,
-        permission_classes=(),
     )
     def veranderingen(self, request):
         serializer = StatusVeranderingSerializer(
