@@ -23,3 +23,30 @@ class StatusSerializer(serializers.ModelSerializer):
                 f"Vorige status: {melding.status.naam} -> Nieuwe status: {nieuwe_status_naam}"
             )
         return attrs
+
+
+class StatusLijstSerializer(serializers.ModelSerializer):
+    melding__uuid = serializers.UUIDField(source="melding.uuid")
+
+    class Meta:
+        model = Status
+        fields = (
+            "naam",
+            "melding__uuid",
+            "aangemaakt_op",
+        )
+
+
+class StatusVeranderingSerializer(serializers.Serializer):
+    class Meta:
+        fields = (
+            "wijk",
+            "onderwerp",
+            "begin_status",
+            "eind_status",
+            "duur_seconden_gemiddeld",
+            "aantal",
+        )
+
+    def to_representation(self, instance):
+        return instance

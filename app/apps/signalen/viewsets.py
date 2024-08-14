@@ -85,7 +85,7 @@ class SignaalViewSet(
     )
     def aantallen(self, request):
         serializer = SignaalAantallenSerializer(
-            Signaal.objects.get_aantallen(),
+            self.filter_queryset(self.get_queryset()).get_aantallen(),
             context={"request": request},
             many=True,
         )
