@@ -20,6 +20,7 @@ from drf_spectacular.utils import extend_schema_field
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
 from rest_framework.reverse import reverse
+from shapely.wkt import loads
 
 
 class MeldingLinksSerializer(serializers.Serializer):
@@ -376,7 +377,7 @@ class MeldingAantallenSerializer(serializers.Serializer):
     def to_representation(self, instance):
         wijk = instance.get("wijk")
         gps = self.wijken_gps_lookup.get(wijk)
-
+        gps = loads(gps)
         if gps:
             lat = str(gps.coords[0][1])
             lon = str(gps.coords[0][0])
