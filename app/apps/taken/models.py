@@ -14,11 +14,23 @@ class Taakgebeurtenis(BasisModel):
     Taakgebeurtenissen bouwen de history op van een taak
     """
 
+    class ResolutieOpties(models.TextChoices):
+        OPGELOST = "opgelost", "Opgelost"
+        NIET_OPGELOST = "niet_opgelost", "Niet opgelost"
+        GEANNULEERD = "geannuleerd", "Geannuleerd"
+        NIET_GEVONDEN = "niet_gevonden", "Niets aangetroffen"
+
     bijlagen = GenericRelation(Bijlage)
     taakstatus = models.ForeignKey(
         to="taken.Taakstatus",
         related_name="taakgebeurtenissen_voor_taakstatus",
         on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    resolutie = models.CharField(
+        max_length=50,
+        choices=ResolutieOpties.choices,
         blank=True,
         null=True,
     )
@@ -43,6 +55,7 @@ class Taakstatus(BasisModel):
         TOEGEWEZEN = "toegewezen", "Toegewezen"
         OPENSTAAND = "openstaand", "Openstaand"
         VOLTOOID = "voltooid", "Voltooid"
+        VOLTOOID_MET_FEEDBACK = "voltooid_met_feedback", "Voltooid met feedback"
 
     naam = models.CharField(
         max_length=50,
@@ -81,6 +94,10 @@ class Taakstatus(BasisModel):
                 return [
                     Taakstatus.NaamOpties.TOEGEWEZEN,
                     Taakstatus.NaamOpties.VOLTOOID,
+                ]
+            case Taakstatus.NaamOpties.VOLTOOID:
+                return [
+                    Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
                 ]
             case _:
                 return []
@@ -176,7 +193,11 @@ class Taakopdracht(BasisModel):
             status_namen = [
                 status_naam[0]
                 for status_naam in Taakstatus.NaamOpties.choices
-                if Taakstatus.NaamOpties.VOLTOOID != status_naam[0]
+                if status_naam[0]
+                not in [
+                    Taakstatus.NaamOpties.VOLTOOID,
+                    Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
+                ]
             ]
             openstaande_taken = self.melding.taakopdrachten_voor_melding.filter(
                 status__naam__in=status_namen
