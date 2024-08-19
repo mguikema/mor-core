@@ -512,7 +512,7 @@ class MeldingManager(models.Manager):
                     taakgebeurtenis.save()
 
             # Heropenen van melding
-            if locked_melding.status.naam == "afgehandeld" and externr_niet_opgelost:
+            if locked_melding.status.is_afgesloten() and externr_niet_opgelost:
                 melding_gebeurtenis_heropenen = Meldinggebeurtenis(
                     melding=locked_melding,
                     gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.MELDING_HEROPEND,
