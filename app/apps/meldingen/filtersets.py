@@ -8,8 +8,10 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
-from django.db.models import F, Max, OuterRef, Q, Subquery
-from django.db.models.functions import Greatest
+from django.db.models import Case
+from django.db.models import CharField as ModelsCharField
+from django.db.models import F, Max, OuterRef, Q, Subquery, Value, When
+from django.db.models.functions import Cast, Concat, Greatest
 from django.forms.fields import CharField, MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
 from django_filters import rest_framework as filters
@@ -219,7 +221,7 @@ class MeldingFilter(BasisFilter):
         return queryset
 
     # Er kan op meerdere komma separated zoektermen gezocht worden
-    def get_q(self, queryset, name, value):
+    def get_q_old(self, queryset, name, value):
         if value:
             search_terms = value.split(",")
             combined_q = Q()
@@ -241,6 +243,91 @@ class MeldingFilter(BasisFilter):
                     | Q(
                         signalen_voor_melding__locaties_voor_signaal__straatnaam__iregex=term
                     )
+                    # Old meta fields
+                    # | Q(meta__email_melder__iregex=term)
+                    # | Q(meta__telefoon_melder__iregex=term)
+                    # | Q(meta__naam_melder__iregex=term)
+                    # | Q(meta__melderTelefoonField__iregex=term)
+                    # | Q(meta__melderEmailField__iregex=term)
+                    # | Q(meta__melderNaamField__iregex=term)
+                )
+            return queryset.filter(combined_q).distinct()
+
+        return queryset
+
+    def get_q(self, queryset, name, value):
+        if value:
+            # Annotate the queryset with a combined address field
+            queryset = queryset.annotate(
+                volledig_adres_melding=Concat(
+                    F("locaties_voor_melding__straatnaam"),
+                    Value(" "),
+                    Cast(
+                        F("locaties_voor_melding__huisnummer"),
+                        output_field=ModelsCharField(),
+                    ),
+                    F("locaties_voor_melding__huisletter"),
+                    Case(
+                        When(
+                            Q(locaties_voor_melding__toevoeging__isnull=False)
+                            & ~Q(locaties_voor_melding__toevoeging=""),
+                            then=Concat(
+                                Value("-"), F("locaties_voor_melding__toevoeging")
+                            ),
+                        ),
+                        default=Value(""),
+                    ),
+                    output_field=ModelsCharField(),
+                )
+            ).annotate(
+                volledig_adres_signaal=Concat(
+                    F("signalen_voor_melding__locaties_voor_signaal__straatnaam"),
+                    Value(" "),
+                    Cast(
+                        F("signalen_voor_melding__locaties_voor_signaal__huisnummer"),
+                        output_field=ModelsCharField(),
+                    ),
+                    F("signalen_voor_melding__locaties_voor_signaal__huisletter"),
+                    Case(
+                        When(
+                            Q(
+                                signalen_voor_melding__locaties_voor_signaal__toevoeging__isnull=False
+                            )
+                            & ~Q(
+                                signalen_voor_melding__locaties_voor_signaal__toevoeging=""
+                            ),
+                            then=Concat(
+                                Value("-"),
+                                F(
+                                    "signalen_voor_melding__locaties_voor_signaal__toevoeging"
+                                ),
+                            ),
+                        ),
+                        default=Value(""),
+                    ),
+                    output_field=ModelsCharField(),
+                )
+            )
+
+            search_terms = value.split(",")
+            combined_q = Q()
+
+            for term in search_terms:
+                term = term.strip()
+                combined_q &= (
+                    # MeldR-nummer fields
+                    Q(meta__meldingsnummerField__iregex=term)
+                    # | Q(meta__morId__iregex=term) Not used, previously needed for msb import meldingen
+                    | Q(signalen_voor_melding__bron_signaal_id__iregex=term)
+                    # Melder fields
+                    | Q(signalen_voor_melding__melder__naam__iregex=term)
+                    # | Q(signalen_voor_melding__melder__voornaam__iregex=term) Currently not used
+                    # | Q(signalen_voor_melding__melder__achternaam__iregex=term) Currently not used
+                    | Q(signalen_voor_melding__melder__email__iregex=term)
+                    | Q(signalen_voor_melding__melder__telefoonnummer__iregex=term)
+                    # Combined address annotated fields
+                    | Q(volledig_adres_melding__iregex=term)
+                    | Q(volledig_adres_signaal__iregex=term)
                     # Old meta fields
                     # | Q(meta__email_melder__iregex=term)
                     # | Q(meta__telefoon_melder__iregex=term)
