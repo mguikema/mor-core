@@ -8,6 +8,7 @@ from django.db.models import (
     DurationField,
     ExpressionWrapper,
     F,
+    Min,
     OuterRef,
     Q,
     QuerySet,
