@@ -308,7 +308,9 @@ class MeldingFilter(BasisFilter):
 
     def get_buurt(self, queryset, name, value):
         if value:
-            queryset = queryset.prefetch_related("locaties_voor_melding")
+            queryset = queryset.prefetch_related(
+                "locaties_voor_melding", "signalen_voor_melding__locaties_voor_signaal"
+            )
             buurtnamen_subquery = (
                 Locatie.objects.filter(melding=OuterRef("pk"))
                 .order_by("-gewicht")
