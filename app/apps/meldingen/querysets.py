@@ -1,21 +1,7 @@
 import logging
 
 from django.contrib.gis.db import models
-from django.db.models import (
-    Avg,
-    Case,
-    Count,
-    DurationField,
-    ExpressionWrapper,
-    F,
-    Min,
-    OuterRef,
-    Q,
-    QuerySet,
-    Subquery,
-    Value,
-    When,
-)
+from django.db.models import Count, OuterRef, QuerySet, Subquery, Value
 from django.db.models.functions import Coalesce, Concat
 
 logger = logging.getLogger(__name__)
