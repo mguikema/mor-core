@@ -2,7 +2,11 @@ import logging
 
 from apps.status.filtersets import RelatedOrderingFilter, StatusFilter
 from apps.status.models import Status
-from apps.status.serializers import StatusLijstSerializer, StatusVeranderingSerializer
+from apps.status.serializers import (
+    StatusAfgehandeldSerializer,
+    StatusLijstSerializer,
+    StatusVeranderingSerializer,
+)
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status, viewsets
@@ -41,6 +45,25 @@ class StatusViewSet(
     def veranderingen(self, request):
         serializer = StatusVeranderingSerializer(
             self.filter_queryset(self.get_queryset()).get_veranderingen(request.GET),
+            context={"request": request},
+            many=True,
+        )
+        return Response(serializer.data)
+
+    @extend_schema(
+        description="Afgehandelde melding stats",
+        responses={status.HTTP_200_OK: StatusAfgehandeldSerializer(many=True)},
+        parameters=None,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="afgehandeld",
+        serializer_class=StatusAfgehandeldSerializer,
+    )
+    def afgehandeld(self, request):
+        serializer = StatusAfgehandeldSerializer(
+            self.get_queryset().afgehandeld(request.GET),
             context={"request": request},
             many=True,
         )

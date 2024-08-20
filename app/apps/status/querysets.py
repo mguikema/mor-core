@@ -1,5 +1,7 @@
 import logging
+from datetime import timedelta
 
+from dateutil import parser
 from django.contrib.gis.db import models
 from django.db.models import (
     Avg,
@@ -7,9 +9,12 @@ from django.db.models import (
     DurationField,
     ExpressionWrapper,
     F,
+    FloatField,
+    Min,
     OuterRef,
     QuerySet,
     Subquery,
+    Sum,
     Value,
 )
 from django.db.models.functions import Coalesce, Concat
@@ -113,3 +118,139 @@ class StatusQuerySet(QuerySet):
             "duur_seconden_gemiddeld",
             "aantal",
         )
+
+    def afgehandeld(self, params):
+        from apps.aliassen.models import OnderwerpAlias
+        from apps.locatie.models import Locatie
+        from apps.status.models import Status
+
+        locaties = Locatie.objects.filter(melding=OuterRef("melding")).order_by(
+            "-gewicht"
+        )
+        onderwerpen = OnderwerpAlias.objects.filter(
+            meldingen_voor_onderwerpen=OuterRef("melding")
+        )
+
+        aangemaakt_op_gte = None
+        aangemaakt_op_lt = None
+        try:
+            aangemaakt_op_gte = parser.parse(params.get("aangemaakt_op_gte"))
+            aangemaakt_op_lt = parser.parse(params.get("aangemaakt_op_lt"))
+        except Exception:
+            ...
+
+        # annotate met duur van status
+        qs = Status.objects.filter().annotate(
+            duur=Coalesce(
+                ExpressionWrapper(
+                    Subquery(
+                        Status.objects.filter(
+                            melding=OuterRef("melding"),
+                            aangemaakt_op__gt=OuterRef("aangemaakt_op"),
+                        )
+                        .order_by()
+                        .annotate(min=Min("aangemaakt_op"))
+                        .values("min")[:1]
+                    )
+                    - F("aangemaakt_op"),
+                    output_field=DurationField(),
+                ),
+                timedelta(seconds=0),
+            ),
+        )
+
+        # subquery aantallen per status naam optie
+        qs_aantal = (
+            Status.objects.filter(melding=OuterRef("melding")).values("naam").order_by()
+        )
+        # subquery voor totale duur van de status instanties per naam optie
+        qs_duur = qs.filter(melding=OuterRef("melding")).values("naam").order_by()
+
+        for status_naam, _ in Status.NaamOpties.choices:
+            annotations = [
+                {
+                    f"{status_naam}_aantal": Subquery(
+                        qs_aantal.filter(
+                            naam=status_naam,
+                        )
+                        .annotate(val=Count("naam"))
+                        .values("val")[:1]
+                    ),
+                },
+                {
+                    f"{status_naam}_duur_totaal": Subquery(
+                        qs_duur.filter(
+                            naam=status_naam,
+                        )
+                        .annotate(val=Sum("duur"))
+                        .values("val")[:1]
+                    ),
+                },
+            ]
+            for annotation in annotations:
+                qs = qs.annotate(**annotation)
+
+        # filter op laatste afgehandelde status instanties
+        qs = qs.filter(
+            duur=timedelta(seconds=0),
+            naam=Status.NaamOpties.AFGEHANDELD,
+        )
+        if aangemaakt_op_lt and aangemaakt_op_gte:
+            qs = qs.filter(
+                aangemaakt_op_gte=aangemaakt_op_gte,
+                aangemaakt_op_lt=aangemaakt_op_lt,
+            )
+
+        # annotate met wijk en onderwerp
+        qs = qs.annotate(
+            onderwerp=Coalesce(
+                Subquery(onderwerpen.values("response_json__name")[:1]),
+                Value("Onbekend", output_field=models.JSONField()),
+            )
+        ).annotate(
+            wijk=Coalesce(
+                Subquery(locaties.values("wijknaam")[:1]),
+                Value("Onbekend"),
+            )
+        )
+        # annotate met onderwerp & wijk gecombineerde voor ontdubbeling
+        qs = qs.annotate(
+            onderwerp_wijk=Concat(
+                "onderwerp", Value("-"), "wijk", output_field=models.CharField()
+            )
+        )
+
+        # annotate met gemiddelden van totaal aantal en totaal duur van statussen
+        avg_fields = [
+            {
+                f"{naam}_aantal_gemiddeld": Avg(
+                    F(f"{naam}_aantal"),
+                    output_field=FloatField(),
+                ),
+                f"{naam}_duur_gemiddeld": Avg(
+                    F(f"{naam}_duur_totaal"),
+                    output_field=DurationField(),
+                    filter=~Q(**{f"{naam}_duur_totaal": timedelta(seconds=0)}),
+                ),
+            }
+            for naam, _ in Status.NaamOpties.choices
+        ]
+        avg_fields.insert(0, {"melding_aantal": Count("onderwerp_wijk")})
+        avg_fields = {k: v for a in avg_fields for k, v in a.items()}
+
+        end_values = list(
+            ["melding_aantal", "wijk", "onderwerp"]
+            + [
+                n
+                for naam, _ in Status.NaamOpties.choices
+                for n in [f"{naam}_aantal_gemiddeld", f"{naam}_duur_gemiddeld"]
+            ]
+        )
+
+        qs = (
+            qs.values("onderwerp_wijk", "wijk", "onderwerp")
+            .order_by()
+            .annotate(**avg_fields)
+            .values(*end_values)
+        )
+        return qs

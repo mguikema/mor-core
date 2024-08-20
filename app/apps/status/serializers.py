@@ -50,3 +50,8 @@ class StatusVeranderingSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         return instance
+
+
+class StatusAfgehandeldSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        return instance
