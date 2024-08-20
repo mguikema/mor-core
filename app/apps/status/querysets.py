@@ -12,6 +12,7 @@ from django.db.models import (
     FloatField,
     Min,
     OuterRef,
+    Q,
     QuerySet,
     Subquery,
     Sum,
