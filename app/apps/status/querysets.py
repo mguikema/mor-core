@@ -198,8 +198,8 @@ class StatusQuerySet(QuerySet):
         )
         if aangemaakt_op_lt and aangemaakt_op_gte:
             qs = qs.filter(
-                aangemaakt_op_gte=aangemaakt_op_gte,
-                aangemaakt_op_lt=aangemaakt_op_lt,
+                aangemaakt_op__gte=aangemaakt_op_gte,
+                aangemaakt_op__lt=aangemaakt_op_lt,
             )
 
         # annotate met wijk en onderwerp
