@@ -56,6 +56,7 @@ class Locatie(BasisModel):
     locatie_type = models.CharField(
         max_length=50, choices=LOCATIE_TYPE_CHOICES, default=LOCATIE_TYPE_CHOICES[0][0]
     )
+    locatie_zoek_field = models.CharField(max_length=512, null=True, blank=True)
     geometrie = models.GeometryField(null=True, blank=True)
     bron = models.CharField(max_length=50, null=True, blank=True)
     naam = models.CharField(max_length=255, null=True, blank=True)
@@ -83,7 +84,16 @@ class Locatie(BasisModel):
 
     def save(self, *args, **kwargs):
         self.locatie_type = self.__class__.__name__.lower()
+        self.update_locatie_zoek_field()
         super().save(*args, **kwargs)
+
+    def update_locatie_zoek_field(self):
+        if self.locatie_type == "adres":
+            self.locatie_zoek_field = f"{self.straatnaam or ''} {self.huisnummer or ''}{self.huisletter or ''}{'-' + self.toevoeging if self.toevoeging else ''}".strip()
+        elif self.locatie_type == "lichtmast":
+            self.locatie_zoek_field = f"{self.straatnaam or ''} {self.huisnummer or ''}{self.huisletter or ''}{'-' + self.toevoeging if self.toevoeging else ''} {self.lichtmast_id or ''}".strip()
+        elif self.locatie_type == "graf":
+            self.locatie_zoek_field = f"{self.begraafplaats or ''} {self.grafnummer or ''} {self.vak or ''}".strip()
 
     def bereken_gewicht(self):
         return self.gewicht
