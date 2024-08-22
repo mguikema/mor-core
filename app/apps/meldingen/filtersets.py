@@ -6,6 +6,7 @@ from apps.locatie.models import Locatie
 from apps.meldingen.models import Melding
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
+from django.contrib.postgres.aggregates import StringAgg
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
 from django.db.models import Case
@@ -223,56 +224,62 @@ class MeldingFilter(BasisFilter):
     # Er kan op meerdere komma separated zoektermen gezocht worden
     def get_q(self, queryset, name, value):
         if value:
-            # Annotate the queryset with a combined address field
-            queryset = queryset.annotate(
-                volledig_adres_melding=Concat(
-                    F("locaties_voor_melding__straatnaam"),
-                    Value(" "),
-                    Cast(
-                        F("locaties_voor_melding__huisnummer"),
-                        output_field=ModelsCharField(),
-                    ),
-                    F("locaties_voor_melding__huisletter"),
-                    Case(
-                        When(
-                            Q(locaties_voor_melding__toevoeging__isnull=False)
-                            & ~Q(locaties_voor_melding__toevoeging=""),
-                            then=Concat(
-                                Value("-"), F("locaties_voor_melding__toevoeging")
-                            ),
-                        ),
-                        default=Value(""),
-                    ),
-                    output_field=ModelsCharField(),
-                )
-            ).annotate(
-                volledig_adres_signaal=Concat(
-                    F("signalen_voor_melding__locaties_voor_signaal__straatnaam"),
-                    Value(" "),
-                    Cast(
-                        F("signalen_voor_melding__locaties_voor_signaal__huisnummer"),
-                        output_field=ModelsCharField(),
-                    ),
-                    F("signalen_voor_melding__locaties_voor_signaal__huisletter"),
-                    Case(
-                        When(
-                            Q(
-                                signalen_voor_melding__locaties_voor_signaal__toevoeging__isnull=False
-                            )
-                            & ~Q(
-                                signalen_voor_melding__locaties_voor_signaal__toevoeging=""
-                            ),
-                            then=Concat(
-                                Value("-"),
-                                F(
-                                    "signalen_voor_melding__locaties_voor_signaal__toevoeging"
+            # Subquery for locaties_voor_melding
+            locaties_melding_subquery = Subquery(
+                Locatie.objects.filter(melding=OuterRef("pk"))
+                .annotate(
+                    full_address=Concat(
+                        "straatnaam",
+                        Value(" "),
+                        Cast("huisnummer", output_field=ModelsCharField()),
+                        "huisletter",
+                        Case(
+                            When(
+                                toevoeging__isnull=False,
+                                then=Concat(
+                                    Value("-"),
+                                    "toevoeging",
                                 ),
                             ),
+                            default=Value(""),
                         ),
-                        default=Value(""),
-                    ),
-                    output_field=ModelsCharField(),
+                    )
                 )
+                .values("melding")
+                .annotate(addresses=StringAgg("full_address", delimiter=" "))
+                .values("addresses")[:1]
+            )
+
+            # Subquery for signalen_voor_melding__locaties_voor_signaal
+            locaties_signaal_subquery = Subquery(
+                Locatie.objects.filter(signaal__melding=OuterRef("pk"))
+                .annotate(
+                    full_address=Concat(
+                        "straatnaam",
+                        Value(" "),
+                        Cast("huisnummer", output_field=ModelsCharField()),
+                        "huisletter",
+                        Case(
+                            When(
+                                toevoeging__isnull=False,
+                                then=Concat(
+                                    Value("-"),
+                                    "toevoeging",
+                                ),
+                            ),
+                            default=Value(""),
+                        ),
+                    )
+                )
+                .values("signaal__melding")
+                .annotate(addresses=StringAgg("full_address", delimiter=" "))
+                .values("addresses")[:1]
+            )
+
+            # Annotate the main queryset with the results of the subqueries
+            queryset = queryset.annotate(
+                volledig_adres_melding=locaties_melding_subquery,
+                volledig_adres_signaal=locaties_signaal_subquery,
             )
 
             search_terms = value.split(",")
@@ -280,27 +287,14 @@ class MeldingFilter(BasisFilter):
 
             for term in search_terms:
                 term = term.strip()
-                combined_q &= (
-                    # MeldR-nummer fields
+                combined_q |= (
                     Q(meta__meldingsnummerField__iregex=term)
-                    # | Q(meta__morId__iregex=term) Not used, previously needed for msb import meldingen
                     | Q(signalen_voor_melding__bron_signaal_id__iregex=term)
-                    # Melder fields
                     | Q(signalen_voor_melding__melder__naam__iregex=term)
-                    # | Q(signalen_voor_melding__melder__voornaam__iregex=term) Currently not used
-                    # | Q(signalen_voor_melding__melder__achternaam__iregex=term) Currently not used
                     | Q(signalen_voor_melding__melder__email__iregex=term)
                     | Q(signalen_voor_melding__melder__telefoonnummer__iregex=term)
-                    # Combined address annotated fields
-                    | Q(volledig_adres_melding__iregex=term)
-                    | Q(volledig_adres_signaal__iregex=term)
-                    # Old meta fields
-                    # | Q(meta__email_melder__iregex=term)
-                    # | Q(meta__telefoon_melder__iregex=term)
-                    # | Q(meta__naam_melder__iregex=term)
-                    # | Q(meta__melderTelefoonField__iregex=term)
-                    # | Q(meta__melderEmailField__iregex=term)
-                    # | Q(meta__melderNaamField__iregex=term)
+                    | Q(volledig_adres_melding__icontains=term)
+                    | Q(volledig_adres_signaal__icontains=term)
                 )
             return queryset.filter(combined_q).distinct()
 
