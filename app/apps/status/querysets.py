@@ -142,8 +142,15 @@ class StatusQuerySet(QuerySet):
         except Exception:
             ...
 
+        qs = Status.objects.all()
+
+        if aangemaakt_op_lt:
+            qs = qs.filter(
+                aangemaakt_op__lt=aangemaakt_op_lt,
+            )
+
         # annotate met duur van status
-        qs = Status.objects.filter().annotate(
+        qs = qs.annotate(
             duur=Coalesce(
                 ExpressionWrapper(
                     Subquery(
@@ -198,10 +205,9 @@ class StatusQuerySet(QuerySet):
             duur=timedelta(seconds=0),
             naam=Status.NaamOpties.AFGEHANDELD,
         )
-        if aangemaakt_op_lt and aangemaakt_op_gte:
+        if aangemaakt_op_gte:
             qs = qs.filter(
                 aangemaakt_op__gte=aangemaakt_op_gte,
-                aangemaakt_op__lt=aangemaakt_op_lt,
             )
 
         # annotate met wijk en onderwerp
