@@ -40,6 +40,19 @@ def get_taak_data(taakopdracht):
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
+def move_resolutie_to_taakgebeurtenis(self):
+    from apps.taken.models import Taakgebeurtenis, Taakopdracht
+
+    for taakopdracht in Taakopdracht.objects.exclude(resolutie__isnull=True):
+        taakgebeurtenis = Taakgebeurtenis.objects.filter(
+            taakopdracht=taakopdracht, taakstatus__naam="voltooid"
+        ).first()
+        if taakgebeurtenis:
+            taakgebeurtenis.resolutie = taakopdracht.resolutie
+            taakgebeurtenis.save()
+
+
+@shared_task(bind=True, base=BaseTaskWithRetry)
 def task_fix_taakopdracht_issues(self, taakopdracht_id):
     from apps.taken.models import Taakopdracht
 
