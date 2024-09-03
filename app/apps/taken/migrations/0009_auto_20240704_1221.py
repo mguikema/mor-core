@@ -51,5 +51,4 @@ class Migration(migrations.Migration):
                 max_length=50,
             ),
         ),
-        migrations.RunPython(move_resolutie_to_taakgebeurtenis),
     ]
