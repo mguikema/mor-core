@@ -121,6 +121,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
         .prefetch_related(
             "locaties_voor_melding",
+            "signalen_voor_melding__locaties_voor_signaal",
             "signalen_voor_melding__bijlagen",
             "bijlagen",
             "onderwerpen",
@@ -182,6 +183,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
                     "taakopdrachten_voor_melding__taakgebeurtenissen_voor_taakopdracht__bijlagen",
                     "taakopdrachten_voor_melding__taakgebeurtenissen_voor_taakopdracht__taakstatus",
                     "locaties_voor_melding",
+                    "signalen_voor_melding__locaties_voor_signaal",
                 )
                 .all()
             )
@@ -423,7 +425,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     )
     def aantallen(self, request):
         serializer = MeldingAantallenSerializer(
-            Melding.objects.get_aantallen(),
+            self.filter_queryset(self.get_queryset()).get_aantallen(),
             context={"request": request},
             many=True,
         )

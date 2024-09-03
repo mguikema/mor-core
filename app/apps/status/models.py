@@ -1,3 +1,4 @@
+from apps.status.querysets import StatusQuerySet
 from django.contrib.gis.db import models
 from django.core.exceptions import ValidationError
 from utils.models import BasisModel
@@ -23,6 +24,8 @@ class Status(BasisModel):
         related_name="statussen_voor_melding",
         on_delete=models.CASCADE,
     )
+
+    objects = StatusQuerySet.as_manager()
 
     class Meta:
         ordering = ("-aangemaakt_op",)
@@ -97,7 +100,13 @@ class Status(BasisModel):
         huidige_status = self.melding.status.naam if self.melding.status else ""
         nieuwe_status = self.naam
 
-        if nieuwe_status == huidige_status:
+        if (
+            nieuwe_status == huidige_status
+            and not (huidige_status == "controle" and nieuwe_status == "controle")
+            and not (
+                huidige_status == "in_behandeling" and nieuwe_status == "in_behandeling"
+            )
+        ):
             error_msg = "Status verandering niet toegestaan: van `{from_state}` naar `{to_state}`.".format(
                 from_state=huidige_status, to_state=nieuwe_status
             )

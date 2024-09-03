@@ -1,20 +1,7 @@
 import logging
 
 from django.contrib.gis.db import models
-from django.db.models import (
-    Avg,
-    Case,
-    Count,
-    DurationField,
-    ExpressionWrapper,
-    F,
-    OuterRef,
-    Q,
-    QuerySet,
-    Subquery,
-    Value,
-    When,
-)
+from django.db.models import Count, OuterRef, QuerySet, Subquery, Value
 from django.db.models.functions import Coalesce, Concat
 
 logger = logging.getLogger(__name__)
@@ -29,8 +16,11 @@ class MeldingQuerySet(QuerySet):
         onderwerpen = OnderwerpAlias.objects.filter(
             meldingen_voor_onderwerpen=OuterRef("pk")
         )
+        meldingen = self.all()
 
-        meldingen = self.annotate(
+        logger.info(f"filtered meldingen count: {meldingen.count()}")
+
+        meldingen = meldingen.annotate(
             onderwerp=Coalesce(
                 Subquery(onderwerpen.values("response_json__name")[:1]),
                 Value("Onbekend", output_field=models.JSONField()),
@@ -52,7 +42,6 @@ class MeldingQuerySet(QuerySet):
             .annotate(count=Count("onderwerp_wijk"))
             .values("count", "onderwerp", "wijk")
         )
-        logger.info(f"all meldingen count: {self.count()}")
         meldingen_count = [m.get("count") for m in meldingen]
         logger.info(f"meldingen count sum: {sum(meldingen_count)}")
         return meldingen

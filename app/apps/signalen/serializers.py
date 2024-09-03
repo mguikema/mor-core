@@ -144,22 +144,27 @@ class SignaalListSerializer(WritableNestedModelSerializer):
 
 
 class SignaalAantallenSerializer(serializers.Serializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.wijken_gps_lookup = self.fetch_wijken_gps_lookup()
+
+    def fetch_wijken_gps_lookup(self):
+        gemeentecode = settings.WIJKEN_EN_BUURTEN_GEMEENTECODE
+        wijken = PDOKService().get_wijken_middels_gemeentecode(gemeentecode)
+        return {wijk.get("wijknaam"): wijk.get("centroide_ll") for wijk in wijken}
+
     def to_representation(self, instance):
-        wijken = PDOKService().get_wijken_middels_gemeentecode(
-            gemeentecode=settings.WIJKEN_EN_BUURTEN_GEMEENTECODE
-        )
-        wijken_gps_lookup = {
-            wijk.get("wijknaam"): wijk.get("centroide_ll") for wijk in wijken
-        }
         wijk = instance.get("wijk")
-        gps = loads(wijken_gps_lookup.get(wijk)) if wijken_gps_lookup.get(wijk) else ""
-        instance.update(
-            {
-                "lat": str(gps.coords[0][1]) if gps else "",
-                "lon": str(gps.coords[0][0]) if gps else "",
-            }
-        )
-        return instance
+        gps = self.wijken_gps_lookup.get(wijk)
+        gps = loads(gps)
+        lat = str(gps.coords[0][1]) if gps else ""
+        lon = str(gps.coords[0][0]) if gps else ""
+
+        return {
+            **instance,
+            "lat": lat,
+            "lon": lon,
+        }
 
 
 class SignaalSerializer(WritableNestedModelSerializer):

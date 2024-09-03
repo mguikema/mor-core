@@ -255,15 +255,6 @@ class MeldingFilter(BasisFilter):
 
     def get_buurt(self, queryset, name, value):
         if value:
-            # buurtnamen = (
-            #     Locatie.objects.filter(melding=OuterRef("pk"))
-            #     .order_by("-gewicht")
-            #     .values("buurtnaam")[:1]
-            # )
-            # return queryset.annotate(buurtnaam=Subquery(buurtnamen)).filter(
-            #     buurtnaam__in=value
-            # )
-
             return queryset.filter(
                 locaties_voor_melding__buurtnaam__in=value
             ).distinct()

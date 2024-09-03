@@ -1,34 +1,29 @@
 from typing import List, Tuple
 
-from apps.signalen.models import Signaal
+from apps.status.models import Status
 from django.db import models
 from django_filters import rest_framework as filters
 from rest_framework import filters as rest_filters
 
 
-class SignaalFilter(filters.FilterSet):
-    signaal_url = filters.CharFilter(field_name="signaal_url")
-    origineel_aangemaakt_gte = filters.DateTimeFilter(
-        field_name="origineel_aangemaakt", lookup_expr="gte"
+class StatusFilter(filters.FilterSet):
+    aangemaakt_op_gte = filters.DateTimeFilter(
+        field_name="aangemaakt_op", lookup_expr="gte"
     )
-    origineel_aangemaakt_gt = filters.DateTimeFilter(
-        field_name="origineel_aangemaakt", lookup_expr="gt"
+    aangemaakt_op_gt = filters.DateTimeFilter(
+        field_name="aangemaakt_op", lookup_expr="gt"
     )
-    origineel_aangemaakt_lte = filters.DateTimeFilter(
-        field_name="origineel_aangemaakt", lookup_expr="lte"
+    aangemaakt_op_lte = filters.DateTimeFilter(
+        field_name="aangemaakt_op", lookup_expr="lte"
     )
-    origineel_aangemaakt_lt = filters.DateTimeFilter(
-        field_name="origineel_aangemaakt", lookup_expr="lt"
-    )
-    melding__origineel_aangemaakt_gte = filters.DateTimeFilter(
-        field_name="melding__origineel_aangemaakt", lookup_expr="gte"
+    aangemaakt_op_lt = filters.DateTimeFilter(
+        field_name="aangemaakt_op", lookup_expr="lt"
     )
 
     class Meta:
-        model = Signaal
+        model = Status
         fields = [
-            "signaal_url",
-            "melding",
+            "aangemaakt_op",
         ]
 
 
