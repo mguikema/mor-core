@@ -226,7 +226,7 @@ class MeldingFilter(BasisFilter):
 
             for term in search_terms:
                 term = term.strip()
-                combined_q &= (
+                combined_q |= (
                     # MeldR-nummer fields
                     Q(meta__meldingsnummerField__iregex=term)
                     # | Q(meta__morId__iregex=term) Not used, previously needed for msb import meldingen
@@ -237,9 +237,9 @@ class MeldingFilter(BasisFilter):
                     # | Q(signalen_voor_melding__melder__achternaam__iregex=term) Currently not used
                     | Q(signalen_voor_melding__melder__email__iregex=term)
                     | Q(signalen_voor_melding__melder__telefoonnummer__iregex=term)
-                    | Q(locaties_voor_melding__straatnaam__iregex=term)
+                    | Q(locaties_voor_melding__locatie_zoek_field__icontains=term)
                     | Q(
-                        signalen_voor_melding__locaties_voor_signaal__straatnaam__iregex=term
+                        signalen_voor_melding__locaties_voor_signaal__locatie_zoek_field__icontains=term
                     )
                     # Old meta fields
                     # | Q(meta__email_melder__iregex=term)
