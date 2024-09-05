@@ -3,18 +3,6 @@
 from django.db import migrations, models
 
 
-def update_locatie_zoek_field(apps, schema_editor):
-    Locatie = apps.get_model("locatie", "Locatie")
-    for locatie in Locatie.objects.all():
-        if locatie.locatie_type == "adres":
-            locatie.locatie_zoek_field = f"{locatie.straatnaam or ''} {locatie.huisnummer or ''}{locatie.huisletter or ''}{'-' + locatie.toevoeging if locatie.toevoeging else ''}".strip()
-        elif locatie.locatie_type == "lichtmast":
-            locatie.locatie_zoek_field = f"{locatie.straatnaam or ''} {locatie.huisnummer or ''}{locatie.huisletter or ''}{'-' + locatie.toevoeging if locatie.toevoeging else ''} {locatie.lichtmast_id or ''}".strip()
-        elif locatie.locatie_type == "graf":
-            locatie.locatie_zoek_field = f"{locatie.begraafplaats or ''} {locatie.grafnummer or ''} {locatie.vak or ''}".strip()
-        locatie.save()
-
-
 class Migration(migrations.Migration):
     dependencies = [
         ("locatie", "0004_auto_20240125_1521"),
@@ -26,5 +14,4 @@ class Migration(migrations.Migration):
             name="locatie_zoek_field",
             field=models.CharField(blank=True, max_length=512, null=True),
         ),
-        migrations.RunPython(update_locatie_zoek_field),
     ]
