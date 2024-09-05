@@ -1,4 +1,3 @@
-from apps.locatie.models import Locatie
 from celery import Task, shared_task
 from celery.utils.log import get_task_logger
 from django.db import transaction
@@ -21,19 +20,34 @@ class BaseTaskWithRetry(Task):
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def update_locatie_zoek_field_task(self, batch_size=1000):
-    total_count = Locatie.objects.count()
-    for start in range(0, total_count, batch_size):
-        end = start + batch_size
-        update_batch.delay(start, end)
+def update_locatie_zoek_field_task(self, locatie_ids, batch_size=1000):
+    from apps.locatie.models import Locatie
+
+    if locatie_ids is not None:
+        queryset = Locatie.objects.filter(id__in=locatie_ids)
+    else:
+        queryset = Locatie.objects.all()
+
+    total_count = queryset.count()
+    processed = 0
+
+    while processed < total_count:
+        batch = queryset[processed : processed + batch_size]
+        update_batch.delay([loc.id for loc in batch])
+        processed += batch_size
+
     return f"Queued update for {total_count} locations in batches of {batch_size}"
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
-def update_batch(self, start, end):
+def update_batch(self, locatie_ids):
+    from apps.locatie.models import Locatie
+
     with transaction.atomic():
-        for locatie in Locatie.objects.all()[start:end]:
+        locaties = Locatie.objects.filter(id__in=locatie_ids)
+        for locatie in locaties:
             if not locatie.locatie_zoek_field:
                 locatie.update_locatie_zoek_field()
                 locatie.save()
-        return f"Updated locations from {start} to {end}"
+
+    return f"Updated {len(locatie_ids)} locations"
