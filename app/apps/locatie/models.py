@@ -83,7 +83,6 @@ class Locatie(BasisModel):
     gewicht = models.FloatField(default=0.2)
 
     def save(self, *args, **kwargs):
-        self.locatie_type = self.__class__.__name__.lower()
         self.update_locatie_zoek_field()
         super().save(*args, **kwargs)
 
@@ -110,6 +109,10 @@ class Adres(Locatie):
 
     objects = AdresQuerySet()
 
+    def save(self, *args, **kwargs):
+        self.locatie_type = "adres"
+        super().save(*args, **kwargs)
+
     class Meta:
         proxy = True
 
@@ -121,6 +124,10 @@ class Lichtmast(Locatie):
 
     objects = LichtmastQuerySet()
 
+    def save(self, *args, **kwargs):
+        self.locatie_type = "lichtmast"
+        super().save(*args, **kwargs)
+
     class Meta:
         proxy = True
 
@@ -131,6 +138,10 @@ class Graf(Locatie):
     """
 
     objects = GrafQuerySet()
+
+    def save(self, *args, **kwargs):
+        self.locatie_type = "graf"
+        super().save(*args, **kwargs)
 
     class Meta:
         proxy = True
