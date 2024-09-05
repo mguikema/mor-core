@@ -226,7 +226,7 @@ class MeldingFilter(BasisFilter):
 
             for term in search_terms:
                 term = term.strip()
-                combined_q |= (
+                combined_q &= (
                     # MeldR-nummer fields
                     Q(meta__meldingsnummerField__iregex=term)
                     # | Q(meta__morId__iregex=term) Not used, previously needed for msb import meldingen
