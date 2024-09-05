@@ -46,8 +46,15 @@ def update_batch(self, locatie_ids):
     with transaction.atomic():
         locaties = Locatie.objects.filter(id__in=locatie_ids)
         for locatie in locaties:
-            if not locatie.locatie_zoek_field:
-                locatie.update_locatie_zoek_field()
-                locatie.save()
+            if locatie.straatnaam:
+                locatie.locatie_type = "adres"
+            elif locatie.lichtmast_id:
+                locatie.locatie_type = "lichtmast"
+            elif locatie.begraafplaats:
+                locatie.locatie_type = "graf"
+            else:
+                locatie.locatie_type = None
+            # if not locatie.locatie_zoek_field:
+            locatie.save()
 
     return f"Updated {len(locatie_ids)} locations"
