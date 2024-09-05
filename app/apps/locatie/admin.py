@@ -37,10 +37,11 @@ class LocatieAdmin(admin.ModelAdmin):
 
     @admin.action(description="Update locatie_zoek_field for selected locations")
     def update_locatie_zoek_field(self, request, queryset):
-        result = update_locatie_zoek_field_task.delay()
+        locatie_ids = list(queryset.values_list("id", flat=True))
+        task = update_locatie_zoek_field_task.delay(locatie_ids)
         self.message_user(
             request,
-            f"Task to update locatie_zoek_field has been queued. Task ID: {result.id}",
+            f"Task to update locatie_zoek_field for {len(locatie_ids)} locations has been queued. Task ID: {task.id}",
             messages.SUCCESS,
         )
 
