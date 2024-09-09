@@ -20,6 +20,8 @@ class Taakgebeurtenis(BasisModel):
         GEANNULEERD = "geannuleerd", "Geannuleerd"
         NIET_GEVONDEN = "niet_gevonden", "Niets aangetroffen"
 
+    verwijderd_op = models.DateTimeField(null=True, blank=True)
+    afgesloten_op = models.DateTimeField(null=True, blank=True)
     bijlagen = GenericRelation(Bijlage)
     taakstatus = models.ForeignKey(
         to="taken.Taakstatus",
@@ -52,14 +54,11 @@ class Taakgebeurtenis(BasisModel):
 class Taakstatus(BasisModel):
     class NaamOpties(models.TextChoices):
         NIEUW = "nieuw", "Nieuw"
-        TOEGEWEZEN = "toegewezen", "Toegewezen"
-        OPENSTAAND = "openstaand", "Openstaand"
         VOLTOOID = "voltooid", "Voltooid"
         VOLTOOID_MET_FEEDBACK = "voltooid_met_feedback", "Voltooid met feedback"
 
     naam = models.CharField(
         max_length=50,
-        choices=NaamOpties.choices,
         default=NaamOpties.NIEUW,
     )
     taakopdracht = models.ForeignKey(
@@ -73,34 +72,6 @@ class Taakstatus(BasisModel):
 
     def __str__(self) -> str:
         return f"{self.naam}({self.pk})"
-
-    def volgende_statussen(self):
-        naam_opties = [no[0] for no in Taakstatus.NaamOpties.choices]
-        if self.naam not in naam_opties:
-            return naam_opties
-
-        match self.naam:
-            case Taakstatus.NaamOpties.NIEUW:
-                return [
-                    Taakstatus.NaamOpties.TOEGEWEZEN,
-                    Taakstatus.NaamOpties.VOLTOOID,
-                ]
-            case Taakstatus.NaamOpties.TOEGEWEZEN:
-                return [
-                    Taakstatus.NaamOpties.OPENSTAAND,
-                    Taakstatus.NaamOpties.VOLTOOID,
-                ]
-            case Taakstatus.NaamOpties.OPENSTAAND:
-                return [
-                    Taakstatus.NaamOpties.TOEGEWEZEN,
-                    Taakstatus.NaamOpties.VOLTOOID,
-                ]
-            case Taakstatus.NaamOpties.VOLTOOID:
-                return [
-                    Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
-                ]
-            case _:
-                return []
 
     def clean(self):
         huidige_status = (
@@ -136,6 +107,7 @@ class Taakopdracht(BasisModel):
 
     afgesloten_op = models.DateTimeField(null=True, blank=True)
     afhandeltijd = models.DurationField(null=True, blank=True)
+    verwijderd_op = models.DateTimeField(null=True, blank=True)
     melding = models.ForeignKey(
         to="meldingen.Melding",
         related_name="taakopdrachten_voor_melding",
@@ -190,17 +162,11 @@ class Taakopdracht(BasisModel):
 
     def clean(self):
         if self.pk is None:
-            status_namen = [
-                status_naam[0]
-                for status_naam in Taakstatus.NaamOpties.choices
-                if status_naam[0]
-                not in [
+            openstaande_taken = self.melding.taakopdrachten_voor_melding.exclude(
+                status__naam__in=[
                     Taakstatus.NaamOpties.VOLTOOID,
                     Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
                 ]
-            ]
-            openstaande_taken = self.melding.taakopdrachten_voor_melding.filter(
-                status__naam__in=status_namen
             )
             gebruikte_taaktypes = list(
                 {

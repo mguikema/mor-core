@@ -8,6 +8,7 @@ from apps.meldingen.managers import (
     status_aangepast,
     taakopdracht_aangemaakt,
     taakopdracht_status_aangepast,
+    taakopdracht_verwijderd,
     urgentie_aangepast,
     verwijderd,
 )
@@ -17,7 +18,11 @@ from apps.meldingen.tasks import (
 )
 from apps.status.models import Status
 from apps.taken.models import Taakgebeurtenis, Taakstatus
-from apps.taken.tasks import task_taak_aanmaken, task_taak_status_aanpassen
+from apps.taken.tasks import (
+    task_taak_aanmaken,
+    task_taak_status_aanpassen,
+    task_taak_verwijderen,
+)
 from celery import chord
 from django.dispatch import receiver
 
@@ -146,3 +151,12 @@ def taakopdracht_status_aangepast_handler(
         notificatie_type="taakopdracht_status_aangepast",
     )
     chord(bijlages_aanmaken, notificaties_voor_melding_veranderd)()
+
+
+@receiver(taakopdracht_verwijderd, dispatch_uid="taakopdracht_verwijderd")
+def taakopdracht_verwijderd_handler(
+    sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
+):
+    task_taak_verwijderen.delay(
+        taakopdracht_id=taakopdracht.id,
+    )

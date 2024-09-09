@@ -23,6 +23,7 @@ class Meldinggebeurtenis(BasisModel):
         STATUS_WIJZIGING = "status_wijziging", "Status wijziging"
         MELDING_AANGEMAAKT = "melding_aangemaakt", "Melding aangemaakt"
         TAAKOPDRACHT_AANGEMAAKT = "taakopdracht_aangemaakt", "Taakopdracht aangemaakt"
+        TAAKOPDRACHT_VERWIJDERD = "taakopdracht_verwijderd", "Taakopdracht verwijderd"
         TAAKOPDRACHT_STATUS_WIJZIGING = (
             "taakopdracht_status_wijziging",
             "Taakopdracht status wijziging",
@@ -142,8 +143,13 @@ class Melding(BasisModel):
         return self.locaties_voor_melding
 
     def actieve_taakopdrachten(self):
+        from apps.taken.models import Taakstatus
+
         return self.taakopdrachten_voor_melding.exclude(
-            status__naam__in=["voltooid", "voltooid_met_feedback"]
+            status__naam__in=[
+                Taakstatus.NaamOpties.VOLTOOID,
+                Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
+            ]
         )
 
     def get_absolute_url(self):

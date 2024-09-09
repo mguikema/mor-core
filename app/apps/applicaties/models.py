@@ -224,8 +224,8 @@ class Applicatie(BasisModel):
     def taak_aanmaken(self, data):
         return self._do_request("/api/v1/taak/", method="post", data=data)
 
-    def taak_verwijderen(self, url):
-        return self._do_request(url, method="delete")
+    def taak_verwijderen(self, url, gebruiker=None):
+        return self._do_request(url, method="delete", params={"gebruiker": gebruiker})
 
     def taaktypes_halen(self, cache_timeout=60):
         if self.basis_url:
