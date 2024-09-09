@@ -4,9 +4,10 @@ from apps.taken.serializers import (
     TaakgebeurtenisSerializer,
     TaakgebeurtenisStatusSerializer,
     TaakopdrachtSerializer,
+    TaakopdrachtVerwijderenSerializer,
 )
 from drf_spectacular.utils import extend_schema
-from rest_framework import mixins, status, viewsets
+from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -22,7 +23,12 @@ class TaakgebeurtenisViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet)
     serializer_class = TaakgebeurtenisSerializer
 
 
-class TaakopdrachtViewSet(viewsets.ReadOnlyModelViewSet):
+class TaakopdrachtViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
     """
     Taakopdracht
     """
@@ -65,3 +71,18 @@ class TaakopdrachtViewSet(viewsets.ReadOnlyModelViewSet):
             data=serializer.errors,
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+    def destroy(self, request, *args, **kwargs):
+        taakopdracht = self.get_object()
+
+        if taakopdracht.verwijderd_op:
+            raise serializers.ValidationError("Deze taakopdracht is al verwijderd")
+
+        taakgebeurtenis = Melding.acties.taakopdracht_verwijderen(
+            taakopdracht, gebruiker=request.GET.get("gebruiker")
+        )
+
+        serializer = TaakopdrachtVerwijderenSerializer(
+            taakgebeurtenis, context={"request": request}
+        )
+        return Response(serializer.data)

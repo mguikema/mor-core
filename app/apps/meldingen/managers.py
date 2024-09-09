@@ -1,5 +1,6 @@
 import logging
 
+import nh3
 from apps.applicaties.models import Applicatie
 from apps.services.onderwerpen import OnderwerpenService
 from django.contrib.gis.db import models
@@ -18,6 +19,8 @@ verwijderd = DjangoSignal()
 gebeurtenis_toegevoegd = DjangoSignal()
 taakopdracht_aangemaakt = DjangoSignal()
 taakopdracht_status_aangepast = DjangoSignal()
+taakopdracht_notificatie = DjangoSignal()
+taakopdracht_verwijderd = DjangoSignal()
 
 
 class MeldingManager(models.Manager):
@@ -182,7 +185,7 @@ class MeldingManager(models.Manager):
 
     def status_aanpassen(self, serializer, melding, db="default", heropen=False):
         from apps.meldingen.models import Melding, Meldinggebeurtenis
-        from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
+        from apps.taken.models import Taakgebeurtenis, Taakopdracht
 
         with transaction.atomic():
             try:
@@ -218,13 +221,10 @@ class MeldingManager(models.Manager):
                         "Eén van taken is op dit moment in gebruik, probeer het later nog eens."
                     )
                 taakgebeurtenissen = []
+                now = timezone.now()
                 for to in locked_taakopdrachten:
-                    taakstatus = Taakstatus.objects.create(
-                        naam=Taakstatus.NaamOpties.VOLTOOID, taakopdracht=to
-                    )
-                    to.status = taakstatus
-                    to.resolutie = Taakopdracht.ResolutieOpties.GEANNULEERD
-                    to.afgesloten_op = timezone.now()
+                    to.verwijderd_op = now
+                    to.afgesloten_op = now
                     if to.afgesloten_op and to.aangemaakt_op:
                         to.afhandeltijd = to.afgesloten_op - to.aangemaakt_op
                     else:
@@ -232,14 +232,14 @@ class MeldingManager(models.Manager):
                     taakgebeurtenissen.append(
                         Taakgebeurtenis(
                             taakopdracht=to,
-                            taakstatus=taakstatus,
-                            resolutie=Taakgebeurtenis.ResolutieOpties.GEANNULEERD,
+                            verwijderd_op=now,
+                            afgesloten_op=now,
                             gebruiker=melding_gebeurtenis.gebruiker,
                         )
                     )
                 Taakopdracht.objects.bulk_update(
                     locked_taakopdrachten,
-                    ["status", "resolutie", "afgesloten_op", "afhandeltijd"],
+                    ["verwijderd_op", "afgesloten_op", "afhandeltijd"],
                 )
                 aangemaakte_taakgebeurtenissen = Taakgebeurtenis.objects.bulk_create(
                     taakgebeurtenissen
@@ -449,6 +449,185 @@ class MeldingManager(models.Manager):
 
         return taakopdracht
 
+    def taakopdracht_notificatie(
+        self,
+        taakopdracht,
+        serializer,
+        db="default",
+    ):
+        from apps.meldingen.models import Melding, Meldinggebeurtenis
+        from apps.status.models import Status
+        from apps.taken.models import Taakopdracht, Taakstatus
+
+        with transaction.atomic():
+            try:
+                locked_melding = (
+                    Melding.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=taakopdracht.melding.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.MeldingInGebruik(
+                    f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {taakopdracht.melding.id}, melding uuid: {taakopdracht.melding.uuid}"
+                )
+            try:
+                locked_taakopdracht = (
+                    Taakopdracht.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=taakopdracht.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.TaakopdrachtInGebruik(
+                    f"De taak is op dit moment in gebruik, probeer het later nog eens. melding nummer: {taakopdracht.id}, melding uuid: {taakopdracht.uuid}"
+                )
+
+            resolutie_opgelost_herzien = serializer.validated_data.pop(
+                "resolutie_opgelost_herzien", False
+            )
+            taakgebeurtenis = serializer.save(
+                taakopdracht=locked_taakopdracht,
+            )
+            resolutie = taakgebeurtenis.resolutie
+            locked_taakopdracht.status = taakgebeurtenis.taakstatus
+
+            if locked_taakopdracht.status.naam in [
+                Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
+                Taakstatus.NaamOpties.VOLTOOID,
+            ]:
+                locked_taakopdracht.afgesloten_op = timezone.now()
+                if resolutie in [ro[0] for ro in Taakopdracht.ResolutieOpties.choices]:
+                    locked_taakopdracht.resolutie = resolutie
+                    taakgebeurtenis.resolutie = resolutie
+                    taakgebeurtenis.save()
+
+            # Heropenen van melding
+            if locked_melding.status.is_afgesloten() and resolutie_opgelost_herzien:
+                melding_gebeurtenis_heropenen = Meldinggebeurtenis(
+                    melding=locked_melding,
+                    gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.MELDING_HEROPEND,
+                    gebruiker=taakgebeurtenis.gebruiker,
+                    omschrijving_intern=f"Melding heropend wegens niet kunnen oplossen van taak door externe instantie: {taakgebeurtenis.omschrijving_intern}",
+                )
+                # Heropenen melding.
+                status_instance = Status(naam=Status.NaamOpties.OPENSTAAND)
+                status_instance.melding = locked_melding
+                status_instance.save()
+                locked_melding.status = status_instance
+                locked_melding.afgesloten_op = None
+                melding_gebeurtenis_heropenen.status = status_instance
+                melding_gebeurtenis_heropenen.save()
+
+            melding_gebeurtenis = Meldinggebeurtenis(
+                melding=locked_melding,
+                gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING,
+                taakopdracht=locked_taakopdracht,
+                taakgebeurtenis=taakgebeurtenis,
+                gebruiker=taakgebeurtenis.gebruiker,
+            )
+
+            # zet status van de melding naar in_behandeling als dit niet de huidige status is
+            locked_taakopdracht.save()
+
+            if not locked_melding.actieve_taakopdrachten():
+                status_instance = Status(naam=Status.NaamOpties.CONTROLE)
+                status_instance.melding = locked_melding
+                status_instance.save()
+                locked_melding.status = status_instance
+                melding_gebeurtenis.status = status_instance
+                melding_gebeurtenis.gebeurtenis_type = (
+                    Meldinggebeurtenis.GebeurtenisType.STATUS_WIJZIGING
+                )
+
+            locked_melding.save()
+            melding_gebeurtenis.save()
+            transaction.on_commit(
+                lambda: taakopdracht_notificatie.send_robust(
+                    sender=self.__class__,
+                    melding=locked_melding,
+                    taakopdracht=locked_taakopdracht,
+                    taakgebeurtenis=taakgebeurtenis,
+                )
+            )
+        return taakgebeurtenis
+
+    def taakopdracht_verwijderen(
+        self,
+        taakopdracht,
+        gebruiker,
+        db="default",
+    ):
+        from apps.meldingen.models import Melding, Meldinggebeurtenis
+        from apps.status.models import Status
+        from apps.taken.models import Taakgebeurtenis, Taakopdracht
+
+        with transaction.atomic():
+            try:
+                locked_melding = (
+                    Melding.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=taakopdracht.melding.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.MeldingInGebruik(
+                    f"De melding is op dit moment in gebruik, probeer het later nog eens. melding nummer: {taakopdracht.melding.id}, melding uuid: {taakopdracht.melding.uuid}"
+                )
+            try:
+                locked_taakopdracht = (
+                    Taakopdracht.objects.using(db)
+                    .select_for_update(nowait=True)
+                    .get(pk=taakopdracht.pk)
+                )
+            except OperationalError:
+                raise MeldingManager.TaakopdrachtInGebruik(
+                    f"De taak is op dit moment in gebruik, probeer het later nog eens. melding nummer: {taakopdracht.id}, melding uuid: {taakopdracht.uuid}"
+                )
+
+            now = timezone.now()
+
+            taakgebeurtenis = Taakgebeurtenis(
+                taakopdracht=locked_taakopdracht,
+                gebruiker=nh3.clean(gebruiker),
+                verwijderd_op=now,
+                afgesloten_op=now,
+            )
+            taakgebeurtenis.save()
+
+            locked_taakopdracht.verwijderd_op = now
+            locked_taakopdracht.afgesloten_op = now
+
+            melding_gebeurtenis = Meldinggebeurtenis(
+                melding=locked_melding,
+                gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_VERWIJDERD,
+                taakopdracht=locked_taakopdracht,
+                taakgebeurtenis=taakgebeurtenis,
+                gebruiker=taakgebeurtenis.gebruiker,
+            )
+
+            # zet status van de melding naar in_behandeling als dit niet de huidige status is
+            locked_taakopdracht.save()
+
+            if not locked_melding.actieve_taakopdrachten():
+                status_instance = Status(naam=Status.NaamOpties.CONTROLE)
+                status_instance.melding = locked_melding
+                status_instance.save()
+                locked_melding.status = status_instance
+                melding_gebeurtenis.status = status_instance
+                melding_gebeurtenis.gebeurtenis_type = (
+                    Meldinggebeurtenis.GebeurtenisType.STATUS_WIJZIGING
+                )
+
+            locked_melding.save()
+            melding_gebeurtenis.save()
+            transaction.on_commit(
+                lambda: taakopdracht_verwijderd.send_robust(
+                    sender=self.__class__,
+                    melding=locked_melding,
+                    taakopdracht=locked_taakopdracht,
+                    taakgebeurtenis=taakgebeurtenis,
+                )
+            )
+        return taakgebeurtenis
+
     def taakopdracht_status_aanpassen(
         self,
         serializer,
@@ -500,11 +679,10 @@ class MeldingManager(models.Manager):
             elif taakgebeurtenis.taakstatus.naam == Taakstatus.NaamOpties.OPENSTAAND:
                 locked_taakopdracht.additionele_informatie["uitvoerder"] = None
 
-            if (
-                Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK
-                in locked_taakopdracht.status.volgende_statussen()
-                or not locked_taakopdracht.status.volgende_statussen()
-            ):
+            if locked_taakopdracht.status.naam in [
+                Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
+                Taakstatus.NaamOpties.VOLTOOID,
+            ]:
                 locked_taakopdracht.afgesloten_op = timezone.now()
                 if resolutie in [ro[0] for ro in Taakopdracht.ResolutieOpties.choices]:
                     locked_taakopdracht.resolutie = resolutie
