@@ -248,7 +248,6 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, voorkom_dubbele_sync=Tr
             "resolutie": taakopdracht.resolutie,
             "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
             "gebruiker": taakgebeurtenis.gebruiker,
-            "uitvoerder": taakgebeurtenis.additionele_informatie.get("uitvoerder"),
         }
         taak_status_aanpassen_response = taakopdracht.applicatie.taak_status_aanpassen(
             f"{taakopdracht.taak_url}status-aanpassen/",
