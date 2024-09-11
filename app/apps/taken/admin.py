@@ -42,7 +42,11 @@ def action_update_fixer_taak_status(modeladmin, request, queryset):
 
 
 class TaakstatusAdmin(admin.ModelAdmin):
-    ...
+    list_display = (
+        "id",
+        "naam",
+        "taakopdracht",
+    )
 
 
 class TaakgebeurtenisAdmin(admin.ModelAdmin):

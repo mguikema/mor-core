@@ -667,18 +667,11 @@ class MeldingManager(models.Manager):
                     f"De taak is op dit moment in gebruik, probeer het later nog eens. melding nummer: {taakopdracht.id}, melding uuid: {taakopdracht.uuid}"
                 )
             resolutie = serializer.validated_data.pop("resolutie", None)
-            uitvoerder = serializer.validated_data.pop("uitvoerder", None)
             taakgebeurtenis = serializer.save(
                 taakopdracht=locked_taakopdracht,
-                additionele_informatie={"uitvoerder": uitvoerder},
             )
 
             locked_taakopdracht.status = taakgebeurtenis.taakstatus
-            if taakgebeurtenis.taakstatus.naam == Taakstatus.NaamOpties.TOEGEWEZEN:
-                locked_taakopdracht.additionele_informatie = {"uitvoerder": uitvoerder}
-            elif taakgebeurtenis.taakstatus.naam == Taakstatus.NaamOpties.OPENSTAAND:
-                locked_taakopdracht.additionele_informatie["uitvoerder"] = None
-
             if locked_taakopdracht.status.naam in [
                 Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
                 Taakstatus.NaamOpties.VOLTOOID,
