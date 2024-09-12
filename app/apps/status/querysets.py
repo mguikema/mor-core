@@ -1,12 +1,10 @@
 import logging
-from datetime import timedelta
 
 from dateutil import parser
 from django.contrib.gis.db import models
 from django.db.models import (
     Avg,
     Count,
-    DurationField,
     ExpressionWrapper,
     F,
     FloatField,
@@ -18,9 +16,15 @@ from django.db.models import (
     Sum,
     Value,
 )
+from django.db.models.expressions import Func
 from django.db.models.functions import Coalesce, Concat
 
 logger = logging.getLogger(__name__)
+
+
+class Epoch(Func):
+    template = "EXTRACT(epoch FROM %(expressions)s)::DOUBLE PRECISION"
+    output_field = models.FloatField()
 
 
 class StatusQuerySet(QuerySet):
@@ -91,8 +95,8 @@ class StatusQuerySet(QuerySet):
         # add duration between begin and end status
         statussen = statussen.annotate(
             duur_seconden=ExpressionWrapper(
-                F("aangemaakt_op") - Subquery(sub_aangemaakt_op),
-                output_field=DurationField(),
+                Epoch(F("aangemaakt_op")) - Epoch(Subquery(sub_aangemaakt_op)),
+                output_field=FloatField(),
             )
         )
 
@@ -106,7 +110,7 @@ class StatusQuerySet(QuerySet):
         ).annotate(
             duur_seconden_gemiddeld=Avg(
                 F("duur_seconden"),
-                output_field=DurationField(),
+                output_field=FloatField(),
             ),
             aantal=Count(F("eind_begin_wijk_onderwerp")),
         )
@@ -151,19 +155,22 @@ class StatusQuerySet(QuerySet):
         qs = qs.annotate(
             duur=Coalesce(
                 ExpressionWrapper(
-                    Subquery(
-                        Status.objects.filter(
-                            melding=OuterRef("melding"),
-                            aangemaakt_op__gt=OuterRef("aangemaakt_op"),
+                    Epoch(
+                        Subquery(
+                            Status.objects.filter(
+                                melding=OuterRef("melding"),
+                                aangemaakt_op__gt=OuterRef("aangemaakt_op"),
+                            )
+                            .order_by()
+                            .annotate(min=Min("aangemaakt_op"))
+                            .values("min")[:1]
                         )
-                        .order_by()
-                        .annotate(min=Min("aangemaakt_op"))
-                        .values("min")[:1]
                     )
-                    - F("aangemaakt_op"),
-                    output_field=DurationField(),
+                    - Epoch(F("aangemaakt_op")),
+                    output_field=FloatField(),
                 ),
-                timedelta(seconds=0),
+                0,
+                output_field=FloatField(),
             ),
         )
 
@@ -200,7 +207,7 @@ class StatusQuerySet(QuerySet):
 
         # filter op laatste afgehandelde status instanties
         qs = qs.filter(
-            duur=timedelta(seconds=0),
+            duur=0,
             naam=Status.NaamOpties.AFGEHANDELD,
         )
         if aangemaakt_op_gte:
@@ -236,8 +243,8 @@ class StatusQuerySet(QuerySet):
                 ),
                 f"{naam}_duur_gemiddeld": Avg(
                     F(f"{naam}_duur_totaal"),
-                    output_field=DurationField(),
-                    filter=~Q(**{f"{naam}_duur_totaal": timedelta(seconds=0)}),
+                    output_field=FloatField(),
+                    filter=~Q(**{f"{naam}_duur_totaal": 0}),
                 ),
             }
             for naam, _ in Status.NaamOpties.choices
