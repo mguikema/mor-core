@@ -95,6 +95,11 @@ class MeldingManager(models.Manager):
                 for locatie in signaal.locaties_voor_signaal.all():
                     melding.locaties_voor_melding.add(locatie)
 
+                first_locatie = signaal.locaties_voor_signaal.first()
+                if first_locatie:
+                    first_locatie.primair = True
+                    first_locatie.save()
+
                 status = Status()
                 status.melding = melding
                 status.save()
@@ -292,6 +297,7 @@ class MeldingManager(models.Manager):
 
             if locatie := serializer.validated_data.get("locatie"):
                 locatie["melding"] = melding
+                melding.locaties_voor_melding.update(primair=False)
                 max_gewicht = melding.locaties_voor_melding.aggregate(Max("gewicht"))[
                     "gewicht__max"
                 ]
@@ -299,6 +305,7 @@ class MeldingManager(models.Manager):
                     round(max_gewicht + 0.1, 2) if max_gewicht is not None else 0.2
                 )
                 locatie["gewicht"] = gewicht
+                locatie["primair"] = True
 
             meldinggebeurtenis = serializer.save(melding=melding, locatie=locatie)
 
