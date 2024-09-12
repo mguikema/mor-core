@@ -18,11 +18,16 @@ class LocatieAdmin(admin.ModelAdmin):
         "melding",
         "wijknaam",
         "gewicht",
+        "primair",
         "signaal",
         "huisnummer",
         "straatnaam",
         "geometrie",
     )
+    search_fields = [
+        "id",
+        "melding__uuid",
+    ]
 
     # TODO: Remove later!!!
     formfield_overrides = {

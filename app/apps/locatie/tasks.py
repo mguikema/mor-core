@@ -49,3 +49,24 @@ def update_batch(self, locatie_ids):
             locatie.save()
 
     return f"Updated {len(locatie_ids)} locations"
+
+
+@shared_task(bind=True, base=BaseTaskWithRetry)
+def task_update_locatie_primair(self):
+    from apps.locatie.models import Locatie
+    from apps.meldingen.models import Melding
+    from django.db.models import OuterRef, Subquery
+
+    locations_subquery = (
+        Locatie.objects.filter(melding=OuterRef("pk"))
+        .order_by("-gewicht", "id")
+        .values("id")[:1]
+    )
+
+    locations_ids = Melding.objects.annotate(
+        highest_weight=Subquery(locations_subquery)
+    ).values_list("highest_weight", flat=True)
+    locations = Locatie.objects.all().update(primair=False)
+    locations = Locatie.objects.filter(id__in=locations_ids).update(primair=True)
+
+    return f"Aantal geupdate locaties {locations}"

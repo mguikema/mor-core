@@ -81,6 +81,7 @@ class Locatie(BasisModel):
         blank=True,
     )
     gewicht = models.FloatField(default=0.2)
+    primair = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         self.update_locatie_zoek_field()
