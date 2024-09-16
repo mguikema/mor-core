@@ -149,22 +149,11 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     pre_filterset_class = MeldingPreFilter
     filter_options_fields = (
         (
-            "begraafplaats",
-            "locaties_voor_melding__begraafplaats",
-            "meta_uitgebreid__begraafplaats__choices",
-            "signalen_voor_melding__meta_uitgebreid__begraafplaats__choices",
-        ),
-        (
             "buurt",
             "locaties_voor_melding__buurtnaam",
             None,
             None,
             "locaties_voor_melding__wijknaam",
-        ),
-        (
-            "onderwerp",
-            "onderwerpen",
-            "onderwerpen__bron_url",
         ),
     )
 
