@@ -113,13 +113,15 @@ class TaakopdrachtViewSet(
     @action(
         detail=False,
         methods=["get"],
-        url_path="taaktype-aantallen",
+        url_path="taaktype-aantallen-per-melding",
         serializer_class=TaaktypeAantallenSerializer,
         permission_classes=(),
     )
-    def taaktype_aantallen(self, request):
+    def taaktype_aantallen_per_melding(self, request):
         serializer = TaaktypeAantallenSerializer(
-            self.filter_queryset(self.get_queryset()).taaktype_aantallen_per_melding(),
+            self.filter_queryset(self.get_queryset()).taaktype_aantallen_per_melding(
+                request.GET
+            ),
             context={"request": request},
             many=True,
         )
