@@ -495,12 +495,17 @@ class MeldingManager(models.Manager):
                 taakopdracht=locked_taakopdracht,
             )
             resolutie = taakgebeurtenis.resolutie
-            locked_taakopdracht.status = taakgebeurtenis.taakstatus
+            if taakgebeurtenis.taakstatus:
+                locked_taakopdracht.status = taakgebeurtenis.taakstatus
 
-            if locked_taakopdracht.status.naam in [
-                Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
-                Taakstatus.NaamOpties.VOLTOOID,
-            ]:
+            if (
+                locked_taakopdracht.status.naam
+                in [
+                    Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK,
+                    Taakstatus.NaamOpties.VOLTOOID,
+                ]
+                and taakgebeurtenis.taakstatus
+            ):
                 locked_taakopdracht.afgesloten_op = timezone.now()
                 if resolutie in [ro[0] for ro in Taakopdracht.ResolutieOpties.choices]:
                     locked_taakopdracht.resolutie = resolutie
@@ -526,7 +531,9 @@ class MeldingManager(models.Manager):
 
             melding_gebeurtenis = Meldinggebeurtenis(
                 melding=locked_melding,
-                gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING,
+                gebeurtenis_type=Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_STATUS_WIJZIGING
+                if taakgebeurtenis.taakstatus
+                else Meldinggebeurtenis.GebeurtenisType.TAAKOPDRACHT_NOTIFICATIE,
                 taakopdracht=locked_taakopdracht,
                 taakgebeurtenis=taakgebeurtenis,
                 gebruiker=taakgebeurtenis.gebruiker,

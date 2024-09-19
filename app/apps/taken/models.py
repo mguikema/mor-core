@@ -1,4 +1,5 @@
 from apps.bijlagen.models import Bijlage
+from apps.taken.querysets import TaakopdrachtQuerySet
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
@@ -151,6 +152,8 @@ class Taakopdracht(BasisModel):
         blank=True,
         null=True,
     )
+
+    objects = TaakopdrachtQuerySet.as_manager()
 
     class AanmakenNietToegestaan(APIException):
         ...

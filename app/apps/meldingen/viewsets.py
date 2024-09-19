@@ -267,6 +267,9 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         except Taakopdracht.DoesNotExist:
             raise Http404("De taakopdracht is niet gevonden!")
 
+        data = {}
+        data.update(request.data)
+
         IS_VOLTOOID_MET_FEEDBACK = (
             taakopdracht.status.naam == Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK
         )
@@ -274,13 +277,17 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             taakopdracht.status.naam == Taakstatus.NaamOpties.VOLTOOID
             and not request.data.get("resolutie_opgelost_herzien", False)
         )
-        if IS_VOLTOOID_MET_FEEDBACK or IS_VOLTOOID_MET_HERZIEN:
-            raise serializers.ValidationError("Deze taakopdracht is al voltooid")
-        if taakopdracht.verwijderd_op:
+        IS_VORIGE_STATUS = taakopdracht.status.naam == data.get("taakstatus", {}).get(
+            "naam"
+        )
+        if (
+            taakopdracht.verwijderd_op
+            or IS_VOLTOOID_MET_FEEDBACK
+            or IS_VOLTOOID_MET_HERZIEN
+            or IS_VORIGE_STATUS
+        ):
             return Response({})
 
-        data = {}
-        data.update(request.data)
         print(data)
         if data.get("taakstatus"):
             data["taakstatus"]["taakopdracht"] = taakopdracht.id
@@ -291,18 +298,8 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         )
         if serializer.is_valid():
             print("is valid")
-            taakgebeurtenis = Melding.acties.taakopdracht_notificatie(
-                taakopdracht, serializer
-            )
-
-            serializer = TaakopdrachtNotificatieSerializer(
-                taakgebeurtenis, context={"request": request}
-            )
-            return Response(serializer.data)
-        return Response(
-            data=serializer.errors,
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+            Melding.acties.taakopdracht_notificatie(taakopdracht, serializer)
+        return Response({})
 
     @extend_schema(
         description="Markeert de taakopdracht in MorCore als verwijderd en stuurt de delete actie naar taakapplicatie.",
