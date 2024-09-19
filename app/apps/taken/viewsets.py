@@ -1,12 +1,16 @@
 from apps.meldingen.models import Melding
+from apps.taken.filtersets import TaakopdrachtFilter
 from apps.taken.models import Taakgebeurtenis, Taakopdracht
 from apps.taken.serializers import (
     TaakgebeurtenisSerializer,
     TaakgebeurtenisStatusSerializer,
     TaakopdrachtSerializer,
     TaakopdrachtVerwijderenSerializer,
+    TaaktypeAantallenSerializer,
 )
-from drf_spectacular.utils import extend_schema
+from django_filters import rest_framework as filters
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -37,6 +41,9 @@ class TaakopdrachtViewSet(
     queryset = Taakopdracht.objects.all()
 
     serializer_class = TaakopdrachtSerializer
+
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = TaakopdrachtFilter
 
     @extend_schema(
         description="Verander de status van een taak",
@@ -84,5 +91,36 @@ class TaakopdrachtViewSet(
 
         serializer = TaakopdrachtVerwijderenSerializer(
             taakgebeurtenis, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    @extend_schema(
+        description="Taaktype aantallen per melding",
+        responses={status.HTTP_200_OK: TaaktypeAantallenSerializer()},
+        parameters=[
+            OpenApiParameter(
+                "melding_afgesloten_op_gte",
+                OpenApiTypes.DATETIME,
+                OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                "melding_afgesloten_op_lt",
+                OpenApiTypes.DATETIME,
+                OpenApiParameter.QUERY,
+            ),
+        ],
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="taaktype-aantallen",
+        serializer_class=TaaktypeAantallenSerializer,
+        permission_classes=(),
+    )
+    def taaktype_aantallen(self, request):
+        serializer = TaaktypeAantallenSerializer(
+            self.filter_queryset(self.get_queryset()).taaktype_aantallen_per_melding(),
+            context={"request": request},
+            many=True,
         )
         return Response(serializer.data)

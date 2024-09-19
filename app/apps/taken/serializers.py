@@ -225,3 +225,8 @@ class TaakopdrachtVerwijderenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Taakgebeurtenis
         fields = []
+
+
+class TaaktypeAantallenSerializer(serializers.Serializer):
+    def to_representation(self, instance):
+        return instance
