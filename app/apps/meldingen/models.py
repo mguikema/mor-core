@@ -24,6 +24,10 @@ class Meldinggebeurtenis(BasisModel):
         MELDING_AANGEMAAKT = "melding_aangemaakt", "Melding aangemaakt"
         TAAKOPDRACHT_AANGEMAAKT = "taakopdracht_aangemaakt", "Taakopdracht aangemaakt"
         TAAKOPDRACHT_VERWIJDERD = "taakopdracht_verwijderd", "Taakopdracht verwijderd"
+        TAAKOPDRACHT_NOTIFICATIE = (
+            "taakopdracht_notificatie",
+            "Taakopdracht notificatie",
+        )
         TAAKOPDRACHT_STATUS_WIJZIGING = (
             "taakopdracht_status_wijziging",
             "Taakopdracht status wijziging",
