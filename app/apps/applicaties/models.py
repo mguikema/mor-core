@@ -2,6 +2,7 @@ import logging
 from urllib.parse import urlencode, urlparse
 
 import requests
+import urllib3
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -131,6 +132,9 @@ class Applicatie(BasisModel):
                 token_response = requests.post(
                     f"{self.basis_url}{settings.TOKEN_API_RELATIVE_URL}",
                     json=json_data,
+                    headers={
+                        "user-agent": urllib3.util.SKIP_HEADER,
+                    },
                 )
             except Exception as e:
                 logger.error(f"Token request mislukt: e: {e}")
@@ -168,9 +172,15 @@ class Applicatie(BasisModel):
 
     def _get_headers(self):
         token = self._get_token()
-        if not token:
-            return {}
-        headers = {"Authorization": f"Token {token}"}
+        headers = {
+            "user-agent": urllib3.util.SKIP_HEADER,
+        }
+        if token:
+            headers.update(
+                {
+                    "Authorization": f"Token {token}",
+                }
+            )
         return headers
 
     def _do_request(

@@ -1,4 +1,5 @@
 import requests
+import urllib3
 from django.contrib.gis.db import models
 from utils.models import BasisModel
 
@@ -19,7 +20,12 @@ class OnderwerpAlias(BasisModel):
         pass
 
     def _valideer_bron_url(self, bron_url: str):
-        response = requests.get(bron_url)
+        response = requests.get(
+            bron_url,
+            headers={
+                "user-agent": urllib3.util.SKIP_HEADER,
+            },
+        )
         if response.status_code != 200:
             raise OnderwerpAlias.OnderwerpNietValide
         return response.json()
