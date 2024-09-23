@@ -1,8 +1,16 @@
 import logging
+import uuid
 
 from apps.applicaties.models import Applicatie
+from django.conf import settings
+from django.db import DatabaseError, IntegrityError
 from health_check.backends import BaseHealthCheckBackend
-from health_check.exceptions import HealthCheckException
+from health_check.db.models import TestModel
+from health_check.exceptions import (
+    HealthCheckException,
+    ServiceReturnedUnexpectedResult,
+    ServiceUnavailable,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -60,3 +68,26 @@ class ApplicatieTokenAPIHealthCheck(BaseHealthCheckBackend):
 
     def identifier(self):
         return self.__class__.__name__
+
+
+class ReadonlyDatabaseBackend(BaseHealthCheckBackend):
+    def check_status(self):
+        title = uuid.uuid4()
+        obj = None
+        try:
+            obj = TestModel.objects.using(settings.DEFAULT_DATABASE_KEY).create(
+                title=title
+            )
+        except IntegrityError:
+            raise ServiceReturnedUnexpectedResult("Integrity Error")
+        except DatabaseError:
+            raise ServiceUnavailable("Database error")
+        try:
+            TestModel.objects.using(settings.READONLY_DATABASE_KEY).get(title=title)
+        except IntegrityError:
+            raise ServiceReturnedUnexpectedResult("Integrity Error")
+        except DatabaseError:
+            raise ServiceUnavailable("Database error")
+
+        if obj:
+            obj.delete()
