@@ -71,6 +71,15 @@ class TaakgebeurtenisSerializer(serializers.ModelSerializer):
         )
 
 
+class TaakgebeurtenisBijlagenSerializer(serializers.ModelSerializer):
+    bijlagen = BijlageSerializer(many=True, required=False)
+
+    class Meta:
+        model = Taakgebeurtenis
+        fields = ("bijlagen",)
+        read_only_fields = ("bijlagen",)
+
+
 class TaakgebeurtenisStatusSerializer(WritableNestedModelSerializer):
     bijlagen = BijlageSerializer(many=True, required=False)
     taakstatus = TaakstatusSerializer(required=True)

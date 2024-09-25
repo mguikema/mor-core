@@ -13,7 +13,11 @@ from apps.services.pdok import PDOKService
 from apps.signalen.serializers import SignaalMeldingListSerializer, SignaalSerializer
 from apps.status.serializers import StatusSerializer
 from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
-from apps.taken.serializers import TaakgebeurtenisSerializer, TaakopdrachtSerializer
+from apps.taken.serializers import (
+    TaakgebeurtenisBijlagenSerializer,
+    TaakgebeurtenisSerializer,
+    TaakopdrachtSerializer,
+)
 from django.conf import settings
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
@@ -166,11 +170,13 @@ class OnderwerpBronUrlField(serializers.RelatedField):
 
 class MeldinggebeurtenisMeldingLijstSerializer(serializers.ModelSerializer):
     bijlagen = BijlageAlleenLezenSerializer(many=True, read_only=True)
+    taakgebeurtenis = TaakgebeurtenisBijlagenSerializer(required=False)
 
     class Meta:
         model = Meldinggebeurtenis
         fields = (
             "omschrijving_extern",
+            "taakgebeurtenis",
             "bijlagen",
         )
         read_only_fields = ("omschrijving_extern",)
@@ -195,9 +201,6 @@ class TaakgebeurtenisMeldingLijstSerializer(TaakgebeurtenisSerializer):
 
 class TaakopdrachtMeldingLijstSerializer(serializers.ModelSerializer):
     status = TaakopdrachtStatusSerializer(read_only=True)
-    taakgebeurtenissen_voor_taakopdracht = TaakgebeurtenisMeldingLijstSerializer(
-        many=True, read_only=True
-    )
 
     class Meta:
         model = Taakopdracht
@@ -205,7 +208,6 @@ class TaakopdrachtMeldingLijstSerializer(serializers.ModelSerializer):
             "titel",
             "resolutie",
             "status",
-            "taakgebeurtenissen_voor_taakopdracht",
         )
 
 
@@ -244,17 +246,9 @@ class MeldingSerializer(serializers.ModelSerializer):
     )
     locaties_voor_melding = LocatieRelatedField(many=True, read_only=True)
     bijlagen = BijlageAlleenLezenSerializer(many=True, read_only=True)
-    meldinggebeurtenissen_voor_melding = MeldinggebeurtenisMeldingLijstSerializer(
-        many=True, read_only=True
+    meldinggebeurtenissen = MeldinggebeurtenisMeldingLijstSerializer(
+        source="meldinggebeurtenissen_voor_melding", many=True, read_only=True
     )
-
-    def get_meldinggebeurtenissen_voor_melding(self, instance):
-        meldinggebeurtenissen = (
-            instance.meldinggebeurtenissen_voor_melding.all().order_by("-aangemaakt_op")
-        )
-        return MeldinggebeurtenisMeldingLijstSerializer(
-            meldinggebeurtenissen, many=True
-        ).data
 
     class Meta:
         model = Melding
@@ -275,7 +269,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "status",
             "resolutie",
             "taakopdrachten_voor_melding",
-            "meldinggebeurtenissen_voor_melding",
+            "meldinggebeurtenissen",
         )
         read_only_fields = (
             "id",
@@ -289,6 +283,7 @@ class MeldingSerializer(serializers.ModelSerializer):
             "meta",
             "meta_uitgebreid",
             "resolutie",
+            "meldinggebeurtenissen",
         )
 
     def to_representation(self, instance):

@@ -131,8 +131,8 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "bijlagen",
             "onderwerpen",
             "meldinggebeurtenissen_voor_melding__bijlagen",
+            "meldinggebeurtenissen_voor_melding__taakgebeurtenis__bijlagen",
             "taakopdrachten_voor_melding__status",
-            "taakopdrachten_voor_melding__taakgebeurtenissen_voor_taakopdracht__bijlagen",
         )
         .all()
     )
