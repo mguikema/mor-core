@@ -72,6 +72,7 @@ class TaakopdrachtQuerySet(QuerySet):
                 "onderwerp",
                 "taaktype_melding_aantal",
                 "melding",
+                "melding__uuid",
                 "titel",
             )
             .order_by()
@@ -96,7 +97,7 @@ class TaakopdrachtQuerySet(QuerySet):
                         ]
                     ),
                     "meldingen": [
-                        to.get("melding")
+                        to.get("melding__uuid")
                         for to in taakopdrachten
                         if to.get("onderwerp_wijk_taaktype_aantal")
                         == taakopdracht.get("onderwerp_wijk_taaktype_aantal")

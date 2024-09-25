@@ -44,7 +44,7 @@ class StatusViewSet(
     )
     def veranderingen(self, request):
         serializer = StatusVeranderingSerializer(
-            self.filter_queryset(self.get_queryset()).get_veranderingen(request.GET),
+            self.filter_queryset(self.get_queryset()).veranderingen(request.GET),
             context={"request": request},
             many=True,
         )
