@@ -1,9 +1,9 @@
 import prometheus_client
+from apps.authenticatie.auth import TokenAuthentication
 from apps.meldingen.metrics_collectors import CustomCollector
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
-from rest_framework.authentication import TokenAuthentication
 
 
 @login_required
