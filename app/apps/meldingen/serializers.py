@@ -178,6 +178,7 @@ class MeldinggebeurtenisMeldingLijstSerializer(serializers.ModelSerializer):
             "omschrijving_extern",
             "taakgebeurtenis",
             "bijlagen",
+            "aangemaakt_op",
         )
         read_only_fields = ("omschrijving_extern",)
 
