@@ -76,8 +76,14 @@ class TaakgebeurtenisBijlagenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Taakgebeurtenis
-        fields = ("bijlagen",)
-        read_only_fields = ("bijlagen",)
+        fields = (
+            "bijlagen",
+            "aangemaakt_op",
+        )
+        read_only_fields = (
+            "bijlagen",
+            "aangemaakt_op",
+        )
 
 
 class TaakgebeurtenisStatusSerializer(WritableNestedModelSerializer):
