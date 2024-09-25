@@ -108,6 +108,11 @@ class TaakopdrachtViewSet(
                 OpenApiTypes.DATETIME,
                 OpenApiParameter.QUERY,
             ),
+            OpenApiParameter(
+                "inclusief-melding",
+                OpenApiTypes.BOOL,
+                OpenApiParameter.QUERY,
+            ),
         ],
     )
     @action(
@@ -115,7 +120,6 @@ class TaakopdrachtViewSet(
         methods=["get"],
         url_path="taaktype-aantallen-per-melding",
         serializer_class=TaaktypeAantallenSerializer,
-        permission_classes=(),
     )
     def taaktype_aantallen_per_melding(self, request):
         serializer = TaaktypeAantallenSerializer(

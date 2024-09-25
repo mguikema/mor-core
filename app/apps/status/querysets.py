@@ -28,7 +28,7 @@ class Epoch(Func):
 
 
 class StatusQuerySet(QuerySet):
-    def get_veranderingen(self, params):
+    def veranderingen(self, params):
         from apps.aliassen.models import OnderwerpAlias
         from apps.locatie.models import Locatie
         from apps.status.models import Status
@@ -52,9 +52,11 @@ class StatusQuerySet(QuerySet):
         ).values("statussen_for_melding_sum")
 
         # annotate with onderwerp & wijk
-        locaties = Locatie.objects.filter(melding=OuterRef("pk")).order_by("-gewicht")
+        locaties = Locatie.objects.filter(melding=OuterRef("melding")).order_by(
+            "-gewicht"
+        )
         onderwerpen = OnderwerpAlias.objects.filter(
-            meldingen_voor_onderwerpen=OuterRef("pk")
+            meldingen_voor_onderwerpen=OuterRef("melding")
         )
         statussen = statussen.annotate(
             onderwerp=Coalesce(
