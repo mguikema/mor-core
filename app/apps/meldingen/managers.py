@@ -190,7 +190,7 @@ class MeldingManager(models.Manager):
 
     def status_aanpassen(self, serializer, melding, db="default", heropen=False):
         from apps.meldingen.models import Melding, Meldinggebeurtenis
-        from apps.taken.models import Taakgebeurtenis, Taakopdracht
+        from apps.taken.models import Taakgebeurtenis, Taakopdracht, Taakstatus
 
         with transaction.atomic():
             try:
@@ -226,10 +226,13 @@ class MeldingManager(models.Manager):
                         "Eén van taken is op dit moment in gebruik, probeer het later nog eens."
                     )
                 taakgebeurtenissen = []
-                now = timezone.now()
                 for to in locked_taakopdrachten:
-                    to.verwijderd_op = now
-                    to.afgesloten_op = now
+                    taakstatus = Taakstatus.objects.create(
+                        naam=Taakstatus.NaamOpties.VOLTOOID, taakopdracht=to
+                    )
+                    to.status = taakstatus
+                    to.resolutie = Taakopdracht.ResolutieOpties.GEANNULEERD
+                    to.afgesloten_op = timezone.now()
                     if to.afgesloten_op and to.aangemaakt_op:
                         to.afhandeltijd = to.afgesloten_op - to.aangemaakt_op
                     else:
@@ -237,14 +240,14 @@ class MeldingManager(models.Manager):
                     taakgebeurtenissen.append(
                         Taakgebeurtenis(
                             taakopdracht=to,
-                            verwijderd_op=now,
-                            afgesloten_op=now,
+                            taakstatus=taakstatus,
+                            resolutie=Taakgebeurtenis.ResolutieOpties.GEANNULEERD,
                             gebruiker=melding_gebeurtenis.gebruiker,
                         )
                     )
                 Taakopdracht.objects.bulk_update(
                     locked_taakopdrachten,
-                    ["verwijderd_op", "afgesloten_op", "afhandeltijd"],
+                    ["status", "resolutie", "afgesloten_op", "afhandeltijd"],
                 )
                 aangemaakte_taakgebeurtenissen = Taakgebeurtenis.objects.bulk_create(
                     taakgebeurtenissen
