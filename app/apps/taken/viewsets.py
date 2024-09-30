@@ -130,3 +130,63 @@ class TaakopdrachtViewSet(
             many=True,
         )
         return Response(serializer.data)
+
+    @extend_schema(
+        description="Taakopdracht doorlooptijden en aantallen voor afgeronde taken per taaktype. Uniek o.b.v. onderwerp, wijk en taaktype ",
+        responses={status.HTTP_200_OK: TaaktypeAantallenSerializer()},
+        parameters=[
+            OpenApiParameter(
+                "afgesloten_op_gte",
+                OpenApiTypes.DATETIME,
+                OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                "afgesloten_op_lt",
+                OpenApiTypes.DATETIME,
+                OpenApiParameter.QUERY,
+            ),
+        ],
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="taakopdracht-doorlooptijden",
+        serializer_class=TaaktypeAantallenSerializer,
+    )
+    def taakopdracht_doorlooptijden(self, request):
+        serializer = TaaktypeAantallenSerializer(
+            self.filter_queryset(self.get_queryset()).taakopdracht_doorlooptijden(),
+            context={"request": request},
+            many=True,
+        )
+        return Response(serializer.data)
+
+    @extend_schema(
+        description="Niewe taakopdracht. Uniek o.b.v. onderwerp, wijk en taaktype ",
+        responses={status.HTTP_200_OK: TaaktypeAantallenSerializer()},
+        parameters=[
+            OpenApiParameter(
+                "aangemaakt_op_gte",
+                OpenApiTypes.DATETIME,
+                OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                "aangemaakt_op_lt",
+                OpenApiTypes.DATETIME,
+                OpenApiParameter.QUERY,
+            ),
+        ],
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="nieuwe-taakopdrachten",
+        serializer_class=TaaktypeAantallenSerializer,
+    )
+    def nieuwe_taakopdrachten(self, request):
+        serializer = TaaktypeAantallenSerializer(
+            self.filter_queryset(self.get_queryset()).nieuwe_taakopdrachten(),
+            context={"request": request},
+            many=True,
+        )
+        return Response(serializer.data)

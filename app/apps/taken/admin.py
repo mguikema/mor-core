@@ -124,6 +124,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "taak_url",
         "titel",
         "melding",
+        "aangemaakt_op",
         "aangepast_op",
         "afgesloten_op",
         "pretty_afhandeltijd",

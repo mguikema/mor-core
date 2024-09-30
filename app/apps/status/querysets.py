@@ -126,7 +126,7 @@ class StatusQuerySet(QuerySet):
             "aantal",
         )
 
-    def afgehandeld(self, params):
+    def doorlooptijden_afgehandelde_meldingen(self, params):
         from apps.aliassen.models import OnderwerpAlias
         from apps.locatie.models import Locatie
         from apps.status.models import Status
@@ -210,7 +210,7 @@ class StatusQuerySet(QuerySet):
         # filter op laatste afgehandelde status instanties
         qs = qs.filter(
             duur=0,
-            naam=Status.NaamOpties.AFGEHANDELD,
+            naam__in=[Status.NaamOpties.AFGEHANDELD, Status.NaamOpties.GEANNULEERD],
         )
         if aangemaakt_op_gte:
             qs = qs.filter(

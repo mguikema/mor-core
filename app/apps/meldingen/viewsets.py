@@ -498,7 +498,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
     @extend_schema(
-        description="Melding aantallen per wijk en onderwerp",
+        description="Nieuwe melding aantallen per wijk en onderwerp",
         responses={status.HTTP_200_OK: MeldingAantallenSerializer(many=True)},
         parameters=None,
     )
@@ -508,9 +508,9 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         url_path="aantallen",
         serializer_class=MeldingAantallenSerializer,
     )
-    def aantallen(self, request):
+    def nieuwe_meldingen(self, request):
         serializer = MeldingAantallenSerializer(
-            self.filter_queryset(self.get_queryset()).get_aantallen(),
+            self.filter_queryset(self.get_queryset()).nieuwe_meldingen(),
             context={"request": request},
             many=True,
         )
