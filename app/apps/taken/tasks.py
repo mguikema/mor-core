@@ -248,7 +248,6 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, voorkom_dubbele_sync=Tr
             "resolutie": taakopdracht.resolutie,
             "omschrijving_intern": taakgebeurtenis.omschrijving_intern,
             "gebruiker": taakgebeurtenis.gebruiker,
-            "uitvoerder": taakgebeurtenis.additionele_informatie.get("uitvoerder"),
         }
         taak_status_aanpassen_response = taakopdracht.applicatie.taak_status_aanpassen(
             f"{taakopdracht.taak_url}status-aanpassen/",
@@ -272,4 +271,24 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, voorkom_dubbele_sync=Tr
 
     resultaat = f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
     logger.warning(resultaat)
+    return resultaat
+
+
+@shared_task(bind=True, base=BaseTaskWithRetry)
+def task_taak_verwijderen(self, taakopdracht_id, gebruiker=None):
+    from apps.taken.models import Taakopdracht
+
+    taakopdracht = Taakopdracht.objects.get(id=taakopdracht_id)
+
+    taak_verwijderen_response = taakopdracht.applicatie.taak_verwijderen(
+        taakopdracht.taak_url,
+        gebruiker=gebruiker,
+    )
+    if taak_verwijderen_response.status_code not in [200, 202, 204, 210, 404, 405]:
+        raise Exception(
+            f"Taak verwijderen is mislukt: {taak_verwijderen_response.text}, code={taak_verwijderen_response.status_code}"
+        )
+
+    resultaat = f"De taak is verwijderd in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id}."
+    logger.info(resultaat)
     return resultaat

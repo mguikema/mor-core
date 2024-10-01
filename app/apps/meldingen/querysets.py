@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class MeldingQuerySet(QuerySet):
-    def get_aantallen(self):
+    def nieuwe_meldingen(self):
         from apps.aliassen.models import OnderwerpAlias
         from apps.locatie.models import Locatie
 

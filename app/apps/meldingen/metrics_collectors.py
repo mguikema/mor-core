@@ -90,7 +90,7 @@ class CustomCollector(object):
 
     def collect(self):
         # Melding status metrics
-        yield self.collect_melding_status_duur_openstaand_metrics()
+        # yield self.collect_melding_status_duur_openstaand_metrics()
 
         # Meldingen metrics
         yield self.collect_melding_metrics()
@@ -99,7 +99,7 @@ class CustomCollector(object):
         yield self.collect_signalen_metrics()
 
         # Taak total metrics
-        yield self.collect_taak_metrics()
+        # yield self.collect_taak_metrics()
 
         # Taaktype threshold
         # yield self.collect_taaktype_threshold_metrics()

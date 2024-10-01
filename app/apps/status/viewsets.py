@@ -8,7 +8,8 @@ from apps.status.serializers import (
     StatusVeranderingSerializer,
 )
 from django_filters import rest_framework as filters
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -44,16 +45,27 @@ class StatusViewSet(
     )
     def veranderingen(self, request):
         serializer = StatusVeranderingSerializer(
-            self.filter_queryset(self.get_queryset()).get_veranderingen(request.GET),
+            self.filter_queryset(self.get_queryset()).veranderingen(request.GET),
             context={"request": request},
             many=True,
         )
         return Response(serializer.data)
 
     @extend_schema(
-        description="Afgehandelde melding stats",
+        description="Doorlooptijden afgehandelde meldingen",
         responses={status.HTTP_200_OK: StatusAfgehandeldSerializer(many=True)},
-        parameters=None,
+        parameters=[
+            OpenApiParameter(
+                "aangemaakt_op_gte",
+                OpenApiTypes.DATETIME,
+                OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                "aangemaakt_op_lt",
+                OpenApiTypes.DATETIME,
+                OpenApiParameter.QUERY,
+            ),
+        ],
     )
     @action(
         detail=False,
@@ -63,7 +75,7 @@ class StatusViewSet(
     )
     def afgehandeld(self, request):
         serializer = StatusAfgehandeldSerializer(
-            self.get_queryset().afgehandeld(request.GET),
+            self.get_queryset().doorlooptijden_afgehandelde_meldingen(request.GET),
             context={"request": request},
             many=True,
         )

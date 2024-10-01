@@ -41,10 +41,19 @@ def action_update_fixer_taak_status(modeladmin, request, queryset):
             )
 
 
+class TaakstatusAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "naam",
+        "taakopdracht",
+    )
+
+
 class TaakgebeurtenisAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "uuid",
+        "verwijderd_op",
         "taakstatus",
         "resolutie",
         "aangemaakt_op",
@@ -110,11 +119,12 @@ def action_task_fix_taakopdracht_issues(self, request, queryset):
 class TaakopdrachtAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "uuid",
         "taaktype",
         "taak_url",
-        "uuid",
         "titel",
         "melding",
+        "aangemaakt_op",
         "aangepast_op",
         "afgesloten_op",
         "pretty_afhandeltijd",
@@ -146,6 +156,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
         "pretty_afhandeltijd",
         "aangemaakt_op",
         "aangepast_op",
+        "verwijderd_op",
         "afgesloten_op",
         "resolutie",
     )
@@ -174,6 +185,7 @@ class TaakopdrachtAdmin(admin.ModelAdmin):
                     "aangemaakt_op",
                     "aangepast_op",
                     "afgesloten_op",
+                    "verwijderd_op",
                     "pretty_afhandeltijd",
                 )
             },
@@ -264,5 +276,6 @@ admin.site.unregister(TaskResult)
 admin.site.register(TaskResult, CustomTaskResultAdmin)
 
 
+admin.site.register(Taakstatus, TaakstatusAdmin)
 admin.site.register(Taakopdracht, TaakopdrachtAdmin)
 admin.site.register(Taakgebeurtenis, TaakgebeurtenisAdmin)

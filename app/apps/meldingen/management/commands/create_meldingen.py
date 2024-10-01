@@ -7,6 +7,7 @@ import os
 import random
 
 import requests
+import urllib3
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 from faker import Faker
@@ -203,7 +204,10 @@ class Command(BaseCommand):
 
             return d
 
-        headers = {"Authorization": f"Token {options['token']}"}
+        headers = {
+            "Authorization": f"Token {options['token']}",
+            "user-agent": urllib3.util.SKIP_HEADER,
+        }
 
         dir_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "bestanden/"

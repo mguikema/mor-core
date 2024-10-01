@@ -1,5 +1,6 @@
 from apps.locatie.models import Adres, Graf, Lichtmast, Locatie
-from django.contrib import admin
+from apps.locatie.tasks import update_locatie_zoek_field_task
+from django.contrib import admin, messages
 from django.contrib.gis.db import models
 from django.forms.widgets import Textarea
 
@@ -17,11 +18,16 @@ class LocatieAdmin(admin.ModelAdmin):
         "melding",
         "wijknaam",
         "gewicht",
+        "primair",
         "signaal",
         "huisnummer",
         "straatnaam",
         "geometrie",
     )
+    search_fields = [
+        "id",
+        "melding__uuid",
+    ]
 
     # TODO: Remove later!!!
     formfield_overrides = {
@@ -32,6 +38,17 @@ class LocatieAdmin(admin.ModelAdmin):
         "signaal",
         "gebruiker",
     )
+    actions = ["update_locatie_zoek_field"]
+
+    @admin.action(description="Update locatie_zoek_field for selected locations")
+    def update_locatie_zoek_field(self, request, queryset):
+        locatie_ids = list(queryset.values_list("id", flat=True))
+        task = update_locatie_zoek_field_task.delay(locatie_ids)
+        self.message_user(
+            request,
+            f"Task to update locatie_zoek_field for {len(locatie_ids)} locations has been queued. Task ID: {task.id}",
+            messages.SUCCESS,
+        )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

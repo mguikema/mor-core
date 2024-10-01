@@ -8,7 +8,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import models
-from django.db.models import F, Max, OuterRef, Q
+from django.db.models import OuterRef, Q
 from django.db.models.functions import Greatest
 from django.forms.fields import CharField, MultipleChoiceField
 from django.utils.translation import gettext_lazy as _
@@ -225,7 +225,13 @@ class MeldingFilter(BasisFilter):
             combined_q = Q()
 
             for term in search_terms:
-                term = term.strip()
+                term = "".join(
+                    [
+                        char
+                        for char in term.strip()
+                        if char not in ["*", "(", ")", "?", "[", "]", "{", "}", "\\"]
+                    ]
+                )
                 combined_q &= (
                     # MeldR-nummer fields
                     Q(meta__meldingsnummerField__iregex=term)
@@ -237,9 +243,9 @@ class MeldingFilter(BasisFilter):
                     # | Q(signalen_voor_melding__melder__achternaam__iregex=term) Currently not used
                     | Q(signalen_voor_melding__melder__email__iregex=term)
                     | Q(signalen_voor_melding__melder__telefoonnummer__iregex=term)
-                    | Q(locaties_voor_melding__straatnaam__iregex=term)
+                    | Q(locaties_voor_melding__locatie_zoek_field__icontains=term)
                     | Q(
-                        signalen_voor_melding__locaties_voor_signaal__straatnaam__iregex=term
+                        signalen_voor_melding__locaties_voor_signaal__locatie_zoek_field__icontains=term
                     )
                     # Old meta fields
                     # | Q(meta__email_melder__iregex=term)
@@ -256,19 +262,24 @@ class MeldingFilter(BasisFilter):
     def get_buurt(self, queryset, name, value):
         if value:
             return queryset.filter(
-                locaties_voor_melding__buurtnaam__in=value
+                locaties_voor_melding__buurtnaam__in=value,
+                locaties_voor_melding__primair=True,
             ).distinct()
         return queryset
 
     def get_wijk(self, queryset, name, value):
         if value:
-            return queryset.filter(locaties_voor_melding__wijknaam__in=value).distinct()
+            return queryset.filter(
+                locaties_voor_melding__wijknaam__in=value,
+                locaties_voor_melding__primair=True,
+            ).distinct()
         return queryset
 
     def get_begraafplaatsen(self, queryset, name, value):
         if value:
             return queryset.filter(
-                locaties_voor_melding__begraafplaats__in=value
+                locaties_voor_melding__begraafplaats__in=value,
+                locaties_voor_melding__primair=True,
             ).distinct()
         return queryset
 
@@ -370,20 +381,6 @@ class RelatedOrderingFilter(rest_filters.OrderingFilter):
                 *[(key, key.title().split("__")) for key in queryset.query.annotations],
             ]
         return valid_fields
-
-    # filter_querset() has to be overridden from the BaseFilterBackend class.
-    def filter_queryset(self, request, queryset, view):
-        ordering = self.get_ordering(request, queryset, view)
-        if ordering:
-            queryset = queryset.annotate(
-                max_gewicht=Max("locaties_voor_melding__gewicht")
-            ).filter(
-                Q(locaties_voor_melding__gewicht=F("max_gewicht"))
-                | Q(locaties_voor_melding__isnull=True)
-            )
-            queryset = queryset.order_by(*ordering)
-            queryset = queryset.distinct()
-        return queryset
 
 
 class TrigramSimilaritySearchFilter(SearchFilter):

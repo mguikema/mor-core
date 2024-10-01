@@ -1,4 +1,7 @@
+from config.context import db
+from django.conf import settings
 from mozilla_django_oidc import auth
+from rest_framework.authentication import TokenAuthentication as DRFTokenAuthentication
 
 
 class OIDCAuthenticationBackend(auth.OIDCAuthenticationBackend):
@@ -46,3 +49,9 @@ class OIDCAuthenticationBackend(auth.OIDCAuthenticationBackend):
         )
 
         return payload
+
+
+class TokenAuthentication(DRFTokenAuthentication):
+    def authenticate_credentials(self, key):
+        with db(settings.READONLY_DATABASE_KEY):
+            return super().authenticate_credentials(key)

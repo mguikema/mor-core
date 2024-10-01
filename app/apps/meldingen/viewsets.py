@@ -15,11 +15,16 @@ from apps.meldingen.serializers import (
     MeldingGebeurtenisUrgentieSerializer,
     MeldingSerializer,
 )
-from apps.taken.serializers import TaakopdrachtSerializer
+from apps.taken.serializers import (
+    TaakopdrachtNotificatieSaveSerializer,
+    TaakopdrachtNotificatieSerializer,
+    TaakopdrachtSerializer,
+    TaakopdrachtVerwijderenSerializer,
+)
 from config.context import db
 from django.conf import settings
 from django.db.models.query import QuerySet
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -126,8 +131,8 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             "bijlagen",
             "onderwerpen",
             "meldinggebeurtenissen_voor_melding__bijlagen",
+            "meldinggebeurtenissen_voor_melding__taakgebeurtenis__bijlagen",
             "taakopdrachten_voor_melding__status",
-            "taakopdrachten_voor_melding__taakgebeurtenissen_voor_taakopdracht__bijlagen",
         )
         .all()
     )
@@ -144,22 +149,11 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
     pre_filterset_class = MeldingPreFilter
     filter_options_fields = (
         (
-            "begraafplaats",
-            "locaties_voor_melding__begraafplaats",
-            "meta_uitgebreid__begraafplaats__choices",
-            "signalen_voor_melding__meta_uitgebreid__begraafplaats__choices",
-        ),
-        (
             "buurt",
             "locaties_voor_melding__buurtnaam",
             None,
             None,
             "locaties_voor_melding__wijknaam",
-        ),
-        (
-            "onderwerp",
-            "onderwerpen",
-            "onderwerpen__bron_url",
         ),
     )
 
@@ -249,6 +243,97 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             data=serializer.errors,
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+
+    @extend_schema(
+        description="Rapporteert dat een taak gewijzigd is aan de taakapplicatie kant. Geeft uitsluitend aan dat er een wijziging is. MorCore haalt de taak vervolgens op bij de taakapplicatie.",
+        request=TaakopdrachtNotificatieSerializer,
+        responses={status.HTTP_200_OK: TaakopdrachtNotificatieSerializer},
+        parameters=None,
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="taakopdracht/(?P<taakopdracht_uuid>[^/.]+)/notificatie",
+        permission_classes=(),
+    )
+    def taakopdracht_notificatie(self, request, uuid, taakopdracht_uuid):
+        from apps.taken.models import Taakopdracht, Taakstatus
+
+        melding = self.get_object()
+        try:
+            taakopdracht = melding.taakopdrachten_voor_melding.get(
+                uuid=taakopdracht_uuid
+            )
+        except Taakopdracht.DoesNotExist:
+            raise Http404("De taakopdracht is niet gevonden!")
+
+        data = {}
+        data.update(request.data)
+
+        IS_VOLTOOID_MET_FEEDBACK = (
+            taakopdracht.status.naam == Taakstatus.NaamOpties.VOLTOOID_MET_FEEDBACK
+        )
+        IS_VOLTOOID_MET_HERZIEN = (
+            taakopdracht.status.naam == Taakstatus.NaamOpties.VOLTOOID
+            and not request.data.get("resolutie_opgelost_herzien", False)
+        )
+        IS_VORIGE_STATUS = taakopdracht.status.naam == data.get("taakstatus", {}).get(
+            "naam"
+        )
+        if (
+            taakopdracht.verwijderd_op
+            or IS_VOLTOOID_MET_FEEDBACK
+            or IS_VOLTOOID_MET_HERZIEN
+            or IS_VORIGE_STATUS
+        ):
+            return Response({})
+
+        print(data)
+        if data.get("taakstatus"):
+            data["taakstatus"]["taakopdracht"] = taakopdracht.id
+        print(data)
+        serializer = TaakopdrachtNotificatieSaveSerializer(
+            data=data,
+            context={"request": request},
+        )
+        if serializer.is_valid():
+            print("is valid")
+            Melding.acties.taakopdracht_notificatie(taakopdracht, serializer)
+        return Response({})
+
+    @extend_schema(
+        description="Markeert de taakopdracht in MorCore als verwijderd en stuurt de delete actie naar taakapplicatie.",
+        request=TaakopdrachtVerwijderenSerializer,
+        responses={status.HTTP_200_OK: TaakopdrachtVerwijderenSerializer},
+        parameters=None,
+    )
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="taakopdracht/(?P<taakopdracht_uuid>[^/.]+)",
+    )
+    def taakopdracht_verwijderen(self, request, uuid, taakopdracht_uuid):
+        from apps.taken.models import Taakopdracht
+
+        melding = self.get_object()
+        try:
+            taakopdracht = melding.taakopdrachten_voor_melding.get(
+                uuid=taakopdracht_uuid
+            )
+        except Taakopdracht.DoesNotExist:
+            raise Http404("De taakopdracht is niet gevonden!")
+
+        if taakopdracht.verwijderd_op:
+            raise serializers.ValidationError("Deze taakopdracht is al verwijderd")
+
+        taakgebeurtenis = Melding.acties.taakopdracht_verwijderen(
+            taakopdracht, gebruiker=request.GET.get("gebruiker")
+        )
+
+        serializer = TaakopdrachtVerwijderenSerializer(
+            taakgebeurtenis, context={"request": request}
+        )
+        return Response(serializer.data)
 
     @extend_schema(
         description="Melding heropenen",
@@ -413,7 +498,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
     @extend_schema(
-        description="Melding aantallen per wijk en onderwerp",
+        description="Nieuwe melding aantallen per wijk en onderwerp",
         responses={status.HTTP_200_OK: MeldingAantallenSerializer(many=True)},
         parameters=None,
     )
@@ -423,9 +508,9 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         url_path="aantallen",
         serializer_class=MeldingAantallenSerializer,
     )
-    def aantallen(self, request):
+    def nieuwe_meldingen(self, request):
         serializer = MeldingAantallenSerializer(
-            self.filter_queryset(self.get_queryset()).get_aantallen(),
+            self.filter_queryset(self.get_queryset()).nieuwe_meldingen(),
             context={"request": request},
             many=True,
         )
