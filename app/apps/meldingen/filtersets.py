@@ -225,7 +225,13 @@ class MeldingFilter(BasisFilter):
             combined_q = Q()
 
             for term in search_terms:
-                term = term.strip()
+                term = "".join(
+                    [
+                        char
+                        for char in term.strip()
+                        if char not in ["*", "(", ")", "?", "[", "]", "{", "}", "\\"]
+                    ]
+                )
                 combined_q &= (
                     # MeldR-nummer fields
                     Q(meta__meldingsnummerField__iregex=term)
