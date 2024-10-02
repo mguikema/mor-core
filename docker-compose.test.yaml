@@ -20,7 +20,7 @@ services:
     tty: true
 
   test_database:
-    image: postgis/postgis:11-3.3
+    image: postgis/postgis:16-3.4
     shm_size: '1024m'
     ports:
       - "5432"
