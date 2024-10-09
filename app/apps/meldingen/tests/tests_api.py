@@ -2,7 +2,9 @@ from datetime import datetime, timedelta
 
 import requests_mock
 from apps.aliassen.models import OnderwerpAlias
+from apps.applicaties.models import Applicatie
 from apps.bijlagen.models import Bijlage
+from apps.instellingen.models import Instelling
 from apps.locatie.models import Adres
 from apps.meldingen.models import Melding
 from apps.status.models import Status
@@ -74,6 +76,13 @@ class SignaalApiTest(APITestCase):
     def setUp(self, m):
         m.get(MOCK_URL, json={}, status_code=200)
         baker.make(OnderwerpAlias, bron_url=MOCK_URL)
+        baker.make(Instelling, onderwerpen_basis_url=MOCK_URL)
+        baker.make(
+            Applicatie,
+            naam="signaal_url",
+            basis_url=MOCK_URL,
+            valide_basis_urls=[MOCK_URL],
+        )
 
     def test_create_signaal_unauthenticated(self):
         client = get_unauthenticated_client()

@@ -17,6 +17,7 @@ def api_exception_handler(exc, context):
         "TaakStatusAanpassenFout": [str(exc), status.HTTP_500_INTERNAL_SERVER_ERROR],
         "TaaktypesOphalenFout": [str(exc), status.HTTP_500_INTERNAL_SERVER_ERROR],
         "TaakopdrachtInGebruik": [str(exc), status.HTTP_423_LOCKED],
+        "UrlFout": [str(exc), status.HTTP_406_NOT_ACCEPTABLE],
         "ApplicatieWerdNietGevondenFout": [
             str(exc),
             status.HTTP_500_INTERNAL_SERVER_ERROR,
