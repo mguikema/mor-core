@@ -182,7 +182,7 @@ class SignaalSerializer(WritableNestedModelSerializer):
     def validate_signaal_url(self, data):
         applicatie = Applicatie.vind_applicatie_obv_uri(data)
         if not applicatie:
-            raise UrlFout("signaal_url ")
+            raise UrlFout("signaal_url")
         return data
 
     def create(self, validated_data):

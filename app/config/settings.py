@@ -100,6 +100,7 @@ INSTALLED_APPS = (
     "apps.signalen",
     "apps.locatie",
     "apps.classificatie",
+    "apps.instellingen",
 )
 
 
