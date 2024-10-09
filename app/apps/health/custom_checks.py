@@ -6,17 +6,13 @@ from django.conf import settings
 from django.db import DatabaseError, IntegrityError
 from health_check.backends import BaseHealthCheckBackend
 from health_check.db.models import TestModel
-from health_check.exceptions import (
-    HealthCheckException,
-    ServiceReturnedUnexpectedResult,
-    ServiceUnavailable,
-)
+from health_check.exceptions import ServiceReturnedUnexpectedResult, ServiceUnavailable
 
 logger = logging.getLogger(__name__)
 
 
 class ApplicatieTokenAPIHealthCheck(BaseHealthCheckBackend):
-    critical_service = False
+    critical_service = True
 
     def check_status(self):
         results = []
@@ -64,7 +60,7 @@ class ApplicatieTokenAPIHealthCheck(BaseHealthCheckBackend):
             ]
         )
         if niet_ok_results:
-            raise HealthCheckException(niet_ok_results)
+            raise ServiceUnavailable(niet_ok_results)
 
     def identifier(self):
         return self.__class__.__name__
