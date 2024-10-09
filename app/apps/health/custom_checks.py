@@ -88,6 +88,10 @@ class ReadonlyDatabaseBackend(BaseHealthCheckBackend):
             raise ServiceReturnedUnexpectedResult("Integrity Error")
         except DatabaseError:
             raise ServiceUnavailable("Database error")
+        except TestModel.DoesNotExist:
+            raise ServiceReturnedUnexpectedResult(
+                "Object not found in readonly database"
+            )
 
         if obj:
             obj.delete()
