@@ -5,7 +5,7 @@ from apps.bijlagen.models import Bijlage
 from apps.signalen.querysets import SignaalQuerySet
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
-from utils.fields import DictJSONField
+from utils.fields import DictJSONField, ListJSONField
 from utils.models import BasisModel
 
 logger = logging.getLogger(__name__)
@@ -22,14 +22,14 @@ class Signaal(BasisModel):
     """
 
     signaal_url = models.URLField()
-    signaal_data = models.JSONField(default=dict)
+    signaal_data = DictJSONField(default=dict)
     bron_id = models.CharField(max_length=500, null=True, blank=True)
     bron_signaal_id = models.CharField(max_length=500, null=True, blank=True)
     origineel_aangemaakt = models.DateTimeField(null=True, blank=True)
     urgentie = models.FloatField(default=0.2)
     omschrijving_melder = models.CharField(max_length=500, null=True, blank=True)
     aanvullende_informatie = models.CharField(max_length=5000, null=True, blank=True)
-    aanvullende_vragen = models.JSONField(default=list)
+    aanvullende_vragen = ListJSONField(default=list)
     meta = DictJSONField(default=dict)
     meta_uitgebreid = DictJSONField(default=dict)
     melder = models.OneToOneField(

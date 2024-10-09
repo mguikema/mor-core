@@ -58,16 +58,6 @@ class Applicatie(BasisModel):
         blank=True,
         null=True,
     )
-    onderwerpen = models.ManyToManyField(
-        to="aliassen.OnderwerpAlias",
-        related_name="applicaties_voor_onderwerpen",
-        blank=True,
-    )
-    taaktypes = models.JSONField(
-        default=list,
-        blank=True,
-        null=True,
-    )
 
     def __str__(self):
         return self.naam
