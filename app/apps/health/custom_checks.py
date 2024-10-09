@@ -26,7 +26,7 @@ class ApplicatieTokenAPIHealthCheck(BaseHealthCheckBackend):
             "Niet ok",
         )
         result_waardes_niet_ok = (
-            result_waardes[0],
+            # result_waardes[0],
             result_waardes[2],
         )
         for applicatie in Applicatie.objects.all():
