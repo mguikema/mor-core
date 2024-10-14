@@ -1,12 +1,13 @@
 import requests
 import urllib3
 from django.contrib.gis.db import models
+from utils.fields import DictJSONField
 from utils.models import BasisModel
 
 
 class OnderwerpAlias(BasisModel):
     bron_url = models.CharField(max_length=500)
-    response_json = models.JSONField(
+    response_json = DictJSONField(
         default=dict,
         blank=True,
         null=True,

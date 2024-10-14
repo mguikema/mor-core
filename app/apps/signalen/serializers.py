@@ -1,4 +1,5 @@
 from apps.aliassen.serializers import OnderwerpAliasSerializer
+from apps.applicaties.models import Applicatie
 from apps.bijlagen.serializers import BijlageAlleenLezenSerializer, BijlageSerializer
 from apps.locatie.models import Adres, Graf, Lichtmast
 from apps.locatie.serializers import (
@@ -19,6 +20,7 @@ from drf_writable_nested.serializers import WritableNestedModelSerializer
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 from shapely.wkt import loads
+from utils.exceptions import UrlFout
 
 
 class SignaalLinksSerializer(serializers.Serializer):
@@ -176,6 +178,12 @@ class SignaalSerializer(WritableNestedModelSerializer):
     onderwerpen = OnderwerpAliasSerializer(many=True, required=False)
     melder = MelderSerializer(required=False)
     locaties_voor_signaal = LocatieSerializer(many=True, read_only=True)
+
+    def validate_signaal_url(self, data):
+        applicatie = Applicatie.vind_applicatie_obv_uri(data)
+        if not applicatie:
+            raise UrlFout("signaal_url")
+        return data
 
     def create(self, validated_data):
         locaties = (("adressen", Adres), ("lichtmasten", Lichtmast), ("graven", Graf))

@@ -8,6 +8,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.gis.db import models
 from django.contrib.sites.models import Site
 from rest_framework.reverse import reverse
+from utils.fields import DictJSONField
 from utils.models import BasisModel
 
 logger = logging.getLogger(__name__)
@@ -110,8 +111,8 @@ class Melding(BasisModel):
     origineel_aangemaakt = models.DateTimeField()
     afgesloten_op = models.DateTimeField(null=True, blank=True)
     urgentie = models.FloatField(default=0.2)
-    meta = models.JSONField(default=dict)
-    meta_uitgebreid = models.JSONField(default=dict)
+    meta = DictJSONField(default=dict)
+    meta_uitgebreid = DictJSONField(default=dict)
     status = models.OneToOneField(
         to="status.Status",
         related_name="melding_voor_status",

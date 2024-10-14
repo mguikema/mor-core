@@ -31,6 +31,8 @@ logger = logging.getLogger(__name__)
 
 @receiver(signaal_aangemaakt, dispatch_uid="melding_signaal_aangemaakt")
 def signaal_aangemaakt_handler(sender, melding, signaal, *args, **kwargs):
+    if kwargs.get("raw"):
+        return
     bijlages_aanmaken = [
         task_aanmaken_afbeelding_versies.s(bijlage.pk)
         for bijlage in signaal.bijlagen.all()
@@ -44,6 +46,8 @@ def signaal_aangemaakt_handler(sender, melding, signaal, *args, **kwargs):
 
 @receiver(status_aangepast, dispatch_uid="melding_status_aangepast")
 def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kwargs):
+    if kwargs.get("raw"):
+        return
     if melding.afgesloten_op and melding.status.is_afgesloten():
         afgesloten.send_robust(
             sender=sender,
@@ -58,6 +62,8 @@ def status_aangepast_handler(sender, melding, status, vorige_status, *args, **kw
 
 @receiver(urgentie_aangepast, dispatch_uid="melding_urgentie_aangepast")
 def urgentie_aangepast_handler(sender, melding, vorige_urgentie, *args, **kwargs):
+    if kwargs.get("raw"):
+        return
     task_notificaties_voor_melding_veranderd.delay(
         melding_url=melding.get_absolute_url(),
         notificatie_type="urgentie_aangepast",
@@ -66,6 +72,8 @@ def urgentie_aangepast_handler(sender, melding, vorige_urgentie, *args, **kwargs
 
 @receiver(afgesloten, dispatch_uid="melding_afgesloten")
 def afgesloten_handler(sender, melding, *args, **kwargs):
+    if kwargs.get("raw"):
+        return
     task_notificaties_voor_melding_veranderd.delay(
         melding_url=melding.get_absolute_url(),
         notificatie_type="afgesloten",
@@ -92,6 +100,8 @@ def afgesloten_handler(sender, melding, *args, **kwargs):
 def gebeurtenis_toegevoegd_handler(
     sender, meldinggebeurtenis, melding, *args, **kwargs
 ):
+    if kwargs.get("raw"):
+        return
     bijlages_aanmaken = [
         task_aanmaken_afbeelding_versies.s(bijlage.pk)
         for bijlage in meldinggebeurtenis.bijlagen.all()
@@ -107,6 +117,8 @@ def gebeurtenis_toegevoegd_handler(
 def melding_verwijderd_handler(
     sender, melding_url, bijlage_paden, samenvatting, *args, **kwargs
 ):
+    if kwargs.get("raw"):
+        return
     logger.info(
         f"Melding verwijderd: melding_url={melding_url}, samenvatting={samenvatting}"
     )
@@ -125,6 +137,8 @@ def melding_verwijderd_handler(
 def taakopdracht_aangemaakt_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
+    if kwargs.get("raw"):
+        return
     task_notificaties_voor_melding_veranderd.delay(
         melding_url=melding.get_absolute_url(),
         notificatie_type="taakopdracht_aangemaakt",
@@ -138,6 +152,8 @@ def taakopdracht_aangemaakt_handler(
 def taakopdracht_status_aangepast_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
+    if kwargs.get("raw"):
+        return
     task_taak_status_aanpassen.delay(
         taakgebeurtenis_id=taakgebeurtenis.id,
     )
@@ -157,6 +173,8 @@ def taakopdracht_status_aangepast_handler(
 def taakopdracht_verwijderd_handler(
     sender, melding, taakopdracht, taakgebeurtenis, *args, **kwargs
 ):
+    if kwargs.get("raw"):
+        return
     task_taak_verwijderen.delay(
         taakopdracht_id=taakopdracht.id,
     )
