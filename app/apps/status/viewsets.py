@@ -7,6 +7,8 @@ from apps.status.serializers import (
     StatusLijstSerializer,
     StatusVeranderingSerializer,
 )
+from config.context import db
+from django.conf import settings
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -44,11 +46,12 @@ class StatusViewSet(
         serializer_class=StatusVeranderingSerializer,
     )
     def veranderingen(self, request):
-        serializer = StatusVeranderingSerializer(
-            self.filter_queryset(self.get_queryset()).veranderingen(request.GET),
-            context={"request": request},
-            many=True,
-        )
+        with db(settings.READONLY_DATABASE_KEY):
+            serializer = StatusVeranderingSerializer(
+                self.filter_queryset(self.get_queryset()).veranderingen(request.GET),
+                context={"request": request},
+                many=True,
+            )
         return Response(serializer.data)
 
     @extend_schema(
@@ -74,9 +77,11 @@ class StatusViewSet(
         serializer_class=StatusAfgehandeldSerializer,
     )
     def afgehandeld(self, request):
-        serializer = StatusAfgehandeldSerializer(
-            self.get_queryset().doorlooptijden_afgehandelde_meldingen(request.GET),
-            context={"request": request},
-            many=True,
-        )
-        return Response(serializer.data)
+        with db(settings.READONLY_DATABASE_KEY):
+            serializer = StatusAfgehandeldSerializer(
+                self.get_queryset().doorlooptijden_afgehandelde_meldingen(request.GET),
+                context={"request": request},
+                many=True,
+            )
+            response = Response(serializer.data)
+        return response

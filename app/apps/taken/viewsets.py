@@ -8,6 +8,8 @@ from apps.taken.serializers import (
     TaakopdrachtVerwijderenSerializer,
     TaaktypeAantallenSerializer,
 )
+from config.context import db
+from django.conf import settings
 from django_filters import rest_framework as filters
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -51,7 +53,12 @@ class TaakopdrachtViewSet(
         responses={status.HTTP_200_OK: TaakopdrachtSerializer},
         parameters=None,
     )
-    @action(detail=True, methods=["patch"], url_path="status-aanpassen")
+    @action(
+        detail=True,
+        methods=["patch"],
+        url_path="status-aanpassen",
+        name="status-aanpassen",
+    )
     def status_aanpassen(self, request, uuid):
         taakopdracht = self.get_object()
         data = {}
@@ -122,13 +129,14 @@ class TaakopdrachtViewSet(
         serializer_class=TaaktypeAantallenSerializer,
     )
     def taaktype_aantallen_per_melding(self, request):
-        serializer = TaaktypeAantallenSerializer(
-            self.filter_queryset(self.get_queryset()).taaktype_aantallen_per_melding(
-                request.GET
-            ),
-            context={"request": request},
-            many=True,
-        )
+        with db(settings.READONLY_DATABASE_KEY):
+            serializer = TaaktypeAantallenSerializer(
+                self.filter_queryset(
+                    self.get_queryset()
+                ).taaktype_aantallen_per_melding(request.GET),
+                context={"request": request},
+                many=True,
+            )
         return Response(serializer.data)
 
     @extend_schema(
@@ -154,11 +162,12 @@ class TaakopdrachtViewSet(
         serializer_class=TaaktypeAantallenSerializer,
     )
     def taakopdracht_doorlooptijden(self, request):
-        serializer = TaaktypeAantallenSerializer(
-            self.filter_queryset(self.get_queryset()).taakopdracht_doorlooptijden(),
-            context={"request": request},
-            many=True,
-        )
+        with db(settings.READONLY_DATABASE_KEY):
+            serializer = TaaktypeAantallenSerializer(
+                self.filter_queryset(self.get_queryset()).taakopdracht_doorlooptijden(),
+                context={"request": request},
+                many=True,
+            )
         return Response(serializer.data)
 
     @extend_schema(
@@ -184,9 +193,10 @@ class TaakopdrachtViewSet(
         serializer_class=TaaktypeAantallenSerializer,
     )
     def nieuwe_taakopdrachten(self, request):
-        serializer = TaaktypeAantallenSerializer(
-            self.filter_queryset(self.get_queryset()).nieuwe_taakopdrachten(),
-            context={"request": request},
-            many=True,
-        )
+        with db(settings.READONLY_DATABASE_KEY):
+            serializer = TaaktypeAantallenSerializer(
+                self.filter_queryset(self.get_queryset()).nieuwe_taakopdrachten(),
+                context={"request": request},
+                many=True,
+            )
         return Response(serializer.data)
