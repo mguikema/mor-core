@@ -448,7 +448,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             serializer = TaakopdrachtSerializer(
                 taakopdracht, context={"request": request}
             )
-            return Response(serializer.data)
+            return Response(serializer.data, status.HTTP_201_CREATED)
 
         return Response(
             data=serializer.errors,
