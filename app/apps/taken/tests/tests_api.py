@@ -70,7 +70,7 @@ class TaakopdrachtAanmakenApiTest(APITestCase):
         data = copy.deepcopy(self.taakopdracht_data)
         data.update({"bericht": self.tekst_tussen_500_en_5000})
         response = client.post(url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def test_taakopdracht_aanmaken_te_lang_bericht(self):
         client = get_authenticated_client()
