@@ -59,7 +59,7 @@ class TaakopdrachtAanmakenApiTest(APITestCase):
         )
         data = self.taakopdracht_data
         response = client.post(url, data=data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_taakopdracht_aanmaken_lang_bericht(self):
         client = get_authenticated_client()
