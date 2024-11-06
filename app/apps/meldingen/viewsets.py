@@ -432,6 +432,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         methods=["post"],
         url_path="taakopdracht",
         serializer_class=TaakopdrachtSerializer,
+        name="taakopdracht-aanmaken",
     )
     def taakopdracht_aanmaken(self, request, uuid):
         melding = self.get_object()
@@ -447,7 +448,7 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
             serializer = TaakopdrachtSerializer(
                 taakopdracht, context={"request": request}
             )
-            return Response(serializer.data)
+            return Response(serializer.data, status.HTTP_201_CREATED)
 
         return Response(
             data=serializer.errors,
@@ -509,9 +510,10 @@ class MeldingViewSet(viewsets.ReadOnlyModelViewSet):
         serializer_class=MeldingAantallenSerializer,
     )
     def nieuwe_meldingen(self, request):
-        serializer = MeldingAantallenSerializer(
-            self.filter_queryset(self.get_queryset()).nieuwe_meldingen(),
-            context={"request": request},
-            many=True,
-        )
+        with db(settings.READONLY_DATABASE_KEY):
+            serializer = MeldingAantallenSerializer(
+                self.filter_queryset(self.get_queryset()).nieuwe_meldingen(),
+                context={"request": request},
+                many=True,
+            )
         return Response(serializer.data)

@@ -128,7 +128,7 @@ class Taakopdracht(BasisModel):
         max_length=100,
     )
     bericht = models.CharField(
-        max_length=500,
+        max_length=5000,
         blank=True,
         null=True,
     )
