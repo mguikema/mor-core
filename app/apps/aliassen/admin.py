@@ -30,11 +30,9 @@ def action_link_meldingen_aan_valide_onderwerp(modeladmin, request, queryset):
 
             onderwerp.meldingen_voor_onderwerpen.remove(*melding_ids)
             onderwerp.signalen_voor_onderwerpen.remove(*signal_ids)
-            onderwerp.save()
 
             valide_onderwerp.meldingen_voor_onderwerpen.add(*melding_ids)
             valide_onderwerp.signalen_voor_onderwerpen.add(*signal_ids)
-            valide_onderwerp.save()
 
 
 class OnderwerpAliasAdmin(admin.ModelAdmin):
