@@ -99,7 +99,7 @@ class CustomCollector(object):
         yield self.collect_signalen_metrics()
 
         # Taak total metrics
-        # yield self.collect_taak_metrics()
+        yield self.collect_taak_metrics()
 
         # Taaktype threshold
         # yield self.collect_taaktype_threshold_metrics()

@@ -7,8 +7,6 @@ logger = get_task_logger(__name__)
 DEFAULT_RETRY_DELAY = 2
 MAX_RETRIES = 6
 
-LOCK_EXPIRE = 5
-
 
 class BaseTaskWithRetry(celery.Task):
     autoretry_for = (Exception,)
