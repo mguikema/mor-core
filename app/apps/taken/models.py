@@ -125,7 +125,7 @@ class Taakopdracht(BasisModel):
         max_length=200,
     )
     titel = models.CharField(
-        max_length=100,
+        max_length=200,
     )
     bericht = models.CharField(
         max_length=5000,
