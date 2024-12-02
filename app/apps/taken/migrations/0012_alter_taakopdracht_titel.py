@@ -9,9 +9,19 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL("DROP VIEW dwh_taken_taakopdracht;"),
         migrations.AlterField(
             model_name="taakopdracht",
             name="titel",
             field=models.CharField(max_length=200),
         ),
+        # dwh_taken_taakopdracht
+        migrations.RunSQL(
+            """CREATE OR REPLACE VIEW dwh_taken_taakopdracht
+                AS SELECT
+                    *
+                FROM taken_taakopdracht
+            ;"""
+        ),
+        migrations.RunSQL("GRANT SELECT ON TABLE dwh_taken_taakopdracht TO dwh;"),
     ]
