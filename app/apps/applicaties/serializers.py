@@ -19,11 +19,6 @@ class TaakapplicatieLinksSerializer(serializers.Serializer):
 
 class TaakapplicatieSerializer(serializers.ModelSerializer):
     _links = TaakapplicatieLinksSerializer(source="*", read_only=True)
-    taaktypes = serializers.SerializerMethodField()
-
-    @extend_schema_field(OpenApiTypes.ANY)
-    def get_taaktypes(self, obj):
-        return obj.taaktypes_halen()
 
     class Meta:
         model = Applicatie
@@ -32,12 +27,10 @@ class TaakapplicatieSerializer(serializers.ModelSerializer):
             "uuid",
             "naam",
             "basis_url",
-            "taaktypes",
         )
         read_only_fields = (
             "_links",
             "uuid",
             "naam",
             "basis_url",
-            "taaktypes",
         )
