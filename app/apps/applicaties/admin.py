@@ -2,7 +2,6 @@ import logging
 
 from apps.applicaties.models import Applicatie
 from django.contrib import admin, messages
-from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +15,6 @@ class TaakapplicatieAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if obj.pk:
-            cache.delete(obj.get_token_cache_key())
             orig_obj = Applicatie.objects.get(pk=obj.pk)
             if (
                 obj.applicatie_gebruiker_wachtwoord
@@ -38,7 +36,7 @@ class TaakapplicatieAdmin(admin.ModelAdmin):
                 logger.error(f"Encryption error: {e}")
 
         try:
-            if obj._get_token():
+            if obj.haal_token():
                 messages.success(request, "Connectie met de applicatie is gelukt")
             else:
                 messages.error(request, "Connectie met de applicatie is mislukt!")

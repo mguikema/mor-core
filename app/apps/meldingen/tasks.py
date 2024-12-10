@@ -33,7 +33,9 @@ def task_notificaties_voor_melding_veranderd(*args, **kwargs):
     if not melding_url or not notificatie_type:
         return "melding_url en notificatie_type zijn verplicht"
 
-    for applicatie in Applicatie.objects.all():
+    for applicatie in Applicatie.objects.filter(
+        applicatie_type=Applicatie.ApplicatieTypes.TAAKAPPLICATIE
+    ):
         task_notificatie_voor_melding_veranderd.delay(
             applicatie.id,
             melding_url,
@@ -53,4 +55,9 @@ def task_notificatie_voor_melding_veranderd(
         melding_url,
         notificatie_type,
     )
-    return f"Applicatie id: {applicatie.naam}, melding_url={melding_url}, notificatie_type={notificatie_type}, status code={notificatie_response.status_code}"
+    error = notificatie_response.get("error")
+    if error:
+        logger.error(
+            f'task_notificatie_voor_melding_veranderd: applicatie:  {applicatie.naam}, bericht: {error.get("bericht")}, status code: {error.get("status_code")}'
+        )
+    return f"Applicatie naam: {applicatie.naam}, melding_url={melding_url}, notificatie_type={notificatie_type}"
