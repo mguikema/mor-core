@@ -37,18 +37,17 @@ class ApplicatieTokenAPIHealthCheck(BaseHealthCheckBackend):
                 "result": None,
             }
             try:
-                r["token"] = applicatie._get_token()
+                r["token"] = applicatie.haal_token()
             except Exception as e:
                 logger.error(
                     f"Error fetching token for applicatie={applicatie.naam}, e={e}"
                 )
-
             r["result"] = (
                 result_waardes[0]
                 if not r.get("applicatie_data_exists")
-                else result_waardes[1]
-                if r.get("token")
                 else result_waardes[2]
+                if not r.get("token") and r.get("applicatie_data_exists")
+                else result_waardes[1]
             )
             results.append(r)
 
