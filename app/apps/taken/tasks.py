@@ -178,21 +178,13 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
             taakapplicatie_data
         )
 
-        if taak_aanmaken_response.status_code != 201:
-            response_text = ""
-            try:
-                response_text = f", antwoord: {taak_aanmaken_response.json()}"
-            except Exception:
-                ...
-            logger.error(
-                f"De taak kon niet worden aangemaakt in {taakopdracht.applicatie.naam} o.b.v. taakopdracht met id {taakopdracht.id}, fout code: {taak_aanmaken_response.status_code}{response_text}"
-            )
+        error = taak_aanmaken_response.get("error")
+        if error:
             raise Exception(
-                f"De taak kon niet worden aangemaakt in {taakopdracht.applicatie.naam} o.b.v. taakopdracht met id {taakopdracht.id}, fout code: {taak_aanmaken_response.status_code}{response_text}"
+                f'De taak kon niet worden aangemaakt in {taakopdracht.applicatie.naam} o.b.v. taakopdracht met id {taakopdracht.id}, bericht: {error.get("bericht")} status code: {error.get("status_code")}'
             )
 
-        taak_aanmaken_data = taak_aanmaken_response.json()
-        taakopdracht.taak_url = taak_aanmaken_data.get("_links", {}).get("self")
+        taakopdracht.taak_url = taak_aanmaken_response.get("_links", {}).get("self")
         taakopdracht.save()
         additionele_informatie = {}
         additionele_informatie.update(taakgebeurtenis.additionele_informatie)
@@ -200,10 +192,7 @@ def task_taak_aanmaken(self, taakgebeurtenis_id, check_taak_url=True):
         taakgebeurtenis.additionele_informatie = additionele_informatie
         taakgebeurtenis.save()
 
-    logger.warning(
-        f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
-    )
-    return f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_data.get('id')}."
+    return f"De taak is aangemaakt in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_aanmaken_response.get('id')}."
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
@@ -250,28 +239,22 @@ def task_taak_status_aanpassen(self, taakgebeurtenis_id, voorkom_dubbele_sync=Tr
             "gebruiker": taakgebeurtenis.gebruiker,
         }
         taak_status_aanpassen_response = taakopdracht.applicatie.taak_status_aanpassen(
-            f"{taakopdracht.taak_url}status-aanpassen/",
+            taakopdracht.taak_url,
             data=taak_status_aanpassen_data,
         )
-
-        if taak_status_aanpassen_response.status_code not in [200, 404]:
-            logger.error(
-                f"De taakstatus kon niet worden aangepast: {taakopdracht.taak_url}status-aanpassen/ o.b.v. taakopdracht met id: {taakopdracht.id}"
-            )
+        error = taak_status_aanpassen_response.get("error")
+        if error:
             raise MeldingManager.TaakStatusAanpassenFout(
-                f"De taakstatus kon niet worden aangepast: {taakopdracht.taak_url}status-aanpassen/ o.b.v. taakopdracht met id: {taakopdracht.id}"
+                f'De taakstatus kon niet worden aangepast: {taakopdracht.taak_url}status-aanpassen/ o.b.v. taakopdracht met id: {taakopdracht.id}, bericht: {error.get("bericht")} status code: {error.get("status_code")}'
             )
 
-        taak_status_aanpassen_data = taak_status_aanpassen_response.json()
         additionele_informatie = {}
         additionele_informatie.update(taakgebeurtenis.additionele_informatie)
         additionele_informatie.update({"taak_url": taakopdracht.taak_url})
         taakgebeurtenis.additionele_informatie = additionele_informatie
         taakgebeurtenis.save()
 
-    resultaat = f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_data.get('id')}."
-    logger.warning(resultaat)
-    return resultaat
+    return f"De taak status is aangepast in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id} en FixeR taak met id: {taak_status_aanpassen_response.get('id')}."
 
 
 @shared_task(bind=True, base=BaseTaskWithRetry)
@@ -284,11 +267,10 @@ def task_taak_verwijderen(self, taakopdracht_id, gebruiker=None):
         taakopdracht.taak_url,
         gebruiker=gebruiker,
     )
-    if taak_verwijderen_response.status_code not in [200, 202, 204, 210, 404, 405]:
+    error = taak_verwijderen_response.get("error")
+    if error:
         raise Exception(
-            f"Taak verwijderen is mislukt: {taak_verwijderen_response.text}, code={taak_verwijderen_response.status_code}"
+            f'Taak verwijderen is mislukt: taakopdracht.id={taakopdracht.id}, bericht={error.get("bericht")}, status code={error.get("status_code")}'
         )
 
-    resultaat = f"De taak is verwijderd in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id}."
-    logger.info(resultaat)
-    return resultaat
+    return f"De taak is verwijderd in {taakopdracht.applicatie.naam}, o.b.v. taakopdracht met id: {taakopdracht.id}."
