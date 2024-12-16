@@ -64,4 +64,4 @@ requests_mock==1.12.1
 django-prometheus==2.3.1
 prometheus-client==0.20.0
 shapely==2.0.4
-git+https://github.com/forza-mor-rotterdam/mor-api-services.git@6cbe88f9e361f7ddd868efc4b087b906a2ba8c7b
+git+https://github.com/forza-mor-rotterdam/mor-api-services.git@5a8d7e3d731d819647c402c7e230b3574ef8fd19
